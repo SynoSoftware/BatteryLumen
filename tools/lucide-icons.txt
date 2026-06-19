@@ -1,0 +1,15 @@
+# Machine-owned manifest. Update only when the UI needs new Lucide icons.
+battery-full
+battery-charging
+bell
+alarm-clock
+heart
+history
+info
+moon
+settings
+sun
+thermometer
+triangle-alert
+x
+zap
