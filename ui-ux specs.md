@@ -1,224 +1,138 @@
-# UI/UX Specification: Open Battery Decision Assistant
+# Product UI Specification: Open Battery Decision Assistant
 
-## 1. Core UI/UX Philosophy
+## 1. Product UI Goal
 
-### Anti-Precision Principle
+The app should help the user make one clear decision:
 
-The UI must structurally prevent fake precision.
+**Am I treating my battery well right now, and what should I do?**
 
-Rules:
+The UI must be:
 
-* Percentages shown to users are rounded integers.
-* Battery health is shown as approximate: `~77%`.
-* Uncertain values are shown as ranges: `74–80%`.
-* No exact wear-per-session numbers.
-* No exact lifetime-loss claims.
-* No “battery will last X times longer” claims.
-* If a value is noisy, the UI must range it, qualify it, or refuse to show it.
+* Fluent
+* Ergonomic
+* Quiet
+* Evidence-based
+* Low-noise
+* No fake precision
+* No fear language
+* No technical dashboard by default
 
-The app should never render a number that implies certainty the model does not have.
+The app should show advice first, evidence second, raw data last.
 
-### Calm Diagnostic Aesthetic
+---
 
-The app should feel precise, quiet, low-drama, and evidence-first.
+# 2. Main Navigation
 
-Avoid:
+Use four main screens:
 
-* Scary health metaphors
-* Disease language
-* Pulsing red alerts
-* Battery “juice” animations
-* Gamified fake scores
-* Decorative technical clutter
+1. **Now**
+2. **Health**
+3. **Ledger**
+4. **How it works**
 
-Use:
+Each screen has one job.
 
-* Clear typography
-* Sparse layout
-* Functional color
-* Strong hierarchy
-* Evidence labels
-* Plain-language explanations
+| Screen       | User question                                    |
+| ------------ | ------------------------------------------------ |
+| Now          | What should I do right now?                      |
+| Health       | Is my battery actually degrading?                |
+| Ledger       | What evidence is the app using?                  |
+| How it works | Which numbers are real, estimated, or uncertain? |
 
-### Progressive Disclosure
+---
 
-The first screen gives the action in 5 seconds.
+# 3. Global UI Rules
 
-Detailed science, model logic, raw measurements, excluded data, and evidence explanations are available only when the user taps or scrolls deeper.
+## 3.1 No fake precision
 
-The main UX must answer:
+Never show:
 
-> What is happening, is it good or stressful, and what should I do?
+* Exact wear per session
+* Exact lifetime lost
+* Exact battery lifespan remaining
+* “This charge cost X minutes of battery life”
+* “Battery will last X times longer”
+* “887% efficiency”
 
-## 2. Visual Language & Theming
+Show instead:
 
-### Colors
+* `Low / Normal / High stress`
+* `Likely range: 74–80%`
+* `Confidence: Medium`
+* `Not enough data`
+* `Ignored for health estimate`
 
-Colors are functional, not decorative.
+## 3.2 Evidence labels
 
-Backgrounds:
+Every important value must be labeled as:
 
-* Light: pure white
-* Dark: pure black
-
-Surfaces:
-
-* Light card: `#F8F9FA`
-* Dark card: `#121212`
-* Separation via spacing and subtle 1px borders
-* Avoid heavy shadows
-
-Semantic signals:
-
-* Excellent / Good: muted slate-teal
-* Normal: neutral gray / slate
-* High stress: warm amber
-* Severe stress: matte terracotta
-
-No bright red unless there is a severe thermal condition.
-
-### Typography
-
-Use:
-
-* Prose and headings: Inter or Roboto
-* Data and ledger values: Roboto Mono
-* Tabular figures enabled for numeric alignment
-
-Ledger rows must feel like strict records, not decorative cards.
-
-## 3. Evidence Labeling System
-
-Every important value must communicate how trustworthy it is.
-
-### Evidence Types
-
-Use full labels on spacious screens:
-
-* `(Measured)`
-* `(Estimated)`
-* `(Inferred)`
-* `(Experimental)`
-
-Use compact labels only in dense tables:
-
-* `[M]`
-* `[E]`
-* `[I]`
-* `[X]`
-
-### Definitions
-
-#### Measured
-
-Direct reading from Android or device sensors.
+* **Measured**: directly read from the device
+* **Estimated**: calculated from measured data
+* **Inferred**: a judgment, classification, or recommendation
+* **Experimental**: not proven enough for normal users
 
 Examples:
 
-* Battery level
-* Battery temperature
-* Plug type
-* Charging status
-* Timestamp
-* Session duration
-* Voltage, if available
-* Current, if available
-* Charge counter, if available
+```text
+Temp: 42°C — Measured
+Time to 85%: ~12 min — Estimated
+Battery stress: High — Inferred
+Session impact: Above average — Experimental
+```
 
-#### Estimated
+## 3.3 Advice hierarchy
 
-Calculated from measured values.
+Every advice card should follow this order:
 
-Examples:
+1. **State**
+2. **Why**
+3. **Action**
+4. **Confidence**
 
-* Time to target
-* Time to full
-* Battery health
-* Capacity estimate
-* Capacity trend
-* Charging speed if derived from current or charge-rate readings
+Example:
 
-#### Inferred
+```text
+Battery stress: High
+Why: Battery is hot while charging above 85%.
+Action: Unplug now or let the phone cool.
+Confidence: High
+```
 
-A classification or recommendation derived from measured and estimated values.
+---
 
-Examples:
+# 4. Screen: Now
 
-* Battery stress
-* Thermal stress
-* Charge-level stress
-* “Fast” charging label
-* “Useful session”
-* “Weak session”
-* “Incomplete data”
-* Recommended action
+## Purpose
 
-#### Experimental
+Answer:
 
-A non-core metric that is not proven enough to drive product decisions.
+**What should I do right now?**
 
-Examples:
+This is the main screen.
 
-* Session impact scale
-* Lifetime-risk proxy
-* Relative stress index
-* Any metric that cannot be validated directly from device readings
+---
 
-Experimental metrics are disabled by default.
+## 4.1 Charging state
 
-### Interaction
+### Top card: Battery stress
 
-Tapping any evidence label opens a bottom sheet explaining:
+Show one dominant card.
 
-* What inputs were used
-* Which inputs were unavailable
-* Whether the value is measured, estimated, inferred, or experimental
-* Why confidence is low, medium, or high
-* What the app cannot prove
+Example:
 
-### First-Run Explanation
+```text
+Battery stress
+High
 
-Show a short tooltip:
+Battery is 42°C while charging above 85%.
 
-> Every number in this app is labeled by evidence quality. We do not pretend to know more than we can measure.
+Unplug now or let the phone cool.
 
-## 4. Main Screen Architecture
+Confidence: High
+Based on direct temperature and battery level
+```
 
-Use standard Android bottom navigation with icons and text labels.
-
-Tabs:
-
-* Now
-* Health
-* Ledger
-* How it works
-
-Do not use icon-only navigation. Clarity is more important than visual minimalism.
-
-## 5. Stress Language
-
-The user-facing product should use the word **stress**, not **risk**, for the primary interface.
-
-Use:
-
-* `Battery stress`
-* `Charging stress`
-* `Thermal stress`
-* `Charge-level stress`
-
-Avoid using `Risk` as the main headline unless explaining the model in technical documentation.
-
-Reason:
-
-* `Stress` is calmer.
-* `Risk` can sound fear-based.
-* The app should guide behavior without making normal charging feel dangerous.
-
-## 6. Stress States
-
-The app must include a neutral state.
-
-Allowed stress states:
+Stress states:
 
 * Excellent
 * Good
@@ -226,143 +140,158 @@ Allowed stress states:
 * High stress
 * Severe stress
 
-Rules:
+Use **Normal** generously. Normal charging should not feel bad.
 
-* Normal charging must not feel like failure.
-* Excellent and Good should be used when conditions are clearly favorable.
-* High stress should be used for conditions worth changing.
-* Severe stress should be rare and reserved for clear heat or high-stress combinations.
+---
 
-Example:
+## 4.2 Best advice rules
 
-```text
-Battery stress: Normal
-Reason: battery temperature is reasonable and charging level is moderate.
-Action: continue charging.
-Confidence: high
-```
+Show the most useful advice based on the current condition.
 
-## 7. Screen 1: Now
-
-Purpose:
-
-> Am I treating my battery well right now?
-
-This is the main product screen.
-
-### Charging State
-
-#### Hero Decision Card
-
-Card style:
-
-* Edge-to-edge or wide card
-* 5% semantic color wash
-* Clear border
-* No heavy shadow
-
-Content:
-
-* Eyebrow: `CURRENT BATTERY STRESS`
-* Headline: `High stress`
-* Reason: `Battery is 42°C while charging above 85%.`
-* Action box: `Unplug now or let phone cool.`
-* Evidence summary: `Confidence: High • Based on direct temperature and battery level`
-
-Do not place individual evidence badges on every hero-line item. The summary is enough at this level.
-
-### Live Telemetry Grid
-
-Default grid should stay focused on the most useful direct state.
-
-Example:
+### If battery is cool and below target
 
 ```text
-Temp:     42°C    (Measured)
-Level:    86%     (Measured)
-State:    Charging (Measured)
+Battery stress: Good
+Why: Temperature is normal and charge level is moderate.
+Action: Continue charging.
 ```
 
-Rules:
-
-* `Temp` is measured if Android exposes battery temperature.
-* `Level` is measured.
-* `State` is measured.
-* Do not show `Speed: Fast` in the default grid.
-* Charging speed belongs in expanded details or advanced mode because it can distract from the main decision.
-
-### Advanced Expansion
-
-If the user expands telemetry:
+### If battery is warm but not severe
 
 ```text
-Current:  1800 mA    (Measured, if supported)
-Speed:    Fast       (Inferred)
-Source:   AC         (Measured)
-Voltage:  4.31 V     (Measured, if supported)
+Battery stress: High
+Why: Battery is warm while charging.
+Action: Let the phone cool or avoid heavy use while charging.
 ```
 
-Rules:
-
-* Raw current is measured only if supported by the device.
-* `Speed: Fast` is inferred from current or charge-rate readings.
-* If current is unavailable, the app must say so.
-
-### Target & Alarm Card
-
-Show target guidance without mixing recommendation and estimate.
-
-Example:
+### If battery is hot
 
 ```text
-Best Stop:       85%       (Recommended)
-Time to target:  ~12 min   (Estimated)
-Full charge:     ~46 min   (Estimated)
+Battery stress: Severe
+Why: Battery is 45°C while charging.
+Action: Unplug now if you do not need more charge.
 ```
 
-Primary action:
+### If battery is above 85%
 
-* Toggle: `Set alarm for 85%`
+```text
+Battery stress: Normal / High
+Why: Battery is near full. Staying near full adds aging stress over time.
+Action: Unplug if you do not need 100%.
+```
+
+### If battery is at 100%
+
+```text
+Battery stress: High
+Why: Battery is full. Staying full for long periods increases aging stress.
+Action: Unplug when convenient.
+```
+
+Do not say:
+
+```text
+You are damaging your battery.
+```
+
+Say:
+
+```text
+This condition increases aging stress over time.
+```
+
+---
+
+## 4.3 Live telemetry
+
+Show only the most useful direct values.
+
+```text
+Temp:   42°C      Measured
+Level:  86%       Measured
+State:  Charging  Measured
+```
+
+Do not show watts, volts, current, cycles, or mAh on the default Now screen.
+
+Those belong in expanded details.
+
+---
+
+## 4.4 Target and alarm card
+
+Show:
+
+```text
+Best stop:       85%        Recommended
+Time to target:  ~12 min    Estimated
+Full charge:     ~46 min    Estimated
+
+[ Set alarm for 85% ]
+```
 
 Context text:
 
-> Continuing past 85% provides less daily value and increases aging stress at this temperature.
-
-Rules:
-
-* `85%` is a recommendation, not an estimate.
-* Time remaining is estimated.
-* The app must not claim it can stop charging unless the device supports it.
-
-## 8. Screen 2: Health
-
-Purpose:
-
-> What condition is my battery in, and can I trust the estimate?
-
-### Health Estimate Card
-
-Example:
-
 ```text
-~77% Useful Capacity    (Estimated)
-Likely range: 74–80%
-Confidence: Medium
-Based on 12 useful sessions
+Continuing past 85% gives less daily value and increases aging stress, especially when warm.
 ```
 
-Rules:
+If user selects 100%:
 
-* Health is always estimated unless the OS exposes a reliable health value.
-* Capacity is always estimated unless the OS exposes a true battery health value.
-* Never label capacity points as measured.
-* Never show fake precision like `77.38%`.
+```text
+Charging to 100% is fine when needed. Avoid staying full for long periods.
+```
 
-### Health Empty State
+---
 
-Before enough data exists, the app must not show a fake health estimate.
+## 4.5 Discharging state
 
-Example:
+When unplugged, the Now screen should not pretend to be a charging assistant.
+
+Show:
+
+```text
+Battery use
+Normal
+
+Temperature is normal and battery level is safe.
+
+Estimated remaining: ~5h 20m
+Confidence: Medium
+```
+
+If battery is very low:
+
+```text
+Battery level is low
+Use normally, but avoid heavy load if the phone is hot.
+
+Estimated remaining: ~32 min
+```
+
+Avoid:
+
+```text
+Low battery is damaging your battery.
+```
+
+---
+
+# 5. Screen: Health
+
+## Purpose
+
+Answer:
+
+**Is my battery actually getting worse?**
+
+The Health screen should not update from weak data.
+
+---
+
+## 5.1 Not enough data state
+
+Before enough useful sessions exist, show:
 
 ```text
 Not enough useful sessions yet
@@ -375,221 +304,327 @@ Recommended: charges with over 30% gain
 
 Actions:
 
-* `View Ledger`
-* `How estimates work`
-
-Rules:
-
-* Do not show a health percentage too early.
-* Do not show a trend line before enough useful points exist.
-* Explain what kind of sessions improve confidence.
-
-### Trend Visualization
-
-Use a scatter plot with uncertainty.
-
-Visual rules:
-
-* X-axis: date
-* Y-axis: estimated useful capacity or health %
-* Very subtle horizontal gridlines only
-* No heavy grid
-* No decorative chart chrome
-* No sharp single-line certainty
-
-Data points:
-
-* Solid dots: high-quality estimated capacity points
-* Hollow dots: weak estimated capacity points excluded from trend calculation
-
-Trend:
-
-* Smooth moving average through solid dots only
-* Shaded confidence band around the trend
-* Confidence band communicates uncertainty visually
-
-Example caption:
-
-> Based on 12 useful sessions. 4 noisy sessions excluded.
-
-Tapping the caption opens the filtered ledger.
-
-### Health Interpretation
-
-Below the chart, show a plain-language conclusion.
-
-Examples:
-
-* `Battery appears stable.`
-* `Battery is slowly declining.`
-* `Recent readings are noisy.`
-* `More useful sessions are needed.`
-* `Drop appears real because multiple useful sessions agree.`
-
-Do not force users to interpret noisy graph data themselves.
-
-## 9. Screen 3: Ledger
-
-Purpose:
-
-> What evidence is the app using?
-
-The Ledger treats charge sessions like bank transactions.
-
-### Layout
-
-Use a dense, scannable list with tabular alignment.
-
-Avoid bulky cards for every row.
-
-### Row Design
-
-Example:
-
 ```text
-+42%    10:00–10:45    40% → 82%    Warm [I]
+View Ledger
+How estimates work
 ```
 
-Columns:
+Do not show fake battery health before enough evidence exists.
 
-* Gain
-* Time range
-* Battery range
-* Tag
+---
 
-Tags:
-
-* `Useful [I]`
-* `Weak [I]`
-* `Warm [I]`
-* `Hot [I]`
-* `Incomplete [I]`
-* `Excluded [I]`
-
-The tag is inferred because it is a classification.
-
-### Expanded Row
-
-On tap, expand inline.
-
-Example:
-
-```text
-Max Temp:        41°C      [M]
-Time > 85%:      12 min    [M]
-Screen On:       4 min     [M]
-Capacity point:  excluded  [I]
-
-Reason:
-Weak data — charge gain under 30%.
-```
-
-Rules:
-
-* Raw measurements can be `[M]`.
-* Session classification is `[I]`.
-* Capacity point is `[E]` if calculated.
-* Exclusion reason is `[I]`.
-
-### Incomplete Data
-
-If Android restricts the app or the app misses part of the session:
+## 5.2 Health estimate state
 
 Show:
 
 ```text
-Incomplete [I]
+~77% Useful Capacity
+Estimated
+
+Likely range: 74–80%
+Confidence: Medium
+Based on 12 useful sessions
 ```
 
-Expanded detail:
+Meaning text:
 
 ```text
-Last measured point: 68% at 10:32 [M]
-Missing interval: 10:32–10:51 [I]
-Reason: app was restricted by Android [I]
+Your phone appears to store about 23% less energy than when new.
 ```
 
-Do not label incomplete data itself as measured.
+If confidence is low:
 
-## 10. Screen 4: How It Works
+```text
+This estimate may change as more useful sessions are recorded.
+```
 
-Purpose:
+---
 
-> Which numbers are real, and how does the app decide?
+## 5.3 Capacity trend graph
 
-This screen should read like a clean open-source README.
+Show:
 
-### Layout
+* Solid dots: useful estimated capacity points
+* Hollow dots: weak estimated points excluded from trend
+* Moving average
+* Shaded confidence band
+* Subtle horizontal gridlines only
 
-Use expandable sections.
+Do not show a sharp single line that implies certainty.
 
-Sections:
+Below graph, show one conclusion:
 
-* Evidence labels
-* Thermal stress model
-* Charge-level stress model
-* Combined stress model
-* Capacity model
-* Data quality rules
-* Experimental metrics
-* Known limitations
+```text
+Battery appears stable.
+```
 
-### Thermal Stress Model
+or:
+
+```text
+Battery is slowly declining.
+```
+
+or:
+
+```text
+Recent readings are noisy. More useful sessions are needed.
+```
+
+or:
+
+```text
+Drop appears real because multiple useful sessions agree.
+```
+
+---
+
+## 5.4 Health advice
+
+Advice should depend on health and confidence.
+
+### Good health
+
+```text
+Battery health looks normal.
+Keep avoiding heat while charging.
+```
+
+### Aging battery
+
+```text
+Battery capacity appears reduced.
+If daily battery life feels poor, replacement may be worth considering.
+```
+
+### Low confidence
+
+```text
+Do not make decisions from this estimate yet.
+The app needs more useful sessions.
+```
+
+---
+
+# 6. Screen: Ledger
+
+## Purpose
+
+Answer:
+
+**What evidence is the app using?**
+
+The Ledger should feel like a clean transaction log.
+
+---
+
+## 6.1 Session row
+
+Each row shows:
+
+```text
++42%    10:00–10:45    40% → 82%    Useful
+```
+
+Possible tags:
+
+* Useful
+* Weak
+* Warm
+* Hot
+* Incomplete
+* Excluded
+
+Tags are inferred.
+
+---
+
+## 6.2 Expanded row
+
+On tap:
+
+```text
+Max temp:        41°C       Measured
+Time above 85%: 12 min     Measured
+Screen on:       4 min      Measured
+Capacity point:  Included   Estimated
+
+Why useful:
+Charge gain was over 30%, readings were stable, and the session was not interrupted.
+```
+
+For weak session:
+
+```text
+Capacity point: Excluded
+
+Why excluded:
+Charge gain was under 30%, so this session is too noisy for health estimation.
+```
+
+For incomplete session:
+
+```text
+Incomplete session
+
+Last measured point: 68% at 10:32
+Missing interval: 10:32–10:51
+
+Reason:
+Android restricted the app during charging.
+```
+
+---
+
+## 6.3 Ledger advice
+
+Ledger should teach data quality without lecturing.
+
+Good copy:
+
+```text
+Recorded, but ignored for health estimate.
+```
+
+```text
+Useful for health estimate.
+```
+
+```text
+Noisy session. Stored for history only.
+```
+
+Bad copy:
+
+```text
+Bad charge.
+```
+
+```text
+Invalid session.
+```
+
+```text
+You charged incorrectly.
+```
+
+---
+
+# 7. Screen: How it works
+
+## Purpose
+
+Answer:
+
+**Which numbers are real, estimated, inferred, or uncertain?**
+
+This screen should feel like a readable open-source README.
+
+---
+
+## 7.1 Evidence labels section
+
+Show:
+
+```text
+Measured
+Read directly from Android or device sensors.
+
+Estimated
+Calculated from measured values.
+
+Inferred
+A judgment or recommendation based on measured and estimated values.
+
+Experimental
+Not proven enough for normal decisions.
+```
+
+---
+
+## 7.2 Thermal stress model
+
+Show:
+
+```text
+Heat is one of the strongest known battery-aging factors.
+
+The app flags higher stress when the battery is warm or hot, especially while charging or near full.
+```
+
+Practical bands:
+
+```text
+Under 35°C: low concern
+35–40°C: moderate concern
+40–43°C: high concern
+43–45°C: very high concern
+Above 45°C: severe concern
+```
+
+Required note:
+
+```text
+These are practical guidance bands, not absolute chemistry constants. Actual degradation depends on battery chemistry, age, charge level, current, and duration.
+```
+
+---
+
+## 7.3 Charge-level stress model
+
+Show:
+
+```text
+Higher charge levels generally increase aging stress, especially when the battery stays near full for long periods.
+```
+
+Required note:
+
+```text
+85% is a practical charging target, not a chemistry cliff. Charging to 100% is fine when needed; staying near full for long periods increases stress.
+```
+
+---
+
+## 7.4 Capacity model
+
+Show:
+
+```text
+Battery health is estimated from useful charge sessions.
+
+The app compares how much the battery percentage increased with charge/current readings when available.
+```
+
+Required note:
+
+```text
+Voltage may be logged, but voltage alone is not treated as a reliable capacity source.
+```
 
 Explain:
 
-* Temperature is a proven battery-aging factor.
-* Heat combined with charging and high state of charge is higher stress.
-* The app uses practical guidance bands.
+```text
+Large uninterrupted charges are more useful.
+Short charges are noisy.
+Wireless charging may add uncertainty.
+Heavy use while charging may reduce quality.
+Trend matters more than one reading.
+```
 
-Required text:
+---
 
-> These are practical guidance bands, not absolute chemistry constants. Actual degradation depends on battery chemistry, age, charge level, current, and duration.
-
-### Charge-Level Stress Model
-
-Explain:
-
-* Higher state of charge generally increases aging stress.
-* Time near full matters more than crossing one exact percentage.
-* 85% is a practical default, not a magic boundary.
-
-Required text:
-
-> 85% is a practical charging target, not a chemistry cliff. Charging to 100% is fine when needed; staying near full for long periods increases stress.
-
-### Capacity Model
-
-Correct model wording:
-
-> Capacity is estimated from battery percentage gained and charge/current readings when available. Voltage may be logged, but voltage alone is not treated as a reliable capacity source.
-
-Explain:
-
-* Large uninterrupted charge sessions are more useful.
-* Short sessions are noisy.
-* Wireless charging may add uncertainty.
-* Heavy use while charging may reduce quality.
-* Capacity trend matters more than one point.
-
-### Experimental Metrics
+## 7.5 Experimental metrics
 
 Experimental metrics are disabled by default.
 
-If enabled, they must use:
-
-* Text scales
-* Wide ranges
-* Strong warnings
-
-Allowed:
+Allowed output:
 
 ```text
 Impact: Above average
 Confidence: Low
 ```
 
-Not allowed:
+Never allowed:
 
 ```text
 Wear this session: 0.004%
@@ -599,161 +634,250 @@ This charge cost 12 minutes of lifespan
 
 Required warning:
 
-> This cannot be measured precisely from a single session.
+```text
+This cannot be measured precisely from a single session.
+```
 
-## 11. Critical UX Flows
+---
 
-### Flow A: Rejecting Fake Data
+# 8. Best Advice Library
 
-Scenario:
+The app should use consistent advice.
 
-User does a 5-minute car charge.
+## Hot while charging
 
-Behavior:
+```text
+Let the phone cool or unplug if you do not need more charge.
+```
 
-1. Session is recorded in Ledger.
-2. Battery health is not recalculated from that session.
-3. Ledger marks it as `Weak [I]`.
-4. Expanded reason says: `Ignored for health estimate — charge too short.`
+Why:
 
-Outcome:
+```text
+Heat while charging increases aging stress.
+```
 
-The user learns the app values data integrity over constant number updates.
+## High charge level
 
-### Flow B: Setting Target Alarm to 100%
+```text
+Unplug if you do not need 100%.
+```
 
-Scenario:
+Why:
 
-User moves target from 85% to 100%.
+```text
+Staying near full increases aging stress over time.
+```
 
-Behavior:
+## Cool and moderate charge
 
-1. Target changes to 100%.
-2. Stress context turns amber if battery is warm or already high.
-3. Subtext appears:
+```text
+Continue charging.
+```
 
-> Charging to 100% is fine when needed, but staying near full increases battery stress. The alarm will sound when full.
+Why:
 
-Do not guilt the user.
+```text
+Temperature and charge level are in a normal range.
+```
 
-### Flow C: Explaining Low Confidence
+## Charging to 100%
 
-Scenario:
+```text
+Charging to 100% is fine when needed. Avoid staying full for long periods.
+```
 
-User sees `Confidence: Low` on Health.
+Why:
 
-On tap, bottom sheet says:
+```text
+The concern is time spent near full, especially when warm.
+```
 
-> The app needs several deep, uninterrupted charges to establish a reliable estimate. Recommended: at least 5 useful sessions with over 30% charge gain. You currently have 2. Keep using your phone normally.
+## Low battery
 
-### Flow D: Hot Charging Warning
+```text
+Use normally. Recharge when convenient.
+```
 
-Scenario:
+Why:
 
-Battery reaches high temperature while charging.
+```text
+Occasional low battery is not catastrophic. Avoid heat and heavy load when very low.
+```
 
-Behavior:
+## Fast charging
 
-* Hero card changes to high stress.
-* Notification can appear if enabled.
-* Message stays factual.
+```text
+Fast charging is not automatically bad. Watch temperature.
+```
 
-Example:
+Why:
 
-> Battery is 43°C while charging. Let the phone cool or unplug if you do not need more charge.
+```text
+Charging speed matters mostly when it causes heat or combines with high charge level.
+```
 
-Avoid:
+## Short charge session
 
-> Your battery is being destroyed.
+```text
+Recorded, but ignored for health estimate.
+```
 
-## 12. Android Implementation & Performance Notes
+Why:
 
-### Minimal Background Impact
+```text
+Small charge changes are too noisy for reliable capacity estimation.
+```
 
-Do not claim zero background drain.
+---
 
-The app should minimize background work and make stale data visible.
+# 9. Copy Rules
 
-Rules:
+## Use
 
-* Use local data first.
-* Avoid persistent foreground service in MVP.
-* Use battery/power events where possible.
-* Show when sessions are incomplete.
-* Show when Android restrictions affect accuracy.
+* Battery stress
+* Charging stress
+* Useful capacity
+* Likely range
+* Confidence
+* Measured
+* Estimated
+* Inferred
+* Not enough data
+* Ignored for health estimate
+* Stored for history only
+* Continue charging
+* Unplug when convenient
+* Let phone cool
 
-### State Transitions
+## Avoid
 
-Use Jetpack Compose crossfades.
+* Damage detected
+* Battery ruined
+* Exact wear
+* Lifetime cost
+* Efficiency score
+* Perfect charging
+* Bad user behavior
+* You are killing your battery
+* Guaranteed lifespan
+* Pro accuracy
 
-When switching from discharging to charging:
+---
 
-* Daily summary card dissolves into live decision card.
-* No abrupt blinking.
-* No unnecessary reload animation.
+# 10. Empty States
 
-### Loading States
+## No sessions yet
 
-No blocking spinners for local data.
+```text
+No charging sessions yet
 
-Use:
+Plug in your phone and open the app during charging to start building evidence.
+```
 
-* Instant rendering from Room/DataStore
-* Lightweight skeleton shimmer only if needed
-* Cached graph state where possible
+## Not enough useful sessions
 
-### Accessibility
+```text
+Not enough useful sessions yet
 
-Required:
+Health estimates need larger, stable charge sessions.
+Useful sessions: 2 / 5
+```
 
-* High contrast in light and dark mode
-* Semantic colors must not be the only signal
-* All stress states must include text
-* Tap targets must meet Android accessibility guidelines
-* Evidence labels must be screen-reader readable
+## Missing device readings
 
-Example screen reader text:
+```text
+Some readings are unavailable on this device
 
-> Temperature, 42 degrees Celsius, measured.
+The app can still show temperature, charge level, and session history, but capacity confidence may be lower.
+```
 
-## 13. UI Copy Rules
+## Android restricted app
 
-The app must use plain, honest wording.
+```text
+Session incomplete
 
-Use:
+Android restricted the app during charging, so this session was stored but excluded from health estimates.
+```
 
-* `Stress`
-* `Confidence`
-* `Measured`
-* `Estimated`
-* `Inferred`
-* `Not enough data`
-* `Ignored for health estimate`
-* `Likely range`
+---
 
-Avoid:
+# 11. Screen-Level Noise Rules
 
-* `Exact wear`
-* `Battery life used`
-* `Efficiency 887%`
-* `Perfect charging`
-* `Battery damage detected`
-* `Guaranteed lifespan`
-* `Pro accuracy`
+## Now
 
-## 14. Required Final Checks
+Show only:
 
-Before implementation, every screen must pass these checks:
+* Stress
+* Reason
+* Action
+* Confidence
+* Temp
+* Level
+* State
+* Best stop
+* Time to target
+* Alarm
 
-1. Does the user know what to do within 5 seconds?
-2. Is every important number labeled by evidence quality?
-3. Is any estimated value pretending to be measured?
-4. Is any single-session metric implying exact battery wear?
-5. Are noisy sessions excluded from health estimates?
-6. Can the user see why a value has low confidence?
-7. Does the UI avoid fear-based language?
-8. Does the UI avoid making users interpret raw stats themselves?
-9. Does normal charging feel normal, not bad?
-10. Is the main screen clean enough to understand without reading the ledger?
+Do not show:
 
-If any answer fails, the screen must be revised.
+* Graphs
+* Raw current
+* Raw voltage
+* mAh
+* Cycle math
+* History table
+
+## Health
+
+Show only:
+
+* Estimated health
+* Range
+* Confidence
+* Useful session count
+* Trend graph
+* Interpretation
+
+Do not show:
+
+* Session-by-session raw stats
+* Exact wear
+* Lifetime prediction
+
+## Ledger
+
+Show:
+
+* Evidence records
+* Raw measured details
+* Why included or excluded
+
+Do not turn Ledger into the main UX.
+
+## How it works
+
+Show:
+
+* Model explanations
+* Evidence labels
+* Limitations
+* Experimental warnings
+
+Do not show marketing copy.
+
+---
+
+# 12. Final UX Standard
+
+Every screen must pass:
+
+1. Is the main answer visible in 5 seconds?
+2. Is the advice clear?
+3. Is the reason clear?
+4. Is uncertainty visible?
+5. Are measured, estimated, and inferred values separated?
+6. Is fake precision impossible?
+7. Is normal charging treated as normal?
+8. Does the screen avoid raw-stat overload?
+9. Does the user know what to do next?
+10. Would a non-technical user understand it?
