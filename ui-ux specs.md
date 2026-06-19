@@ -44,11 +44,11 @@ Use:
 
 The first screen gives the action in 5 seconds.
 
-Detailed science, model logic, raw measurements, and excluded data are available only when the user taps or scrolls deeper.
+Detailed science, model logic, raw measurements, excluded data, and evidence explanations are available only when the user taps or scrolls deeper.
 
 The main UX must answer:
 
-> What is happening, is it good or risky, and what should I do?
+> What is happening, is it good or stressful, and what should I do?
 
 ## 2. Visual Language & Theming
 
@@ -70,9 +70,10 @@ Surfaces:
 
 Semantic signals:
 
-* Good / safe: muted slate-teal
-* Moderate risk: warm amber
-* High risk: matte terracotta
+* Excellent / Good: muted slate-teal
+* Normal: neutral gray / slate
+* High stress: warm amber
+* Severe stress: matte terracotta
 
 No bright red unless there is a severe thermal condition.
 
@@ -135,7 +136,7 @@ Examples:
 * Battery health
 * Capacity estimate
 * Capacity trend
-* Charging speed if derived from readings
+* Charging speed if derived from current or charge-rate readings
 
 #### Inferred
 
@@ -143,9 +144,9 @@ A classification or recommendation derived from measured and estimated values.
 
 Examples:
 
-* Charging risk
-* Thermal risk
-* Charge-level risk
+* Battery stress
+* Thermal stress
+* Charge-level stress
 * “Fast” charging label
 * “Useful session”
 * “Weak session”
@@ -190,11 +191,58 @@ Tabs:
 * Now
 * Health
 * Ledger
-* Evidence
+* How it works
 
 Do not use icon-only navigation. Clarity is more important than visual minimalism.
 
-## 5. Screen 1: Now
+## 5. Stress Language
+
+The user-facing product should use the word **stress**, not **risk**, for the primary interface.
+
+Use:
+
+* `Battery stress`
+* `Charging stress`
+* `Thermal stress`
+* `Charge-level stress`
+
+Avoid using `Risk` as the main headline unless explaining the model in technical documentation.
+
+Reason:
+
+* `Stress` is calmer.
+* `Risk` can sound fear-based.
+* The app should guide behavior without making normal charging feel dangerous.
+
+## 6. Stress States
+
+The app must include a neutral state.
+
+Allowed stress states:
+
+* Excellent
+* Good
+* Normal
+* High stress
+* Severe stress
+
+Rules:
+
+* Normal charging must not feel like failure.
+* Excellent and Good should be used when conditions are clearly favorable.
+* High stress should be used for conditions worth changing.
+* Severe stress should be rare and reserved for clear heat or high-stress combinations.
+
+Example:
+
+```text
+Battery stress: Normal
+Reason: battery temperature is reasonable and charging level is moderate.
+Action: continue charging.
+Confidence: high
+```
+
+## 7. Screen 1: Now
 
 Purpose:
 
@@ -215,39 +263,50 @@ Card style:
 
 Content:
 
-* Eyebrow: `CURRENT CHARGING RISK`
-* Headline: `High`
+* Eyebrow: `CURRENT BATTERY STRESS`
+* Headline: `High stress`
 * Reason: `Battery is 42°C while charging above 85%.`
 * Action box: `Unplug now or let phone cool.`
-* Evidence summary: `Confidence: High • Evidence: direct temperature + direct battery level`
+* Evidence summary: `Confidence: High • Based on direct temperature and battery level`
 
 Do not place individual evidence badges on every hero-line item. The summary is enough at this level.
 
 ### Live Telemetry Grid
 
-Use tight tabular layout.
+Default grid should stay focused on the most useful direct state.
 
 Example:
 
 ```text
 Temp:     42°C    (Measured)
 Level:    86%     (Measured)
-Speed:    Fast    (Inferred)
+State:    Charging (Measured)
 ```
 
 Rules:
 
 * `Temp` is measured if Android exposes battery temperature.
 * `Level` is measured.
-* `Speed: Fast` is inferred.
-* If raw current or power is shown in advanced mode, label the raw reading separately according to availability.
+* `State` is measured.
+* Do not show `Speed: Fast` in the default grid.
+* Charging speed belongs in expanded details or advanced mode because it can distract from the main decision.
 
-Example advanced expansion:
+### Advanced Expansion
+
+If the user expands telemetry:
 
 ```text
 Current:  1800 mA    (Measured, if supported)
 Speed:    Fast       (Inferred)
+Source:   AC         (Measured)
+Voltage:  4.31 V     (Measured, if supported)
 ```
+
+Rules:
+
+* Raw current is measured only if supported by the device.
+* `Speed: Fast` is inferred from current or charge-rate readings.
+* If current is unavailable, the app must say so.
 
 ### Target & Alarm Card
 
@@ -256,9 +315,9 @@ Show target guidance without mixing recommendation and estimate.
 Example:
 
 ```text
-Best Stop:      85%       (Recommended)
-Time to target: ~12 min   (Estimated)
-Full charge:    ~46 min   (Estimated)
+Best Stop:       85%       (Recommended)
+Time to target:  ~12 min   (Estimated)
+Full charge:     ~46 min   (Estimated)
 ```
 
 Primary action:
@@ -267,7 +326,7 @@ Primary action:
 
 Context text:
 
-> Continuing past 85% provides less daily value and increases aging risk at this temperature.
+> Continuing past 85% provides less daily value and increases aging stress at this temperature.
 
 Rules:
 
@@ -275,7 +334,7 @@ Rules:
 * Time remaining is estimated.
 * The app must not claim it can stop charging unless the device supports it.
 
-## 6. Screen 2: Health
+## 8. Screen 2: Health
 
 Purpose:
 
@@ -294,10 +353,36 @@ Based on 12 useful sessions
 
 Rules:
 
-* Health is always estimated.
+* Health is always estimated unless the OS exposes a reliable health value.
 * Capacity is always estimated unless the OS exposes a true battery health value.
 * Never label capacity points as measured.
 * Never show fake precision like `77.38%`.
+
+### Health Empty State
+
+Before enough data exists, the app must not show a fake health estimate.
+
+Example:
+
+```text
+Not enough useful sessions yet
+
+We need several larger, uninterrupted charges before estimating battery health.
+
+Useful sessions: 2 / 5
+Recommended: charges with over 30% gain
+```
+
+Actions:
+
+* `View Ledger`
+* `How estimates work`
+
+Rules:
+
+* Do not show a health percentage too early.
+* Do not show a trend line before enough useful points exist.
+* Explain what kind of sessions improve confidence.
 
 ### Trend Visualization
 
@@ -343,7 +428,7 @@ Examples:
 
 Do not force users to interpret noisy graph data themselves.
 
-## 7. Screen 3: Ledger
+## 9. Screen 3: Ledger
 
 Purpose:
 
@@ -426,7 +511,7 @@ Reason: app was restricted by Android [I]
 
 Do not label incomplete data itself as measured.
 
-## 8. Screen 4: Evidence
+## 10. Screen 4: How It Works
 
 Purpose:
 
@@ -441,41 +526,41 @@ Use expandable sections.
 Sections:
 
 * Evidence labels
-* Thermal risk model
-* Charge-level risk model
-* Combined risk model
+* Thermal stress model
+* Charge-level stress model
+* Combined stress model
 * Capacity model
 * Data quality rules
 * Experimental metrics
 * Known limitations
 
-### Thermal Risk Model
+### Thermal Stress Model
 
 Explain:
 
 * Temperature is a proven battery-aging factor.
-* Heat combined with charging and high state of charge is higher risk.
+* Heat combined with charging and high state of charge is higher stress.
 * The app uses practical guidance bands.
 
 Required text:
 
 > These are practical guidance bands, not absolute chemistry constants. Actual degradation depends on battery chemistry, age, charge level, current, and duration.
 
-### Charge-Level Risk Model
+### Charge-Level Stress Model
 
 Explain:
 
-* Higher state of charge generally increases aging risk.
+* Higher state of charge generally increases aging stress.
 * Time near full matters more than crossing one exact percentage.
 * 85% is a practical default, not a magic boundary.
 
 Required text:
 
-> 85% is a practical charging target, not a chemistry cliff. Charging to 100% is fine when needed; staying near full for long periods increases risk.
+> 85% is a practical charging target, not a chemistry cliff. Charging to 100% is fine when needed; staying near full for long periods increases stress.
 
 ### Capacity Model
 
-Correct wording:
+Correct model wording:
 
 > Capacity is estimated from battery percentage gained and charge/current readings when available. Voltage may be logged, but voltage alone is not treated as a reliable capacity source.
 
@@ -516,7 +601,7 @@ Required warning:
 
 > This cannot be measured precisely from a single session.
 
-## 9. Critical UX Flows
+## 11. Critical UX Flows
 
 ### Flow A: Rejecting Fake Data
 
@@ -544,7 +629,7 @@ User moves target from 85% to 100%.
 Behavior:
 
 1. Target changes to 100%.
-2. Risk context turns amber if battery is warm or already high.
+2. Stress context turns amber if battery is warm or already high.
 3. Subtext appears:
 
 > Charging to 100% is fine when needed, but staying near full increases battery stress. The alarm will sound when full.
@@ -569,7 +654,7 @@ Battery reaches high temperature while charging.
 
 Behavior:
 
-* Hero card changes to high risk.
+* Hero card changes to high stress.
 * Notification can appear if enabled.
 * Message stays factual.
 
@@ -581,7 +666,7 @@ Avoid:
 
 > Your battery is being destroyed.
 
-## 10. Android Implementation & Performance Notes
+## 12. Android Implementation & Performance Notes
 
 ### Minimal Background Impact
 
@@ -623,7 +708,7 @@ Required:
 
 * High contrast in light and dark mode
 * Semantic colors must not be the only signal
-* All risk states must include text
+* All stress states must include text
 * Tap targets must meet Android accessibility guidelines
 * Evidence labels must be screen-reader readable
 
@@ -631,13 +716,13 @@ Example screen reader text:
 
 > Temperature, 42 degrees Celsius, measured.
 
-## 11. UI Copy Rules
+## 13. UI Copy Rules
 
 The app must use plain, honest wording.
 
 Use:
 
-* `Risk`
+* `Stress`
 * `Confidence`
 * `Measured`
 * `Estimated`
@@ -656,7 +741,7 @@ Avoid:
 * `Guaranteed lifespan`
 * `Pro accuracy`
 
-## 12. Required Final Checks
+## 14. Required Final Checks
 
 Before implementation, every screen must pass these checks:
 
@@ -668,5 +753,7 @@ Before implementation, every screen must pass these checks:
 6. Can the user see why a value has low confidence?
 7. Does the UI avoid fear-based language?
 8. Does the UI avoid making users interpret raw stats themselves?
+9. Does normal charging feel normal, not bad?
+10. Is the main screen clean enough to understand without reading the ledger?
 
 If any answer fails, the screen must be revised.
