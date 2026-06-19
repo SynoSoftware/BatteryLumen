@@ -2,77 +2,74 @@
 
 ## 1. Product Goal
 
-Build a small Android app that gives users immediate, practical battery advice:
+Build a lightweight Android app that helps users make better battery decisions while charging.
+
+The app must answer quickly:
 
 * Is charging now good or bad?
-* Is the battery too hot?
-* Should I unplug now or keep charging?
+* Why?
+* Should I unplug, cool the phone, or continue?
 * How long until the best stop point?
-* Is my battery actually degrading?
-* Can I trust the app’s estimate?
+* Is my battery health estimate believable?
 
-The app should maximize user value with the least technical surface area.
+The app should avoid becoming a technical dashboard.
 
-## 2. Product Positioning
+## 2. ROI Principle
 
-This is not a battery dashboard.
+Every feature must pass this test:
 
-It is a **battery decision assistant**.
+> Does this help the user make a better battery decision with low implementation complexity?
 
-Main promise:
+Prioritize features that are:
 
-> Know whether you are treating your battery well right now.
+* Easy to understand
+* Useful on day one
+* Technically realistic on Android
+* Valuable without always-on background monitoring
+* Differentiated from AccuBattery-style dashboards
+
+Delay features that require:
+
+* Heavy background execution
+* Complex permissions
+* Root/device-specific behavior
+* Exact battery-aging claims
+* Large maintenance across OEMs
+
+## 3. Product Positioning
+
+This is a **battery decision assistant**, not a battery lab.
+
+Primary promise:
+
+> Know whether your current charging behavior is helping or hurting battery longevity.
 
 Secondary promise:
 
-> Track real battery health over time without fake precision.
-
-## 3. ROI Principle
-
-Prioritize features that create clear user value quickly.
-
-High ROI:
-
-* Live charging advice
-* Temperature warning
-* Charge target alarm
-* Time to 80% / 85%
-* Battery health estimate
-* Capacity trend
-* Confidence label
-
-Low ROI:
-
-* Too many raw graphs
-* Exact wear per session
-* Complex app-drain attribution
-* Root charging control
-* Always-on background monitoring
-* Over-precise lifetime cost claims
+> Track battery health over time with honest confidence labels.
 
 ## 4. Core User Value
 
-The app must convert battery data into decisions.
+The app converts raw battery state into plain advice.
 
-Bad UX:
+Bad:
 
-> Temperature: 42°C
-> Current: 1830 mA
-> Voltage: 4.28 V
-> Wear: 0.06 cycles
+> 42°C, 4.31V, 1.8A, 87%
 
-Good UX:
+Good:
 
 > Charging stress: High
 > Reason: battery is hot while charging above 85%
-> Action: unplug or let the phone cool
+> Action: unplug or let it cool
 > Confidence: high
 
-## 5. Main Features
+## 5. MVP Feature Set
 
 ### 5.1 Live Stress Card
 
-The home screen must show one primary card:
+Highest-priority feature.
+
+Show:
 
 * Stress level: Excellent / Good / Normal / High / Severe
 * Main reason
@@ -83,16 +80,16 @@ Example:
 
 > Stress: High
 > Reason: 42°C while charging above 85%
-> Action: unplug now
+> Action: unplug now or let the phone cool
 > Confidence: high
 
-This is the highest-value feature.
+This is the main reason to open the app.
 
 ### 5.2 Temperature-Based Stress Model
 
-The app must estimate battery aging stress using temperature as a primary input.
+The app must treat temperature as a first-class aging signal, not just a warning.
 
-Base thermal zones:
+Base rules:
 
 * Under 35°C: low stress
 * 35–40°C: normal/moderate
@@ -106,28 +103,35 @@ Stress increases when heat combines with:
 * Fast charging
 * Battery above 85%
 * Battery above 95%
-* Heavy usage while charging
+* Heavy use while charging
 * Long time plugged in near full
 
-The app should not claim exact lifespan loss.
+Do not show exact lifetime loss. Use relative language:
+
+* Better than normal
+* Normal
+* Worse than normal
+* Much worse than normal
 
 ### 5.3 Charging Guidance
 
-Show:
+Show the next useful action.
 
-* Recommended stop point
-* Time until recommended stop
-* Time until full
+Required:
+
+* Best stop point
+* Time to target
+* Time to full
 * Whether continuing is worth it
-* Whether current charging is healthy
 
 Default target:
 
 * 85%
 
-Other options:
+Supported targets:
 
 * 80%
+* 85%
 * 90%
 * 100%
 * Custom
@@ -136,85 +140,99 @@ Example:
 
 > Best stop: 85% in 18 min
 > Full charge: 100% in 52 min
-> Continuing past 85% gives less value and more stress.
+> Continuing past 85% gives less daily value and more aging stress.
 
 ### 5.4 Charge Alarm
+
+High ROI because it gives immediate value.
 
 User can set a target charge level.
 
 When reached:
 
 * Send notification
-* Optional sound
+* Optional sound/vibration
 * Explain why stopping helps
 
 Example:
 
 > 85% reached. Unplug now to reduce time spent near full.
 
-This creates immediate first-day value.
+The app must not claim it can stop charging unless the device supports it.
 
 ### 5.5 Battery Health Estimate
 
-Estimate real capacity from charging sessions.
+Estimate useful battery capacity from charge sessions.
 
 Show:
 
-* Estimated health
+* Estimated health %
 * Estimated current capacity
-* Original/design capacity
+* Design capacity
 * Range
 * Confidence
-* Useful session count
+* Number of useful sessions
 
 Example:
 
 > Health: ~77%
 > Range: 74–80%
 > Confidence: medium
-> Based on 12 useful charge sessions
+> Based on 12 useful charging sessions
 
-Avoid fake precision like 77.38%.
+Avoid fake precision.
+
+Do not show:
+
+> 77.38%
+
+Show:
+
+> ~77%
 
 ### 5.6 Capacity Trend
 
-Show a simple long-term graph:
+Show a simple health trend.
 
-* Capacity points
+Required:
+
+* Capacity estimate points
 * Moving average
-* Trend
+* Plain-language conclusion
 * Confidence
 
-The graph must include a plain-language conclusion:
+Examples:
 
-* Stable
-* Slowly declining
-* Declining quickly
-* Too noisy to tell
-* More sessions needed
+* Battery appears stable.
+* Battery is slowly declining.
+* Recent readings are noisy.
+* More sessions are needed.
+* Drop appears real because multiple sessions agree.
 
-Example:
-
-> Battery health appears stable. Recent readings are noisy but within the expected range.
+This should be useful without requiring the user to interpret the graph.
 
 ### 5.7 Estimate Confidence
 
-Every major estimate must include confidence:
+Every major estimate needs confidence.
 
-* Stress: high / medium / low
-* Health: high / medium / low
-* Time remaining: high / medium / low
-* Time to target: high / medium / low
+Required confidence labels:
 
-The app must explain why.
+* Stress confidence
+* Health confidence
+* Time-to-target confidence
+* Capacity trend confidence
 
-Example:
+Examples:
 
-> Confidence: medium. Most sessions agree, but three recent measurements look noisy.
+> Confidence: high. Temperature and battery percentage are direct readings.
 
-### 5.8 Session History
+> Confidence: medium. Most charging sessions agree, but some readings are noisy.
 
-Record charging sessions.
+This is a differentiator and prevents the app from feeling fake.
+
+### 5.8 Charge Session History
+
+Store each charge session.
 
 Show:
 
@@ -228,131 +246,100 @@ Show:
 * Capacity estimate, if usable
 * Data quality
 
+Keep the summary simple.
+
 Example:
 
 > Good session. Max temperature 35°C. Useful for capacity estimate.
 
 ### 5.9 Daily Summary
 
-Show one daily summary card:
+One card per day.
+
+Show:
 
 * Charging quality
-* High-stress charging time
 * Max charging temperature
+* High-stress charging time
 * Time above 85%
-* Battery treatment score
 * Main issue
+* Simple score
 
 Example:
 
 > Today: Good
 > High-stress charging: 4 min
-> Main issue: battery reached 41°C during charging.
+> Main issue: battery reached 41°C while charging.
 
-### 5.10 Basic Discharge Estimate
+## 6. Data Quality Rules
 
-Show:
+The app must reject weak data instead of producing fake confidence.
 
-* Estimated time remaining
-* Screen-on estimate
-* Screen-off estimate
-* Current drain level
+### Useful Capacity Session
 
-Keep it simple.
+A session is useful when:
 
-Avoid building a complex power-user drain dashboard in MVP.
+* Charge gain is at least 30–40%
+* Charging source is stable
+* App was not killed
+* Session was not heavily interrupted
+* Battery readings are consistent
+* Temperature was not extreme
 
-## 6. Useful Baseline Features to Include
+### Weak Session
 
-The app should include the useful expected battery-app features:
+A session is weak when:
+
+* Charge gain is too small
+* Wireless charging was used
+* Phone was heavily used while charging
+* Temperature was high
+* Android restricted the app
+* Battery percentage jumped strangely
+* Data contradicts the trend without repetition
+
+Weak sessions may be stored but should not strongly affect health estimates.
+
+## 7. Useful AccuBattery-Like Features to Keep
+
+Include only the useful baseline features that support the main product:
 
 * Health estimate
 * Capacity estimate
 * Capacity history graph
-* Charge session history
-* Discharge session history
 * Charge alarm
 * Time to full
 * Time to target
-* Time remaining
+* Charge session history
+* Discharge session history
 * Temperature tracking
 * Charge/discharge speed
 * Plug type
 * Design capacity override
 * Data export
-* Optional advanced metrics
+* Optional advanced raw metrics
 
-But these should support the main decision assistant, not replace it.
+These features should support decision-making, not become the main UX.
 
-## 7. Features to Delay
+## 8. Features to Delay
 
-Delay these unless users ask for them:
+Delay unless users clearly request them:
 
 * Detailed app-drain attribution
 * Deep sleep analysis
 * Widgets
-* CSV/JSON export
-* Advanced raw metric screens
 * Prediction vs reality dashboard
-* Live foreground service mode
-* Paid tier
-* Root/device-specific charging control
-
-These are useful, but not needed to prove value.
-
-## 8. MVP Scope
-
-Build only the smallest version that proves the app is useful.
-
-### MVP Must Have
-
-1. Live stress card
-2. Temperature-based stress model
-3. Charge target alarm
-4. Time to target/full
-5. Charge session history
-6. Capacity estimate points
-7. Health estimate with confidence
-8. Capacity trend graph
-9. Daily summary
-
-### MVP Must Not Have
-
-* Account system
+* Advanced export
+* Live foreground-service monitor
+* Root charging control
+* Device-specific charge limiting
 * Cloud sync
-* Always-on foreground service
-* Root features
-* Complex dashboards
-* Exact lifetime-cost claims
-* App cleaner features
-* Fear-based notifications
+* Account system
+* Complex paid tier
 
-## 9. Monetization Strategy
+Reason: these add effort, permissions, or maintenance before proving core value.
 
-Free version should provide immediate value.
-
-Free:
-
-* Live stress card
-* Temperature warnings
-* Charge alarm
-* Basic health estimate
-* Recent session history
-
-Paid:
-
-* Full history
-* Capacity trend graph
-* Confidence analysis
-* Daily summaries
-* Advanced notifications
-* Export
-* Advanced raw metrics
-* Prediction vs reality validation
-
-Premium must sell clarity and history, not fake precision.
-
-## 10. Android Implementation Requirements
+## 9. Android Implementation Requirements
 
 Recommended stack:
 
@@ -362,37 +349,56 @@ Recommended stack:
 * DataStore
 * WorkManager
 * BatteryManager
-* Optional UsageStatsManager
-* Optional foreground service only for explicit live charging monitor
 
-Core functionality should work without always-on background monitoring.
+Optional later:
 
-## 11. Background Strategy
+* UsageStatsManager
+* Foreground service for explicit live charging monitor only
 
-Default:
+The MVP must not depend on always-on background monitoring.
+
+## 10. Background Strategy
+
+Default behavior:
 
 * No persistent foreground service.
-* Use battery and power connection events where possible.
+* Use battery and power events where possible.
 * Record sessions opportunistically.
 * Recalculate trends periodically.
-* Show most value when app is opened or while charging.
+* Provide best experience when app is opened during charging.
 
-Optional:
+Optional later:
 
 ### Live Charging Monitor
 
 Only if user explicitly enables it.
 
+Rules:
+
 * Runs only while charging.
 * Shows visible notification.
-* Improves accuracy.
 * Stops when unplugged.
+* Improves measurement accuracy.
+* Not required for core app value.
 
-## 12. Privacy Requirements
+## 11. Permissions
+
+Required:
+
+* Notifications for charge alarm.
+
+Optional:
+
+* Usage access for app drain insights.
+* Foreground service for live charging monitor.
+
+The app must still be useful without optional permissions.
+
+## 12. Privacy
 
 Local-first.
 
-No requirement for:
+No required:
 
 * Account
 * Cloud sync
@@ -403,17 +409,24 @@ No requirement for:
 * SMS
 * Call logs
 
-Data stays on device unless the user exports it.
+Data stored locally:
+
+* Battery readings
+* Charge sessions
+* Discharge sessions
+* Capacity estimates
+* Confidence metadata
+* Daily summaries
 
 ## 13. Main Screens
 
 ### Home
 
-Purpose: answer what to do now.
+Purpose: what should I do now?
 
 Cards:
 
-* Stress now
+* Current stress
 * Recommended action
 * Time to target
 * Health estimate
@@ -421,7 +434,7 @@ Cards:
 
 ### Charging
 
-Purpose: understand the current session.
+Purpose: current session.
 
 Cards:
 
@@ -434,7 +447,7 @@ Cards:
 
 ### Health
 
-Purpose: understand long-term condition.
+Purpose: long-term condition.
 
 Cards:
 
@@ -446,7 +459,7 @@ Cards:
 
 ### History
 
-Purpose: show evidence.
+Purpose: evidence.
 
 Tabs:
 
@@ -463,41 +476,97 @@ Options:
 * Design capacity
 * Notifications
 * Temperature unit
-* Live monitor
 * Data retention
 * Export
 * Advanced metrics
+* Optional live monitor
 
-## 14. Success Criteria
+## 14. Free vs Paid
 
-The MVP succeeds if users can answer these within 5 seconds:
+### Free
+
+Must deliver real value:
+
+* Live stress card
+* Temperature warning
+* Charge alarm
+* Time to target/full
+* Basic health estimate
+* Recent session history
+
+### Paid
+
+Only after MVP proves retention:
+
+* Full history
+* Capacity trend graph
+* Confidence analysis
+* Daily summaries
+* Export
+* Advanced notifications
+* Advanced raw metrics
+* Prediction vs reality validation
+
+Do not monetize fake precision.
+
+## 15. Non-Goals
+
+The app must not:
+
+* Claim exact battery lifespan remaining.
+* Claim exact wear from one short session.
+* Claim it can stop charging on unsupported devices.
+* Require root.
+* Require account creation.
+* Require always-on background monitoring.
+* Become a phone cleaner.
+* Push fear-based alerts.
+* Overload users with raw metrics.
+
+## 16. MVP Build Order
+
+Build in this order:
+
+1. Battery data collection
+2. Live stress card
+3. Temperature-based rules
+4. Charge target alarm
+5. Time to target/full
+6. Charge session history
+7. Capacity estimate points
+8. Health estimate with confidence
+9. Capacity trend
+10. Daily summary
+
+Stop after step 6 if users do not find the app useful during charging.
+
+## 17. Success Criteria
+
+The MVP succeeds if users can answer within 5 seconds:
 
 * Is charging now good or bad?
 * Why?
 * Should I unplug?
-* Is the phone too hot?
+* Is the battery too hot?
 * How long until 85%?
 * What is my battery health?
-* Can I trust that estimate?
-* Is my battery getting worse?
+* Can I trust the health estimate?
 
-## 15. Product Kill Criteria
+## 18. Kill Criteria
 
 Stop or pivot if:
 
-* Users only open it once.
-* Charge alarm is the only feature people value.
-* Capacity estimates are too noisy to trust.
-* Android background limits make core value unreliable.
-* Users still feel they need to interpret raw data.
-* The app becomes another technical battery dashboard.
+* Users only use the charge alarm.
+* Users do not reopen the app while charging.
+* Capacity estimates are too noisy.
+* Android background limits block useful measurement.
+* Users still need to interpret raw stats.
+* The app becomes another battery dashboard.
 
-## 16. Product Success Signal
+## 19. Strongest Success Signal
 
-The strongest signal is not downloads.
-
-It is repeated use during charging.
+The best signal is repeated charging-session use.
 
 Target behavior:
 
-> User plugs in phone, opens app, sees whether charging is healthy, sets alarm, and understands when to unplug.
+> User plugs in phone, opens app, sees charging stress, understands why, sets an alarm, and knows when to unplug.
