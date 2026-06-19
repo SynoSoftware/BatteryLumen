@@ -26,4 +26,3 @@ Capability matrix, UI placement rules, and model validation.
 - Unsupported metrics show as unavailable.
 - Supported metrics retain unit and source labels.
 - Raw metrics stay secondary.
-

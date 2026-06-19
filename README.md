@@ -5,7 +5,7 @@ Open Battery is an Android charging decision assistant focused on evidence quali
 ## Current scope
 
 - Native Android only
-- Kotlin + Compose + Room + DataStore + WorkManager + Hilt
+- Kotlin + Compose + Room + DataStore + WorkManager
 - Charge-session ledger from day one
 - Now screen first, Health as an empty state until enough useful data exists
 
@@ -23,6 +23,12 @@ Open Battery is an Android charging decision assistant focused on evidence quali
 - App icons use Lucide-derived vector drawables
 - Bitmap UI assets are not allowed
 - See [`docs/icon-policy.md`](docs/icon-policy.md) for the enforcement rules
+
+## Localization policy
+
+- Use `T("...")` for user-facing text keys
+- Keep the catalog in [`app/src/main/assets/i18n/en.json`](app/src/main/assets/i18n/en.json)
+- See [`docs/i18n-policy.md`](docs/i18n-policy.md) for the rules
 
 ## Repo layout
 

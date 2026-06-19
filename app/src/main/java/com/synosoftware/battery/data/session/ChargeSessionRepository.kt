@@ -10,7 +10,7 @@ import com.synosoftware.battery.domain.ConfidenceLevel
 import com.synosoftware.battery.domain.EvidenceGrade
 import com.synosoftware.battery.domain.SessionQuality
 import com.synosoftware.battery.domain.SessionStatus
-import com.synosoftware.battery.i18n.text
+import com.synosoftware.battery.i18n.T
 
 data class SessionProcessResult(
     val activeSession: ChargeSessionMetrics?,
@@ -111,7 +111,7 @@ class ChargeSessionRepository(
             usefulForHealth = false,
             evidenceGrade = EvidenceGrade.INFERRED.name,
             confidenceLevel = ConfidenceLevel.LOW.name,
-            confidenceReason = text("session_started").key,
+            confidenceReason = T("session_started").key,
             thermalStress = "NORMAL",
             chargeLevelStress = "NORMAL",
             combinedStress = "NORMAL",

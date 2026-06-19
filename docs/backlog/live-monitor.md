@@ -26,4 +26,3 @@ Observed value from the initial charging assistant and permission UX.
 - User opt-in is explicit.
 - The service runs only while charging.
 - It stops when unplugged.
-

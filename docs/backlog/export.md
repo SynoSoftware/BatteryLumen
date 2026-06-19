@@ -26,4 +26,3 @@ Stable schema and ledger fields.
 - JSON contains the model metadata.
 - CSV includes evidence and confidence columns.
 - Weak sessions remain identifiable.
-

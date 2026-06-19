@@ -5,7 +5,11 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.runtime.getValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.synosoftware.battery.ui.BatteryAppRoot
+import com.synosoftware.battery.data.preferences.ThemeMode
 import com.synosoftware.battery.ui.theme.BatteryTheme
 
 class MainActivity : ComponentActivity() {
@@ -17,8 +21,25 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            BatteryTheme {
-                BatteryAppRoot(viewModel = viewModel)
+            val themeMode by viewModel.themeMode.collectAsStateWithLifecycle()
+            val systemDark = isSystemInDarkTheme()
+            val darkTheme = when (themeMode) {
+                ThemeMode.SYSTEM -> systemDark
+                ThemeMode.LIGHT -> false
+                ThemeMode.DARK -> true
+            }
+            val nextThemeMode = when (themeMode) {
+                ThemeMode.SYSTEM -> if (systemDark) ThemeMode.LIGHT else ThemeMode.DARK
+                ThemeMode.LIGHT -> ThemeMode.DARK
+                ThemeMode.DARK -> ThemeMode.LIGHT
+            }
+
+            BatteryTheme(darkTheme = darkTheme) {
+                BatteryAppRoot(
+                    viewModel = viewModel,
+                    darkTheme = darkTheme,
+                    onThemeToggle = { viewModel.setThemeMode(nextThemeMode) },
+                )
             }
         }
     }

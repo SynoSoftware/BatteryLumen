@@ -28,4 +28,3 @@ Health estimation, confidence rules, and charting implementation.
 - Useful points render differently from weak points.
 - Confidence band is visible.
 - Trend copy can say stable, declining, or noisy.
-

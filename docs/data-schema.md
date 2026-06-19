@@ -22,4 +22,3 @@
 - `target_charge_percent`
 - `experimental_metrics_enabled`
 - `temperature_unit`
-

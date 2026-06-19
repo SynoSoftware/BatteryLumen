@@ -29,4 +29,3 @@ Charge-session ledger, useful-vs-weak session classification, device capability 
 - Fewer than 5 useful sessions shows not enough data.
 - Noisy sessions are stored but excluded.
 - Stable large sessions produce an approximate range, not exact precision.
-

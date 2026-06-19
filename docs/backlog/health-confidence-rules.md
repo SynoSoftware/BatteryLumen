@@ -28,4 +28,3 @@ Ledger quality, capability matrix, and health estimation logic.
 - Very small sample counts stay low confidence.
 - Conflicting sessions reduce confidence.
 - Stable repeated sessions increase confidence.
-

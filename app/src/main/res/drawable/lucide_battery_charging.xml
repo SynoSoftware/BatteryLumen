@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- MACHINE-GENERATED from lucide-static v1.21.0. Do not edit by hand. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="24dp"
     android:height="24dp"
@@ -10,14 +11,14 @@
         android:strokeWidth="2"
         android:strokeLineCap="round"
         android:strokeLineJoin="round"
-        android:pathData="m11 7 -3 5h4l-3 5" />
+        android:pathData="m11 7-3 5h4l-3 5" />
     <path
         android:fillColor="#00000000"
         android:strokeColor="#FF000000"
         android:strokeWidth="2"
         android:strokeLineCap="round"
         android:strokeLineJoin="round"
-        android:pathData="M14.856 6H16a2 2 0 0 1 2 2v8a2 2 0 0 1 -2 2h-2.935" />
+        android:pathData="M14.856 6H16a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-2.935" />
     <path
         android:fillColor="#00000000"
         android:strokeColor="#FF000000"
@@ -31,5 +32,5 @@
         android:strokeWidth="2"
         android:strokeLineCap="round"
         android:strokeLineJoin="round"
-        android:pathData="M5.14 18H4a2 2 0 0 1 -2 -2V8a2 2 0 0 1 2 -2h2.936" />
+        android:pathData="M5.14 18H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h2.936" />
 </vector>

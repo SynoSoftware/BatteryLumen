@@ -19,7 +19,7 @@ class AppContainer(context: Context) {
             BatteryDatabase::class.java,
             "open_battery.db",
         )
-            .fallbackToDestructiveMigration()
+            .fallbackToDestructiveMigration(dropAllTables = true)
             .build()
     }
 

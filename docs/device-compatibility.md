@@ -12,4 +12,3 @@ Open Battery relies on Android battery broadcasts and BatteryManager properties.
 
 - Unsupported readings are labeled unavailable
 - Health remains empty until enough useful sessions exist
-

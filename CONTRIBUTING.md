@@ -13,4 +13,3 @@ Thanks for helping improve Open Battery.
 - Open an issue before larger changes
 - Add tests for model logic and data behavior
 - Keep docs updated when model rules change
-

@@ -16,4 +16,3 @@ This file tracks the product's evidence-based battery guidance.
 - Daily summaries
 - Export
 - Experimental metrics
-

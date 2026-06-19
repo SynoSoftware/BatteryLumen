@@ -3,15 +3,28 @@ package com.synosoftware.battery.i18n
 import android.content.Context
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
+import java.util.Locale
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.jsonObject
+
+private const val LocalizationAsset = "i18n/en.json"
+
+private val LocalizationJson = Json {
+    ignoreUnknownKeys = true
+}
+
+private val LocalizationLock = Any()
+
+@Volatile
+private var localizationCatalog: JsonObject? = null
 
 fun Context.resolveText(text: UiText): String {
-    val resId = resources.getIdentifier(text.key, "string", packageName)
-    return if (resId != 0) {
-        if (text.args.isEmpty()) {
-            getString(resId)
-        } else {
-            getString(resId, *text.args.toTypedArray())
-        }
+    val resolved = resolveCatalogValue(text.key)
+    return if (resolved != null) {
+        formatText(resolved, text.args, this)
     } else {
         fallbackText(text)
     }
@@ -20,6 +33,56 @@ fun Context.resolveText(text: UiText): String {
 @Composable
 fun UiText.asString(): String {
     return LocalContext.current.resolveText(this)
+}
+
+private fun Context.resolveCatalogValue(key: String): String? {
+    val catalog = localizationCatalog ?: synchronized(LocalizationLock) {
+        localizationCatalog ?: runCatching {
+            assets.open(LocalizationAsset).use { stream ->
+                LocalizationJson.parseToJsonElement(stream.bufferedReader().readText()).jsonObject
+            }
+        }.getOrNull()?.also { localizationCatalog = it }
+    } ?: return null
+
+    return catalog.resolveKey(key)
+}
+
+private fun JsonObject.resolveKey(key: String): String? {
+    val direct = this[key]
+    if (direct is JsonPrimitive && direct.isString) {
+        return direct.content
+    }
+
+    var current: JsonElement = this
+    for (segment in key.split('_')) {
+        current = when (current) {
+            is JsonObject -> current[segment] ?: return null
+            else -> return null
+        }
+    }
+
+    return when (current) {
+        is JsonPrimitive -> current.content
+        is JsonObject -> {
+            val leaf = current["_"]
+            if (leaf is JsonPrimitive && leaf.isString) leaf.content else null
+        }
+        else -> null
+    }
+}
+
+private fun formatText(template: String, args: List<UiArg>, context: Context): String {
+    if (args.isEmpty()) return template
+    return runCatching {
+        val resolvedArgs = args.map { it.resolve(context) }.toTypedArray()
+        String.format(Locale.ROOT, template, *resolvedArgs)
+    }.getOrElse {
+        buildString {
+            append(template)
+            append(": ")
+            append(args.joinToString(", ") { it.resolve(context) })
+        }
+    }
 }
 
 private fun Context.fallbackText(text: UiText): String {
@@ -35,7 +98,14 @@ private fun Context.fallbackText(text: UiText): String {
         buildString {
             append(label)
             append(": ")
-            append(text.args.joinToString(", "))
+            append(text.args.joinToString(", ") { it.resolve(this@fallbackText) })
         }
+    }
+}
+
+private fun UiArg.resolve(context: Context): String {
+    return when (this) {
+        is TextArg -> value
+        is TextRef -> context.resolveText(value)
     }
 }

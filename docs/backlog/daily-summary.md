@@ -27,4 +27,3 @@ Session aggregation and health/trend logic.
 - A quiet day can still produce a summary.
 - A hot day highlights temperature and time-above-threshold.
 - Weak observations are labeled.
-

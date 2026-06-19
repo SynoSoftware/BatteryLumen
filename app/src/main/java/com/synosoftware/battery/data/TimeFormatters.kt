@@ -7,7 +7,7 @@ import java.util.Locale
 fun formatTimeRange(startMs: Long, endMs: Long?): String {
     val formatter = SimpleDateFormat("HH:mm", Locale.getDefault())
     val start = formatter.format(Date(startMs))
-    val end = endMs?.let { formatter.format(Date(it)) } ?: "now"
+    val end = endMs?.let { formatter.format(Date(it)) } ?: ""
     return "$start–$end"
 }
 
@@ -20,9 +20,3 @@ fun formatDuration(ms: Long): String {
         else -> "${minutes}m"
     }
 }
-
-fun formatDeltaPercent(start: Int, end: Int): String {
-    val delta = (end - start).coerceAtLeast(0)
-    return "+${delta}%"
-}
-

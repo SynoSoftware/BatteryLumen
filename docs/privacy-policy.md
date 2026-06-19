@@ -20,4 +20,3 @@ Open Battery is local-first.
 
 - CSV
 - JSON
-

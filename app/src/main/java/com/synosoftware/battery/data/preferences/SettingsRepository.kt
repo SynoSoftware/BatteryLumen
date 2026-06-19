@@ -17,10 +17,17 @@ enum class TemperatureUnit {
     FAHRENHEIT,
 }
 
+enum class ThemeMode {
+    SYSTEM,
+    LIGHT,
+    DARK,
+}
+
 data class UserPreferences(
     val targetChargePercent: Int = 85,
     val experimentalMetricsEnabled: Boolean = false,
     val temperatureUnit: TemperatureUnit = TemperatureUnit.CELSIUS,
+    val themeMode: ThemeMode = ThemeMode.SYSTEM,
 )
 
 class SettingsRepository(
@@ -29,6 +36,7 @@ class SettingsRepository(
     private val targetKey = intPreferencesKey("target_charge_percent")
     private val experimentalKey = booleanPreferencesKey("experimental_metrics_enabled")
     private val temperatureUnitKey = stringPreferencesKey("temperature_unit")
+    private val themeModeKey = stringPreferencesKey("theme_mode")
 
     val preferences: Flow<UserPreferences> = context.userPreferencesDataStore.data.map { prefs ->
         prefs.toUserPreferences()
@@ -52,16 +60,26 @@ class SettingsRepository(
         }
     }
 
+    suspend fun setThemeMode(mode: ThemeMode) {
+        context.userPreferencesDataStore.edit { prefs ->
+            prefs[themeModeKey] = mode.name
+        }
+    }
+
     private fun Preferences.toUserPreferences(): UserPreferences {
         val targetChargePercent = this[targetKey] ?: 85
         val experimentalMetricsEnabled = this[experimentalKey] ?: false
         val temperatureUnit = runCatching {
             TemperatureUnit.valueOf(this[temperatureUnitKey] ?: TemperatureUnit.CELSIUS.name)
         }.getOrDefault(TemperatureUnit.CELSIUS)
+        val themeMode = runCatching {
+            ThemeMode.valueOf(this[themeModeKey] ?: ThemeMode.SYSTEM.name)
+        }.getOrDefault(ThemeMode.SYSTEM)
         return UserPreferences(
             targetChargePercent = targetChargePercent,
             experimentalMetricsEnabled = experimentalMetricsEnabled,
             temperatureUnit = temperatureUnit,
+            themeMode = themeMode,
         )
     }
 }

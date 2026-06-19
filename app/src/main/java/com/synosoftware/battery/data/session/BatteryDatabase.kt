@@ -11,4 +11,3 @@ import androidx.room.RoomDatabase
 abstract class BatteryDatabase : RoomDatabase() {
     abstract fun chargeSessionDao(): ChargeSessionDao
 }
-

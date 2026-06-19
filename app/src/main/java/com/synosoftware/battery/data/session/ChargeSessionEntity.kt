@@ -33,4 +33,3 @@ data class ChargeSessionEntity(
     val chargeLevelStress: String,
     val combinedStress: String,
 )
-

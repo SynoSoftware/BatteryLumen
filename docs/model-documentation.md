@@ -13,4 +13,3 @@
 - Higher charge level increases stress
 - Long time near full increases stress
 - Weak sessions are stored but excluded from health estimates
-

@@ -23,4 +23,3 @@ interface ChargeSessionDao {
     @Update
     suspend fun update(session: ChargeSessionEntity)
 }
-
