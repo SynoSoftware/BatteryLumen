@@ -12,7 +12,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
@@ -20,7 +20,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.synosoftware.battery.R
-import com.synosoftware.battery.i18n.asString
+import com.synosoftware.battery.i18n.resolveText
 import com.synosoftware.battery.i18n.text
 import com.synosoftware.battery.ui.model.BatteryEvent
 import com.synosoftware.battery.ui.model.BatteryTab
@@ -32,17 +32,18 @@ import com.synosoftware.battery.ui.screens.NowScreen
 
 @Composable
 fun BatteryAppRoot(
-    viewModel: BatteryViewModel = hiltViewModel(),
+    viewModel: BatteryViewModel,
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val navController = rememberNavController()
     val snackbarHostState = remember { SnackbarHostState() }
+    val context = LocalContext.current
 
     LaunchedEffect(Unit) {
         viewModel.events.collect { event ->
             when (event) {
-                is BatteryEvent.TargetReached -> snackbarHostState.showSnackbar(text("target_reached_snackbar", event.targetPercent).asString())
-                is BatteryEvent.Message -> snackbarHostState.showSnackbar(event.text.asString())
+                is BatteryEvent.TargetReached -> snackbarHostState.showSnackbar(context.resolveText(text("target_reached_snackbar", event.targetPercent)))
+                is BatteryEvent.Message -> snackbarHostState.showSnackbar(context.resolveText(event.text))
             }
         }
     }
@@ -68,7 +69,7 @@ fun BatteryAppRoot(
                             }
                         },
                         icon = {
-                            val label = text(tab.label).asString()
+                            val label = context.resolveText(text(tab.label))
                             when (tab) {
                                 BatteryTab.NOW -> LucideIcon(R.drawable.lucide_battery_charging, contentDescription = label)
                                 BatteryTab.HEALTH -> LucideIcon(R.drawable.lucide_heart, contentDescription = label)
@@ -76,7 +77,7 @@ fun BatteryAppRoot(
                                 BatteryTab.HOW_IT_WORKS -> LucideIcon(R.drawable.lucide_info, contentDescription = label)
                             }
                         },
-                        label = { Text(text(tab.label).asString()) },
+                        label = { Text(context.resolveText(text(tab.label))) },
                     )
                 }
             }

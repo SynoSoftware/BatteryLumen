@@ -8,15 +8,10 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import com.synosoftware.battery.R
-import dagger.hilt.android.qualifiers.ApplicationContext
 import com.synosoftware.battery.i18n.text
 import com.synosoftware.battery.i18n.resolveText
-import javax.inject.Inject
-import javax.inject.Singleton
 
-@Singleton
-class ChargingNotificationManager @Inject constructor(
-    @ApplicationContext
+class ChargingNotificationManager(
     private val context: Context,
 ) {
     private val channelId = "charging_target"

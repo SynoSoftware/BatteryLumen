@@ -1,5 +1,7 @@
 package com.synosoftware.battery.domain
 
+import com.synosoftware.battery.i18n.text
+
 object DeviceCapabilityMatrix {
     fun defaultCapabilities(): List<DeviceCapability> = listOf(
         DeviceCapability(

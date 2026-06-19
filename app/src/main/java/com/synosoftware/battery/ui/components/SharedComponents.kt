@@ -5,7 +5,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.weight
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -38,10 +39,11 @@ fun LabelValueRow(
         modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
     ) {
-        Column(modifier = Modifier.weight(1f)) {
+        Column(modifier = Modifier.fillMaxWidth()) {
             Text(label, style = MaterialTheme.typography.labelLarge)
             Text(value, style = MaterialTheme.typography.bodyMedium)
         }
+        Spacer(modifier = Modifier.width(8.dp))
         AssistChip(onClick = {}, label = { Text(evidence) })
     }
 }

@@ -9,17 +9,13 @@ import androidx.core.content.ContextCompat
 import com.synosoftware.battery.domain.BatterySnapshot
 import com.synosoftware.battery.domain.ChargingSource
 import com.synosoftware.battery.domain.ChargingState
-import dagger.hilt.android.qualifiers.ApplicationContext
-import javax.inject.Inject
-import javax.inject.Singleton
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.conflate
 
-@Singleton
-class BatteryMonitor @Inject constructor(
-    @ApplicationContext private val context: Context,
+class BatteryMonitor(
+    private val context: Context,
 ) {
     fun snapshots(): Flow<BatterySnapshot> = callbackFlow {
         val receiver = object : BroadcastReceiver() {

@@ -16,8 +16,6 @@ import com.synosoftware.battery.domain.SessionStatus
 import com.synosoftware.battery.i18n.text
 import com.synosoftware.battery.ui.model.BatteryEvent
 import com.synosoftware.battery.ui.model.BatteryUiState
-import dagger.hilt.android.lifecycle.HiltViewModel
-import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -27,8 +25,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
-@HiltViewModel
-class BatteryViewModel @Inject constructor(
+class BatteryViewModel(
     private val batteryMonitor: BatteryMonitor,
     private val sessionRepository: ChargeSessionRepository,
     private val settingsRepository: SettingsRepository,

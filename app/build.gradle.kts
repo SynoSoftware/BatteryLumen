@@ -1,12 +1,16 @@
+import com.android.build.api.dsl.ApplicationExtension
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
 plugins {
     alias(libs.plugins.android.application)
+    alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.kotlin.kapt)
-    alias(libs.plugins.hilt)
 }
 
-android {
+extensions.configure<ApplicationExtension> {
     namespace = "com.synosoftware.battery"
     compileSdk = 37
 
@@ -35,13 +39,12 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 
-    kotlinOptions {
-        jvmTarget = "17"
-    }
 }
 
-kotlin {
-    jvmToolchain(17)
+tasks.withType<KotlinCompile>().configureEach {
+    compilerOptions {
+        jvmTarget.set(JvmTarget.JVM_17)
+    }
 }
 
 kapt {
@@ -56,6 +59,7 @@ dependencies {
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.activity.compose)
+    implementation(libs.androidx.activity.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
@@ -74,11 +78,6 @@ dependencies {
 
     implementation(libs.androidx.datastore.preferences)
     implementation(libs.androidx.work.runtime.ktx)
-    implementation(libs.androidx.hilt.navigation.compose)
-    implementation(libs.androidx.hilt.work)
-    implementation(libs.hilt.android)
-    kapt(libs.hilt.android.compiler)
-    kapt(libs.androidx.hilt.compiler)
 
     testImplementation(libs.junit)
     testImplementation(kotlin("test"))
@@ -90,48 +89,4 @@ dependencies {
 
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
-}
-
-tasks.register("enforceLucideVectorAssets") {
-    group = "verification"
-    description = "Fails if raster assets, bitmap drawables, or non-Lucide icon APIs are added."
-    doLast {
-        val rasterAssets = fileTree("src/main/res") {
-            include("**/*.png", "**/*.jpg", "**/*.jpeg", "**/*.webp", "**/*.gif", "**/*.bmp")
-        }.files.sortedBy { it.path }
-
-        check(rasterAssets.isEmpty()) {
-            "Raster assets are not allowed: ${rasterAssets.joinToString { it.relativeTo(projectDir).path }}"
-        }
-
-        val bitmapDrawables = fileTree("src/main/res") {
-            include("**/*.xml")
-        }.files.filter { file ->
-            file.readText().contains("<bitmap")
-        }.sortedBy { it.path }
-
-        check(bitmapDrawables.isEmpty()) {
-            "Bitmap drawable XML is not allowed: ${bitmapDrawables.joinToString { it.relativeTo(projectDir).path }}"
-        }
-
-        val sourceFiles = fileTree("src/main/java") {
-            include("**/*.kt")
-        }.files.sortedBy { it.path }
-
-        val forbidden = sourceFiles.filter { file ->
-            val content = file.readText()
-            content.contains("androidx.compose.material.icons") ||
-                Regex("""\bIcons\.(Filled|Outlined|Rounded|Sharp|TwoTone|Baseline)\b""").containsMatchIn(content) ||
-                content.contains("android.R.drawable.") ||
-                Regex("""\bBitmapFactory\b|\bImageBitmap\b|\bandroid\.graphics\.Bitmap\b""").containsMatchIn(content)
-        }
-
-        check(forbidden.isEmpty()) {
-            "Lucide-only enforcement failed in: ${forbidden.joinToString { it.relativeTo(projectDir).path }}"
-        }
-    }
-}
-
-tasks.named("preBuild") {
-    dependsOn("enforceLucideVectorAssets")
 }

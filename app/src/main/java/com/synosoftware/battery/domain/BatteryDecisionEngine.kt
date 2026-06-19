@@ -1,10 +1,9 @@
 package com.synosoftware.battery.domain
 
 import kotlin.math.ceil
-import javax.inject.Inject
 import com.synosoftware.battery.i18n.text
 
-class BatteryDecisionEngine @Inject constructor() {
+class BatteryDecisionEngine {
     fun analyze(
         snapshot: BatterySnapshot,
         session: ChargeSessionMetrics?,

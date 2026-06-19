@@ -11,8 +11,6 @@ import com.synosoftware.battery.domain.EvidenceGrade
 import com.synosoftware.battery.domain.SessionQuality
 import com.synosoftware.battery.domain.SessionStatus
 import com.synosoftware.battery.i18n.text
-import javax.inject.Inject
-import javax.inject.Singleton
 
 data class SessionProcessResult(
     val activeSession: ChargeSessionMetrics?,
@@ -21,8 +19,7 @@ data class SessionProcessResult(
     val targetPercent: Int?,
 )
 
-@Singleton
-class ChargeSessionRepository @Inject constructor(
+class ChargeSessionRepository(
     private val database: BatteryDatabase,
     private val dao: ChargeSessionDao,
     private val decisionEngine: BatteryDecisionEngine,
