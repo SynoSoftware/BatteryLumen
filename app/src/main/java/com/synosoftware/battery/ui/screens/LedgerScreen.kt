@@ -30,6 +30,7 @@ import com.synosoftware.battery.data.sessionTemperatureText
 import com.synosoftware.battery.domain.EvidenceGrade
 import com.synosoftware.battery.i18n.T
 import com.synosoftware.battery.i18n.asString
+import com.synosoftware.battery.i18n.confidenceText
 import com.synosoftware.battery.ui.components.EvidenceBadge
 import com.synosoftware.battery.ui.components.IconBadge
 import com.synosoftware.battery.ui.components.LabelValueRow
@@ -88,7 +89,7 @@ fun LedgerScreen(
         if (query.isEmpty() && totalSessions > sessionsToShow.size) {
             item {
                 AppText(
-                    text = T("sessions.recent_note", sessionsToShow.size, totalSessions).asString(),
+                    text = T("sessions.recent.note", sessionsToShow.size, totalSessions).asString(),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -134,12 +135,12 @@ private fun EmptyLedgerCard() {
                 contentDescription = null,
             )
             AppText(
-                text = T("sessions.empty_title").asString(),
+                text = T("sessions.empty.title").asString(),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold,
             )
             AppText(
-                text = T("sessions.empty_hint").asString(),
+                text = T("sessions.empty.hint").asString(),
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
@@ -164,12 +165,12 @@ private fun EmptySearchCard() {
                 contentDescription = null,
             )
             AppText(
-                text = T("sessions.search.empty_title").asString(),
+                text = T("sessions.search.empty.title").asString(),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold,
             )
             AppText(
-                text = T("sessions.search.empty_hint").asString(),
+                text = T("sessions.search.empty.hint").asString(),
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
@@ -189,7 +190,7 @@ private fun SessionCard(
     val note = when {
         session.usefulForHealth -> T("sessions.useful").asString()
         session.active -> T("sessions.active").asString()
-        else -> T("stored_only_label").asString()
+        else -> T("stored.only.label").asString()
     }
     Surface(
         modifier = Modifier.fillMaxWidth(),
@@ -235,30 +236,30 @@ private fun SessionCard(
 
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 LabelValueRow(
-                    T("temperature_label").asString(),
+                    T("temperature.label").asString(),
                     sessionTemperatureText(session.maxTemperatureC, session.averageTemperatureC, temperatureUnit).asString(),
-                    T("confidence_${session.confidence.name.lowercase()}").asString(),
+                    confidenceText(session.confidence).asString(),
                     compactEvidence = true,
                 )
                 LabelValueRow(
-                    T("source_label").asString(),
+                    T("source.label").asString(),
                     session.sourceLabel.asString(),
                     note,
                     compactEvidence = true,
                 )
                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
                     LabelValueRow(
-                        T("above_85_label").asString(),
+                        T("above.85.label").asString(),
                         session.timeAbove85Label.asString(),
-                        T("evidence_measured").asString(),
+                        T("evidence.measured").asString(),
                         evidenceGrade = EvidenceGrade.MEASURED,
                         compactEvidence = true,
                         modifier = Modifier.weight(1f),
                     )
                     LabelValueRow(
-                        T("above_90_label").asString(),
+                        T("above.90.label").asString(),
                         session.timeAbove90Label.asString(),
-                        T("evidence_measured").asString(),
+                        T("evidence.measured").asString(),
                         evidenceGrade = EvidenceGrade.MEASURED,
                         compactEvidence = true,
                         modifier = Modifier.weight(1f),

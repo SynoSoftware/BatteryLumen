@@ -115,21 +115,21 @@ private fun HealthStatusHeroCard(
                 Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     AppText(
                         text = if (estimate.hasEstimate) {
-                            T("health.current_title").asString()
+                            T("health.current.title").asString()
                         } else {
-                            T("health.insufficient_title").asString()
+                            T("health.insufficient.title").asString()
                         },
                         style = MaterialTheme.typography.headlineSmall,
                         fontWeight = FontWeight.SemiBold,
                     )
                     if (estimate.hasEstimate) {
                         AppText(
-                            text = T("health.estimated_capacity").asString(),
+                            text = T("health.estimated.capacity").asString(),
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     } else {
                         AppText(
-                            text = T("health.insufficient_body", MIN_USEFUL_SESSION_COUNT).asString(),
+                            text = T("health.insufficient.body", MIN_USEFUL_SESSION_COUNT).asString(),
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
@@ -139,7 +139,7 @@ private fun HealthStatusHeroCard(
             if (estimate.hasEstimate) {
                 Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     AppText(
-                        text = T("value_mah", estimate.estimatedCapacityMah).asString(),
+                        text = T("value.mah", estimate.estimatedCapacityMah).asString(),
                         style = MaterialTheme.typography.displaySmall,
                         fontWeight = FontWeight.SemiBold,
                     )
@@ -147,9 +147,9 @@ private fun HealthStatusHeroCard(
                     estimate.likelyRangeMah?.let { range ->
                         AppText(
                             text = T(
-                                "health.likely_range",
-                                T("value_mah", range.first).asString(),
-                                T("value_mah", range.last).asString(),
+                                "health.likely.range",
+                                T("value.mah", range.first).asString(),
+                                T("value.mah", range.last).asString(),
                             ).asString(),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -163,7 +163,7 @@ private fun HealthStatusHeroCard(
                     }
 
                     AppText(
-                        text = T("health.based_on_sessions", estimate.usefulSessionCount).asString(),
+                        text = T("health.based.on.sessions", estimate.usefulSessionCount).asString(),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -174,12 +174,12 @@ private fun HealthStatusHeroCard(
                     modifier = Modifier.fillMaxWidth(),
                 )
                 AppText(
-                    text = T("health.sessions_collected", estimate.usefulSessionCount, MIN_USEFUL_SESSION_COUNT).asString(),
+                    text = T("health.sessions.collected", estimate.usefulSessionCount, MIN_USEFUL_SESSION_COUNT).asString(),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 AppText(
-                    text = T("health.collecting_data").asString(),
+                    text = T("health.collecting.data").asString(),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -212,7 +212,7 @@ private fun HealthTrendChartCard(
         lineLayer,
         startAxis = VerticalAxis.rememberStart(
             valueFormatter = CartesianValueFormatter { _, y, _ ->
-                context.resolveText(T("value_mah", y.roundToInt()))
+                context.resolveText(T("value.mah", y.roundToInt()))
             },
         ),
         bottomAxis = HorizontalAxis.rememberBottom(
@@ -248,12 +248,12 @@ private fun HealthTrendChartCard(
             ) {
                 Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                     AppText(
-                        text = T("health.trend_title").asString(),
+                        text = T("health.trend.title").asString(),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.SemiBold,
                     )
                     AppText(
-                        text = T("health.trend_subtitle").asString(),
+                        text = T("health.trend.subtitle").asString(),
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
@@ -268,7 +268,7 @@ private fun HealthTrendChartCard(
             )
 
             AppText(
-                text = T("health.collecting_data").asString(),
+                text = T("health.collecting.data").asString(),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -293,17 +293,17 @@ private fun DebugSeedDataCard(
         ) {
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 AppText(
-                    text = T("health_debug_seed_title").asString(),
+                    text = T("health.debug.seed.title").asString(),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold,
                 )
                 AppText(
-                    text = T("health_debug_seed_body").asString(),
+                    text = T("health.debug.seed.body").asString(),
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
             Button(onClick = onSeedDemoData) {
-                AppText(T("health_debug_seed_action").asString())
+                AppText(T("health.debug.seed.action").asString())
             }
         }
     }
@@ -312,18 +312,18 @@ private fun DebugSeedDataCard(
 @Composable
 private fun confidenceLabel(confidence: ConfidenceLevel): String {
     return when (confidence) {
-        ConfidenceLevel.HIGH -> T("confidence_high").asString()
-        ConfidenceLevel.MEDIUM -> T("confidence_medium").asString()
-        ConfidenceLevel.LOW -> T("confidence_low").asString()
+        ConfidenceLevel.HIGH -> T("confidence.high").asString()
+        ConfidenceLevel.MEDIUM -> T("confidence.medium").asString()
+        ConfidenceLevel.LOW -> T("confidence.low").asString()
     }
 }
 
 @Composable
 private fun trendLabel(trend: HealthTrendState): String {
     return when (trend) {
-        HealthTrendState.COLLECTING -> T("health_trend_collecting").asString()
-        HealthTrendState.STABLE -> T("health_trend_stable").asString()
-        HealthTrendState.DECLINING -> T("health_trend_declining").asString()
-        HealthTrendState.NOISY -> T("health_trend_noisy").asString()
+        HealthTrendState.COLLECTING -> T("health.trend.collecting").asString()
+        HealthTrendState.STABLE -> T("health.trend.stable").asString()
+        HealthTrendState.DECLINING -> T("health.trend.declining").asString()
+        HealthTrendState.NOISY -> T("health.trend.noisy").asString()
     }
 }

@@ -76,7 +76,7 @@ fun BatteryAppRoot(
     val isSettingsRoute = currentRoute == settingsRoute
     val currentTab = BatteryTab.entries[pagerState.currentPage]
     val titleKey = when {
-        isSettingsRoute -> "settings_title"
+        isSettingsRoute -> "settings.title"
         else -> currentTab.titleKey
     }
     val headerIconRes = when {
@@ -87,7 +87,7 @@ fun BatteryAppRoot(
     LaunchedEffect(Unit) {
         viewModel.events.collect { event ->
             when (event) {
-                is BatteryEvent.TargetReached -> snackbarHostState.showSnackbar(context.resolveText(T("target_reached_snackbar", event.targetPercent)))
+                is BatteryEvent.TargetReached -> snackbarHostState.showSnackbar(context.resolveText(T("target.reached.snackbar", event.targetPercent)))
             }
         }
     }

@@ -50,27 +50,27 @@ fun HowItWorksScreen(
         item {
             RegistryCard(
                 iconRes = R.drawable.lucide_info,
-                title = T("how_it_works_grades_title").asString(),
+                title = T("info.grades.title").asString(),
             ) {
                 GradeRow(
-                    badge = T("evidence_measured").asString(),
+                    badge = T("evidence.measured").asString(),
                     grade = EvidenceGrade.MEASURED,
-                    body = T("how_it_works_measured_desc").asString(),
+                    body = T("info.grades.measured.body").asString(),
                 )
                 GradeRow(
-                    badge = T("evidence_estimated").asString(),
+                    badge = T("evidence.estimated").asString(),
                     grade = EvidenceGrade.ESTIMATED,
-                    body = T("how_it_works_estimated_desc").asString(),
+                    body = T("info.grades.estimated.body").asString(),
                 )
                 GradeRow(
-                    badge = T("evidence_inferred").asString(),
+                    badge = T("evidence.inferred").asString(),
                     grade = EvidenceGrade.INFERRED,
-                    body = T("how_it_works_inferred_desc").asString(),
+                    body = T("info.grades.inferred.body").asString(),
                 )
                 GradeRow(
-                    badge = T("evidence_experimental").asString(),
+                    badge = T("evidence.experimental").asString(),
                     grade = EvidenceGrade.EXPERIMENTAL,
-                    body = T("how_it_works_experimental_desc").asString(),
+                    body = T("info.grades.experimental.body").asString(),
                 )
             }
         }
@@ -78,24 +78,24 @@ fun HowItWorksScreen(
         item {
             RegistryCard(
                 iconRes = R.drawable.lucide_history,
-                title = T("how_it_works_models_title").asString(),
+                title = T("info.models.title").asString(),
             ) {
                 RuleRow(
-                    title = T("how_it_works_thermal_title").asString(),
-                    body = T("how_it_works_thermal_body").asString(),
-                    badge = T("evidence_inferred").asString(),
+                    title = T("info.models.thermal.title").asString(),
+                    body = T("info.models.thermal.body").asString(),
+                    badge = T("evidence.inferred").asString(),
                     grade = EvidenceGrade.INFERRED,
                 )
                 RuleRow(
-                    title = T("how_it_works_charge_title").asString(),
-                    body = T("how_it_works_charge_body").asString(),
-                    badge = T("evidence_estimated").asString(),
+                    title = T("info.models.charge.title").asString(),
+                    body = T("info.models.charge.body").asString(),
+                    badge = T("evidence.estimated").asString(),
                     grade = EvidenceGrade.ESTIMATED,
                 )
                 RuleRow(
-                    title = T("how_it_works_session_title").asString(),
-                    body = T("how_it_works_session_body").asString(),
-                    badge = T("evidence_inferred").asString(),
+                    title = T("info.models.session.title").asString(),
+                    body = T("info.models.session.body").asString(),
+                    badge = T("evidence.inferred").asString(),
                     grade = EvidenceGrade.INFERRED,
                 )
             }
@@ -104,10 +104,10 @@ fun HowItWorksScreen(
         item {
             RegistryCard(
                 iconRes = R.drawable.lucide_battery_full,
-                title = T("capability_matrix_title").asString(),
+                title = T("info.capability.title").asString(),
             ) {
                 AppText(
-                    text = T("capability_matrix_subtitle").asString(),
+                    text = T("info.capability.subtitle").asString(),
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 Spacer(Modifier.height(4.dp))
@@ -120,13 +120,13 @@ fun HowItWorksScreen(
         item {
             if (state.experimentalMetricsEnabled) {
                 NoteCard(
-                    title = T("experimental_metrics_title").asString(),
-                    body = T("experimental_metrics_desc").asString(),
+                    title = T("info.experimental.title").asString(),
+                    body = T("info.experimental.desc").asString(),
                 )
             } else {
                 NoteCard(
-                    title = T("experimental_metrics_title").asString(),
-                    body = T("experimental_metrics_disabled").asString(),
+                    title = T("info.experimental.title").asString(),
+                    body = T("info.experimental.disabled").asString(),
                 )
             }
         }
@@ -222,7 +222,7 @@ private fun CapabilityRow(capability: com.synosoftware.battery.domain.DeviceCapa
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         AppText(
-            text = T("fallback_label", capability.fallback.asString()).asString(),
+            text = T("fallback.label", capability.fallback.asString()).asString(),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )

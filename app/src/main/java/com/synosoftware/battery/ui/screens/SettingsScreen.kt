@@ -64,13 +64,13 @@ fun SettingsScreen(
         item {
             SettingsCard(
                 iconRes = R.drawable.lucide_battery_full,
-                title = T("settings.target_title").asString(),
-                subtitle = T("settings.target_description").asString(),
+                title = T("settings.target.title").asString(),
+                subtitle = T("settings.target.description").asString(),
             ) {
                 ChoiceRow(
                     choices = listOf(80, 85, 90, 100),
                     selected = state.targetChargePercent,
-                    labelForChoice = { target -> T("value_percent", target).asString() },
+                    labelForChoice = { target -> T("value.percent", target).asString() },
                     onSelected = onTargetSelected,
                 )
             }
@@ -79,16 +79,16 @@ fun SettingsScreen(
         item {
             SettingsCard(
                 iconRes = R.drawable.lucide_thermometer,
-                title = T("settings.temperature_title").asString(),
-                subtitle = T("settings.temperature_description").asString(),
+                title = T("settings.temperature.title").asString(),
+                subtitle = T("settings.temperature.description").asString(),
             ) {
                 ChoiceRow(
                     choices = TemperatureUnit.entries,
                     selected = state.temperatureUnit,
                     labelForChoice = { unit ->
                         when (unit) {
-                            TemperatureUnit.CELSIUS -> T("settings_temperature_celsius").asString()
-                            TemperatureUnit.FAHRENHEIT -> T("settings_temperature_fahrenheit").asString()
+                            TemperatureUnit.CELSIUS -> T("settings.temperature.celsius").asString()
+                            TemperatureUnit.FAHRENHEIT -> T("settings.temperature.fahrenheit").asString()
                         }
                     },
                     onSelected = onTemperatureUnitSelected,
@@ -109,17 +109,17 @@ fun SettingsScreen(
         item {
             SettingsCard(
                 iconRes = R.drawable.lucide_settings,
-                title = T("settings.theme_title").asString(),
-                subtitle = T("settings.theme_description").asString(),
+                title = T("settings.theme.title").asString(),
+                subtitle = T("settings.theme.description").asString(),
             ) {
                 ChoiceRow(
                     choices = listOf(ThemeMode.SYSTEM, ThemeMode.LIGHT, ThemeMode.DARK),
                     selected = state.themeMode,
                     labelForChoice = { mode ->
                         when (mode) {
-                            ThemeMode.SYSTEM -> T("settings_theme_system").asString()
-                            ThemeMode.LIGHT -> T("settings_theme_light").asString()
-                            ThemeMode.DARK -> T("settings_theme_dark").asString()
+                            ThemeMode.SYSTEM -> T("settings.theme.system").asString()
+                            ThemeMode.LIGHT -> T("settings.theme.light").asString()
+                            ThemeMode.DARK -> T("settings.theme.dark").asString()
                         }
                     },
                     onSelected = onThemeModeSelected,
@@ -130,11 +130,11 @@ fun SettingsScreen(
         item {
                 SettingsCard(
                 iconRes = R.drawable.lucide_zap,
-                title = T("settings.experimental_title").asString(),
-                subtitle = T("settings.experimental_description").asString(),
+                title = T("settings.experimental.title").asString(),
+                subtitle = T("settings.experimental.description").asString(),
             ) {
                 ToggleRow(
-                    label = T("settings_experimental_toggle").asString(),
+                    label = T("settings.experimental.toggle").asString(),
                     value = state.experimentalMetricsEnabled,
                     onValueChanged = onExperimentalMetricsChanged,
                 )
@@ -226,7 +226,7 @@ private fun ToggleRow(
                     fontWeight = FontWeight.SemiBold,
                 )
                 AppText(
-                    text = if (value) T("settings_toggle_on").asString() else T("settings_toggle_off").asString(),
+                    text = if (value) T("settings.toggle.on").asString() else T("settings.toggle.off").asString(),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )

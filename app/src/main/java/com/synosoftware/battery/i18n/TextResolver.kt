@@ -3,6 +3,7 @@ package com.synosoftware.battery.i18n
 import android.content.Context
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
+import com.synosoftware.battery.BuildConfig
 import java.util.Locale
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
@@ -26,7 +27,7 @@ fun Context.resolveText(text: UiText): String {
     return if (resolved != null) {
         formatText(resolved, text.args, this)
     } else {
-        fallbackText(text)
+        if (BuildConfig.DEBUG) debugMissingText(text) else fallbackText(text)
     }
 }
 
@@ -59,23 +60,7 @@ private fun JsonObject.resolveKey(key: String): String? {
     if (dotPath != null) {
         return dotPath
     }
-
-    var current: JsonElement = this
-    for (segment in key.split('_')) {
-        current = when (current) {
-            is JsonObject -> current[segment] ?: return null
-            else -> return null
-        }
-    }
-
-    return when (current) {
-        is JsonPrimitive -> current.content
-        is JsonObject -> {
-            val leaf = current["_"]
-            if (leaf is JsonPrimitive && leaf.isString) leaf.content else null
-        }
-        else -> null
-    }
+    return null
 }
 
 private fun JsonObject.resolvePath(key: String, delimiter: Char): String? {
@@ -91,10 +76,6 @@ private fun JsonObject.resolvePath(key: String, delimiter: Char): String? {
 
     return when (current) {
         is JsonPrimitive -> current.content
-        is JsonObject -> {
-            val leaf = current["_"]
-            if (leaf is JsonPrimitive && leaf.isString) leaf.content else null
-        }
         else -> null
     }
 }
@@ -130,6 +111,10 @@ private fun Context.fallbackText(text: UiText): String {
             append(text.args.joinToString(", ") { it.resolve(this@fallbackText) })
         }
     }
+}
+
+private fun debugMissingText(text: UiText): String {
+    return "⟦${text.key}⟧"
 }
 
 private fun UiArg.resolve(context: Context): String {

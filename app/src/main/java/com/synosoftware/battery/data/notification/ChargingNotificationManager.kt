@@ -22,8 +22,8 @@ class ChargingNotificationManager(
 
         val notification = NotificationCompat.Builder(context, channelId)
             .setSmallIcon(R.drawable.lucide_bell)
-            .setContentTitle(context.resolveText(T("target_reached_title", targetPercent)))
-            .setContentText(context.resolveText(T("target_reached_body", currentPercent)))
+            .setContentTitle(context.resolveText(T("target.reached.title", targetPercent)))
+            .setContentText(context.resolveText(T("target.reached.body", currentPercent)))
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             .setAutoCancel(true)
             .build()
@@ -36,10 +36,10 @@ class ChargingNotificationManager(
         val manager = context.getSystemService(NotificationManager::class.java)
         val channel = NotificationChannel(
             channelId,
-            context.resolveText(T("notification_channel_charge_target")),
+            context.resolveText(T("notification.channel.charge.target.title")),
             NotificationManager.IMPORTANCE_DEFAULT,
         ).apply {
-            description = context.resolveText(T("notification_channel_charge_target_description"))
+            description = context.resolveText(T("notification.channel.charge.target.description"))
         }
         manager.createNotificationChannel(channel)
     }

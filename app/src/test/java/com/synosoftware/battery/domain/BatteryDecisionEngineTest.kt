@@ -19,7 +19,7 @@ class BatteryDecisionEngineTest {
         val decision = engine.analyze(snapshot, null, 85)
 
         assertEquals(StressLevel.HIGH_STRESS, decision.stress)
-        assertEquals("decision_action_cool", decision.action.key)
+        assertEquals("decision.action.cool", decision.action.key)
     }
 
     @Test
@@ -33,7 +33,7 @@ class BatteryDecisionEngineTest {
         val decision = engine.analyze(snapshot, null, 85)
 
         assertEquals(StressLevel.HIGH_STRESS, decision.stress)
-        assertEquals("decision_action_unplug_if_not_needed", decision.action.key)
+        assertEquals("decision.action.unplug.if.not.needed", decision.action.key)
     }
 
     @Test
@@ -47,7 +47,7 @@ class BatteryDecisionEngineTest {
         val decision = engine.analyze(snapshot, null, 85)
 
         assertTrue(decision.stress == StressLevel.GOOD || decision.stress == StressLevel.NORMAL)
-        assertEquals("decision_action_continue", decision.action.key)
+        assertEquals("decision.action.continue", decision.action.key)
     }
 
     @Test

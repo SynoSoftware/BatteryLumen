@@ -21,8 +21,8 @@ enum class BatteryTab(
 ) {
     NOW("now", "navigation.now", "navigation.now", R.drawable.lucide_battery_charging),
     HEALTH("health", "health.title", "navigation.health", R.drawable.lucide_heart),
-    LEDGER("ledger", "sessions.title", "navigation.sessions", R.drawable.lucide_history),
-    HOW_IT_WORKS("how_it_works", "info.title", "navigation.info", R.drawable.lucide_info),
+    LEDGER("sessions", "sessions.title", "navigation.sessions", R.drawable.lucide_history),
+    HOW_IT_WORKS("info", "info.title", "navigation.info", R.drawable.lucide_info),
 }
 
 enum class HealthTrendState {

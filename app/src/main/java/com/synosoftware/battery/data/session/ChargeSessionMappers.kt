@@ -8,6 +8,7 @@ import com.synosoftware.battery.domain.SessionAssessment
 import com.synosoftware.battery.domain.SessionQuality
 import com.synosoftware.battery.domain.SessionStatus
 import com.synosoftware.battery.i18n.T
+import com.synosoftware.battery.i18n.sessionSourceText
 import com.synosoftware.battery.ui.model.BatterySessionUi
 
 fun ChargeSessionEntity.toMetrics(): ChargeSessionMetrics {
@@ -35,24 +36,25 @@ fun ChargeSessionEntity.toMetrics(): ChargeSessionMetrics {
 fun ChargeSessionEntity.toUi(assessment: SessionAssessment): BatterySessionUi {
     val start = startedAtMs
     val status = runCatching { SessionStatus.valueOf(status) }.getOrDefault(SessionStatus.INCOMPLETE)
+    val source = runCatching { ChargingSource.valueOf(chargingSource) }.getOrDefault(ChargingSource.UNKNOWN)
     return BatterySessionUi(
         id = id,
-        headline = T("session_headline_delta", T("value_delta_percent", (currentLevelPercent - startLevelPercent).coerceAtLeast(0))),
-        timeRange = T("session_time_range", formatTimeRange(start, endedAtMs)),
-        deltaLabel = T("session_delta_label", startLevelPercent, currentLevelPercent),
+        headline = T("session.headline.delta", T("value.delta.percent", (currentLevelPercent - startLevelPercent).coerceAtLeast(0))),
+        timeRange = T("session.time.range", formatTimeRange(start, endedAtMs)),
+        deltaLabel = T("session.delta.label", startLevelPercent, currentLevelPercent),
         temperatureLabel = if (averageTemperatureC != null) {
             T(
-                "session_temperature_with_average",
-                maxTemperatureC?.let { String.format("%.1f", it) } ?: T("value_na"),
+                "session.temperature.with.average",
+                maxTemperatureC?.let { String.format("%.1f", it) } ?: T("value.na"),
                 String.format("%.1f", averageTemperatureC),
             )
         } else {
-            T("session_temperature", maxTemperatureC?.let { String.format("%.1f", it) } ?: T("value_na"))
+            T("session.temperature.title", maxTemperatureC?.let { String.format("%.1f", it) } ?: T("value.na"))
         },
         maxTemperatureC = maxTemperatureC,
         averageTemperatureC = averageTemperatureC,
         currentTemperatureC = currentTemperatureC,
-        sourceLabel = T("session_source_${chargingSource.lowercase()}"),
+        sourceLabel = sessionSourceText(source),
         qualityLabel = when {
             assessment.quality == SessionQuality.USEFUL -> T("sessions.useful")
             status == SessionStatus.ACTIVE -> T("sessions.active")
@@ -67,7 +69,7 @@ fun ChargeSessionEntity.toUi(assessment: SessionAssessment): BatterySessionUi {
         thermalStress = assessment.thermalStress,
         chargeLevelStress = assessment.chargeLevelStress,
         combinedStress = assessment.combinedStress,
-        timeAbove85Label = T("session_time_above_85", formatDuration(timeAbove85Sec * 1000L)),
-        timeAbove90Label = T("session_time_above_90", formatDuration(timeAbove90Sec * 1000L)),
+        timeAbove85Label = T("session.time.above.85", formatDuration(timeAbove85Sec * 1000L)),
+        timeAbove90Label = T("session.time.above.90", formatDuration(timeAbove90Sec * 1000L)),
     )
 }

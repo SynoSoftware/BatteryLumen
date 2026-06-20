@@ -42,6 +42,10 @@ import com.synosoftware.battery.domain.EvidenceGrade
 import com.synosoftware.battery.domain.StressLevel
 import com.synosoftware.battery.i18n.T
 import com.synosoftware.battery.i18n.asString
+import com.synosoftware.battery.i18n.chargingSourceText
+import com.synosoftware.battery.i18n.chargingStateText
+import com.synosoftware.battery.i18n.confidenceText
+import com.synosoftware.battery.i18n.stressText
 import com.synosoftware.battery.ui.components.EvidenceBadge
 import com.synosoftware.battery.ui.components.IconBadge
 import com.synosoftware.battery.ui.components.LabelValueRow
@@ -97,34 +101,34 @@ fun NowScreen(
         item {
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 SectionHeader(
-                    title = T("live_telemetry").asString(),
-                    subtitle = T("live_telemetry_subtitle").asString(),
+                    title = T("live.telemetry.title").asString(),
+                    subtitle = T("live.telemetry.subtitle").asString(),
                 )
                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
                     MetricTile(
                         modifier = Modifier.weight(1f),
                         iconRes = R.drawable.lucide_thermometer,
-                        title = T("temperature_label").asString(),
+                        title = T("temperature.label").asString(),
                         value = temperatureText(snapshot?.temperatureC, state.temperatureUnit).asString(),
-                        evidence = T("evidence_measured").asString(),
+                        evidence = T("evidence.measured").asString(),
                         evidenceGrade = EvidenceGrade.MEASURED,
                         showEvidence = false,
                     )
                     MetricTile(
                         modifier = Modifier.weight(1f),
                         iconRes = R.drawable.lucide_battery_full,
-                        title = T("level_label").asString(),
-                        value = snapshot?.let { T("value_percent", it.levelPercent).asString() } ?: T("value_na").asString(),
-                        evidence = T("evidence_measured").asString(),
+                        title = T("level.label").asString(),
+                        value = snapshot?.let { T("value.percent", it.levelPercent).asString() } ?: T("value.na").asString(),
+                        evidence = T("evidence.measured").asString(),
                         evidenceGrade = EvidenceGrade.MEASURED,
                         showEvidence = false,
                     )
                     MetricTile(
                         modifier = Modifier.weight(1f),
                         iconRes = R.drawable.lucide_zap,
-                        title = T("state_label").asString(),
-                        value = snapshot?.let { T("charging_state_${it.chargingState.name.lowercase()}").asString() } ?: T("value_na").asString(),
-                        evidence = T("evidence_measured").asString(),
+                        title = T("state.label").asString(),
+                        value = snapshot?.let { chargingStateText(it.chargingState).asString() } ?: T("value.na").asString(),
+                        evidence = T("evidence.measured").asString(),
                         evidenceGrade = EvidenceGrade.MEASURED,
                         showEvidence = false,
                     )
@@ -145,29 +149,29 @@ fun NowScreen(
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
                     AppText(
-                        text = T("source_label").asString(),
+                        text = T("source.label").asString(),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.SemiBold,
                     )
                     if (snapshot == null) {
-                        AppText(T("no_battery_snapshot_yet").asString())
+                        AppText(T("no.battery.snapshot.yet").asString())
                     } else {
                         LabelValueRow(
-                            T("source_charging_label").asString(),
-                            T("charging_source_${snapshot.chargingSource.name.lowercase()}").asString(),
-                            T("evidence_measured").asString(),
+                            T("source.charging.label").asString(),
+                            chargingSourceText(snapshot.chargingSource).asString(),
+                            T("evidence.measured").asString(),
                             evidenceGrade = EvidenceGrade.MEASURED,
                         )
                         LabelValueRow(
-                            T("voltage_label").asString(),
-                            snapshot.voltageMv?.let { T("value_mv", it).asString() } ?: T("value_na").asString(),
-                            T("evidence_measured").asString(),
+                            T("voltage.label").asString(),
+                            snapshot.voltageMv?.let { T("value.mv", it).asString() } ?: T("value.na").asString(),
+                            T("evidence.measured").asString(),
                             evidenceGrade = EvidenceGrade.MEASURED,
                         )
                         LabelValueRow(
-                            T("current_label").asString(),
-                            snapshot.currentUa?.let { T("value_ua", it).asString() } ?: T("value_na").asString(),
-                            T("evidence_measured").asString(),
+                            T("current.label").asString(),
+                            snapshot.currentUa?.let { T("value.ua", it).asString() } ?: T("value.na").asString(),
+                            T("evidence.measured").asString(),
                             evidenceGrade = EvidenceGrade.MEASURED,
                         )
                     }
@@ -200,10 +204,10 @@ private fun HeroDecisionCard(
     containerColor: androidx.compose.ui.graphics.Color,
     borderColor: androidx.compose.ui.graphics.Color,
 ) {
-    val stressLabel = decision?.stress?.name?.lowercase()?.let { T("stress_$it").asString() } ?: T("waiting_for_battery_data").asString()
-    val reason = decision?.reason?.asString() ?: T("open_app_while_charging").asString()
-    val action = decision?.action?.asString() ?: T("continue_charging_or_set_target").asString()
-    val confidenceText = decision?.confidence?.name?.lowercase()?.let { T("confidence_$it").asString() } ?: T("waiting_for_battery_data").asString()
+    val stressLabel = decision?.stress?.let { stressText(it).asString() } ?: T("waiting.for.battery.data").asString()
+    val reason = decision?.reason?.asString() ?: T("open.app.while.charging").asString()
+    val action = decision?.action?.asString() ?: T("continue.charging.or.set.target").asString()
+    val confidenceSummaryText = decision?.confidence?.let { confidenceText(it).asString() } ?: T("waiting.for.battery.data").asString()
     val icon = when (decision?.stress) {
         StressLevel.HIGH_STRESS, StressLevel.SEVERE_STRESS -> R.drawable.lucide_triangle_alert
         else -> R.drawable.lucide_battery_charging
@@ -231,7 +235,7 @@ private fun HeroDecisionCard(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 AppText(
-                    text = T("battery_stress_label").asString(),
+                    text = T("now.stress.label").asString(),
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -279,17 +283,17 @@ private fun HeroDecisionCard(
 
             if (decision != null) {
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    PlainBadge(text = T("confidence_${decision.confidence.name.lowercase()}").asString())
+                    PlainBadge(text = confidenceText(decision.confidence).asString())
                     EvidenceBadge(grade = decision.evidenceGrade)
                 }
                 AppText(
-                    text = T("confidence_summary", confidenceText, decision.confidenceReason.asString()).asString(),
+                    text = T("confidence.summary", confidenceSummaryText, decision.confidenceReason.asString()).asString(),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             } else {
                 AppText(
-                    text = T("waiting_for_battery_data").asString(),
+                    text = T("waiting.for.battery.data").asString(),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -316,7 +320,7 @@ private fun TargetCard(
             verticalArrangement = Arrangement.spacedBy(14.dp),
         ) {
             AppText(
-                text = T("target_label").asString(),
+                text = T("target.label").asString(),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold,
             )
@@ -325,7 +329,7 @@ private fun TargetCard(
                     FilterChip(
                         selected = state.targetChargePercent == target,
                         onClick = { onTargetSelected(target) },
-                        label = { AppText(T("value_percent", target).asString()) },
+                        label = { AppText(T("value.percent", target).asString()) },
                     )
                 }
             }
@@ -333,26 +337,26 @@ private fun TargetCard(
             if (decision != null) {
                 Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     LabelValueRow(
-                        T("best_stop_label").asString(),
-                        T("value_percent", decision.bestStopPercent).asString(),
-                        T("recommended_label").asString(),
+                        T("best.stop.label").asString(),
+                        T("value.percent", decision.bestStopPercent).asString(),
+                        T("recommended.label").asString(),
                     )
                     LabelValueRow(
-                        T("time_to_target_label").asString(),
-                        decision.timeToTargetMinutes?.let { T("value_min_short", it).asString() } ?: T("value_na").asString(),
-                        T("evidence_estimated").asString(),
+                        T("time.to.target.label").asString(),
+                        decision.timeToTargetMinutes?.let { T("value.min.short", it).asString() } ?: T("value.na").asString(),
+                        T("evidence.estimated").asString(),
                         evidenceGrade = EvidenceGrade.ESTIMATED,
                     )
                     LabelValueRow(
-                        T("full_charge_label").asString(),
-                        decision.timeToFullMinutes?.let { T("value_min_short", it).asString() } ?: T("value_na").asString(),
-                        T("evidence_estimated").asString(),
+                        T("full.charge.label").asString(),
+                        decision.timeToFullMinutes?.let { T("value.min.short", it).asString() } ?: T("value.na").asString(),
+                        T("evidence.estimated").asString(),
                         evidenceGrade = EvidenceGrade.ESTIMATED,
                     )
                 }
             } else {
                 AppText(
-                    text = T("target_timing_wait").asString(),
+                    text = T("target.timing.wait").asString(),
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
@@ -366,11 +370,11 @@ private fun TargetCard(
                     contentDescription = null,
                     modifier = Modifier.padding(end = 8.dp).size(18.dp),
                 )
-                AppText(T("set_alarm_target", T("value_percent", state.targetChargePercent)).asString())
+                AppText(T("set.alarm.target", T("value.percent", state.targetChargePercent)).asString())
             }
 
             AppText(
-                text = T("target_guidance_note").asString(),
+                text = T("target.guidance.note").asString(),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center,
@@ -396,14 +400,14 @@ private fun SessionCard(
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             AppText(
-                text = T("current_session_label").asString(),
+                text = T("current.session.label").asString(),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold,
             )
             val active = state.activeSession
             if (active == null) {
                 AppText(
-                    text = T("no_active_session_yet").asString(),
+                    text = T("no.active.session.yet").asString(),
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             } else {
@@ -420,15 +424,15 @@ private fun SessionCard(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 LabelValueRow(
-                    T("temperature_label").asString(),
+                    T("temperature.label").asString(),
                     active.temperatureLabel.asString(),
-                    T("confidence_${active.confidence.name.lowercase()}").asString(),
+                    confidenceText(active.confidence).asString(),
                     compactEvidence = true,
                 )
                 LabelValueRow(
-                    T("source_charging_label").asString(),
+                    T("source.charging.label").asString(),
                     active.sourceLabel.asString(),
-                    if (active.usefulForHealth) T("useful_label").asString() else T("stored_only_label").asString(),
+                    if (active.usefulForHealth) T("useful.label").asString() else T("stored.only.label").asString(),
                     compactEvidence = true,
                 )
             }
@@ -438,9 +442,9 @@ private fun SessionCard(
 
 private fun currentSessionHint(active: com.synosoftware.battery.ui.model.BatterySessionUi) =
     when {
-        active.usefulForHealth -> T("session_hint_useful")
-        active.active -> T("session_hint_active")
-        else -> T("session_hint_incomplete")
+        active.usefulForHealth -> T("session.hint.useful")
+        active.active -> T("session.hint.active")
+        else -> T("session.hint.incomplete")
     }
 
 @Composable
@@ -469,16 +473,16 @@ private fun NotificationPermissionCard() {
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             AppText(
-                T("notification_channel_charge_target_title").asString(),
+                T("notification.channel.charge.target.title").asString(),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold,
             )
             AppText(
-                T("notification_channel_charge_target_description").asString(),
+                T("notification.channel.charge.target.description").asString(),
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Button(onClick = { launcher.launch(Manifest.permission.POST_NOTIFICATIONS) }) {
-                AppText(T("allow_notifications").asString())
+                AppText(T("allow.notifications").asString())
             }
         }
     }

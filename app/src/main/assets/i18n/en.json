@@ -1,715 +1,287 @@
-﻿{
+{
   "above": {
     "85": {
-      "label": {
-        "_": "Above 85"
-      }
+      "label": "Above 85"
     },
     "90": {
-      "label": {
-        "_": "Above 90"
-      }
+      "label": "Above 90"
     }
   },
   "allow": {
-    "notifications": {
-      "_": "Allow notifications"
-    }
+    "notifications": "Allow notifications"
   },
   "app": {
-    "title": {
-      "_": "Battery Lumen"
-    }
+    "title": "Battery Lumen"
   },
   "navigation": {
-    "health": {
-      "_": "Health"
-    },
-    "info": {
-      "_": "Info"
-    },
-    "now": {
-      "_": "Now"
-    },
-    "sessions": {
-      "_": "Sessions"
-    },
-    "settings": {
-      "_": "Settings"
-    }
-  },
-  "battery": {
-    "tab": {
-      "health": {
-        "_": "Health"
-      },
-      "how": {
-        "it": {
-          "works": {
-            "_": "How It Works"
-          }
-        }
-      },
-      "ledger": {
-        "_": "History"
-      },
-      "now": {
-        "_": "Now"
-      }
-    },
-    "health": {
-      "title": {
-        "_": "Battery Health"
-      }
-    },
-    "stress": {
-      "label": {
-        "_": "Battery Stress"
-      }
-    }
+    "health": "Health",
+    "info": "Info",
+    "now": "Now",
+    "sessions": "Sessions",
+    "settings": "Settings"
   },
   "best": {
     "stop": {
-      "label": {
-        "_": "Best Stop"
-      }
+      "label": "Best Stop"
     }
   },
   "capability": {
     "battery": {
       "level": {
-        "_": "Battery Level",
-        "availability": {
-          "_": "Available on every device"
-        },
-        "fallback": {
-          "_": "Show battery percent only"
-        },
-        "rule": {
-          "_": "Use the broadcast snapshot as the current reading."
-        },
-        "source": {
-          "_": "Android battery broadcast"
-        }
+        "availability": "Available on every device",
+        "fallback": "Show battery percent only",
+        "rule": "Use the broadcast snapshot as the current reading.",
+        "source": "Android battery broadcast"
       },
       "temperature": {
-        "_": "Battery Temperature",
-        "availability": {
-          "_": "Available on many devices"
-        },
-        "fallback": {
-          "_": "Hide temperature when missing"
-        },
-        "rule": {
-          "_": "Use the measured temperature when the device reports it."
-        },
-        "source": {
-          "_": "BatteryManager"
-        }
+        "availability": "Available on many devices",
+        "fallback": "Hide temperature when missing",
+        "rule": "Use the measured temperature when the device reports it.",
+        "source": "BatteryManager"
       }
     },
     "celsius": {
-      "unit": {
-        "_": "Celsius"
-      }
+      "unit": "Celsius"
     },
     "charge": {
       "counter": {
-        "_": "Charge Counter",
-        "availability": {
-          "_": "Available on some devices"
-        },
-        "fallback": {
-          "_": "Hide charge counter when missing"
-        },
-        "rule": {
-          "_": "Use the remaining charge counter when the device exposes it."
-        },
-        "source": {
-          "_": "BatteryManager"
-        }
+        "availability": "Available on some devices",
+        "fallback": "Hide charge counter when missing",
+        "rule": "Use the remaining charge counter when the device exposes it.",
+        "source": "BatteryManager"
       }
     },
     "current": {
       "now": {
-        "_": "Current Now",
-        "availability": {
-          "_": "Available on some devices"
-        },
-        "fallback": {
-          "_": "Hide current when missing"
-        },
-        "rule": {
-          "_": "Use the instantaneous current when the device exposes it."
-        },
-        "source": {
-          "_": "BatteryManager"
-        }
+        "availability": "Available on some devices",
+        "fallback": "Hide current when missing",
+        "rule": "Use the instantaneous current when the device exposes it.",
+        "source": "BatteryManager"
       }
     },
     "enum": {
-      "unit": {
-        "_": "Enum"
-      }
-    },
-    "matrix": {
-      "subtitle": {
-        "_": "What this device can expose"
-      },
-      "title": {
-        "_": "Device Capability Matrix"
-      }
+      "unit": "Enum"
     },
     "microamp": {
       "hour": {
-        "unit": {
-          "_": "Microamp hour"
-        }
+        "unit": "Microamp hour"
       },
-      "unit": {
-        "_": "Microamp"
-      }
+      "unit": "Microamp"
     },
     "millivolt": {
-      "unit": {
-        "_": "Millivolt"
-      }
+      "unit": "Millivolt"
     },
     "percent": {
-      "unit": {
-        "_": "Percent"
-      }
+      "unit": "Percent"
     },
     "plug": {
       "type": {
-        "_": "Plug Type",
-        "availability": {
-          "_": "Available on most devices"
-        },
-        "fallback": {
-          "_": "Treat the source as unknown"
-        },
-        "rule": {
-          "_": "Use the reported plug type as a hint."
-        },
-        "source": {
-          "_": "Android battery broadcast"
-        }
+        "availability": "Available on most devices",
+        "fallback": "Treat the source as unknown",
+        "rule": "Use the reported plug type as a hint.",
+        "source": "Android battery broadcast"
       }
     },
     "voltage": {
-      "_": "Voltage",
-      "availability": {
-        "_": "Available on many devices"
-      },
-      "fallback": {
-        "_": "Hide voltage when missing"
-      },
-      "rule": {
-        "_": "Use the reported millivolts when available."
-      },
-      "source": {
-        "_": "BatteryManager"
-      }
+      "availability": "Available on many devices",
+      "fallback": "Hide voltage when missing",
+      "rule": "Use the reported millivolts when available.",
+      "source": "BatteryManager"
     }
   },
   "charging": {
     "source": {
-      "ac": {
-        "_": "AC"
-      },
-      "dock": {
-        "_": "Dock"
-      },
-      "unknown": {
-        "_": "Unknown"
-      },
-      "usb": {
-        "_": "USB"
-      },
-      "wireless": {
-        "_": "Wireless"
-      }
+      "ac": "AC",
+      "dock": "Dock",
+      "unknown": "Unknown",
+      "usb": "USB",
+      "wireless": "Wireless"
     },
     "state": {
-      "charging": {
-        "_": "Charging State Charging"
-      },
-      "discharging": {
-        "_": "Charging State Discharging"
-      },
-      "full": {
-        "_": "Charging State Full"
-      },
-      "unknown": {
-        "_": "Charging State Unknown"
-      }
+      "charging": "Charging State Charging",
+      "discharging": "Charging State Discharging",
+      "full": "Charging State Full",
+      "unknown": "Charging State Unknown"
     }
   },
   "confidence": {
-    "high": {
-      "_": "High"
-    },
-    "low": {
-      "_": "Low"
-    },
-    "medium": {
-      "_": "Medium"
-    },
+    "high": "High",
+    "low": "Low",
+    "medium": "Medium",
     "reason": {
-      "high": {
-        "_": "Enough readings and useful sessions"
-      },
-      "low": {
-        "_": "Too little data yet"
-      },
-      "medium": {
-        "_": "Some readings are still missing"
-      }
+      "high": "Enough readings and useful sessions",
+      "low": "Too little data yet",
+      "medium": "Some readings are still missing"
     },
-    "summary": {
-      "_": "Confidence: %1$s. %2$s"
-    }
+    "summary": "Confidence: %1$s. %2$s"
   },
   "continue": {
     "charging": {
       "or": {
         "set": {
-          "target": {
-            "_": "Continue charging or set a target"
-          }
+          "target": "Continue charging or set a target"
         }
       }
     }
   },
   "current": {
-    "label": {
-      "_": "Current"
-    },
+    "label": "Current",
     "session": {
-      "label": {
-        "_": "Current Session"
-      }
+      "label": "Current Session"
     }
   },
   "decision": {
     "action": {
       "avoid": {
-        "full": {
-          "_": "Avoid charging to full"
-        }
+        "full": "Avoid charging to full"
       },
-      "continue": {
-        "_": "Continue charging"
-      },
-      "cool": {
-        "_": "Cool the device or unplug"
-      },
+      "continue": "Continue charging",
+      "cool": "Cool the device or unplug",
       "not": {
-        "charging": {
-          "_": "Start charging to see guidance"
-        }
+        "charging": "Start charging to see guidance"
       },
       "unplug": {
         "if": {
           "not": {
-            "needed": {
-              "_": "Unplug if you do not need a full charge"
-            }
+            "needed": "Unplug if you do not need a full charge"
           }
         },
-        "now": {
-          "_": "Unplug now"
-        }
+        "now": "Unplug now"
       }
     },
     "reason": {
       "at": {
-        "target": {
-          "_": "At target while charging"
-        }
+        "target": "At target while charging"
       },
       "hot": {
-        "_": "Battery is hot",
-        "charging": {
-          "_": "Charging while hot: %1$s°C"
-        }
+        "charging": "Charging while hot: %1$s°C"
       },
       "near": {
-        "full": {
-          "_": "Near full while charging"
-        }
+        "full": "Near full while charging"
       },
       "not": {
-        "charging": {
-          "_": "Not charging"
-        }
+        "charging": "Not charging"
       },
-      "reasonable": {
-        "_": "Charging looks reasonable"
-      }
+      "reasonable": "Charging looks reasonable"
     }
   },
   "evidence": {
-    "estimated": {
-      "_": "Estimated"
-    },
-    "experimental": {
-      "_": "Experimental"
-    },
-    "inferred": {
-      "_": "Inferred"
-    },
-    "measured": {
-      "_": "Measured"
-    }
-  },
-  "experimental": {
-    "metrics": {
-      "desc": {
-        "_": "Experimental metrics are disabled by default. They are useful for research, but not for precise battery-health claims."
-      },
-      "disabled": {
-        "_": "Experimental Metrics Disabled"
-      },
-      "title": {
-        "_": "Experimental Metrics"
-      }
-    }
+    "estimated": "Estimated",
+    "experimental": "Experimental",
+    "inferred": "Inferred",
+    "measured": "Measured"
   },
   "fallback": {
-    "label": {
-      "_": "Fallback: %1$s"
-    }
+    "label": "Fallback: %1$s"
   },
   "full": {
     "charge": {
-      "label": {
-        "_": "Full Charge"
-      }
+      "label": "Full Charge"
     }
   },
   "health": {
-    "based_on_sessions": {
-      "_": "Based on %1$s useful sessions"
-    },
-    "collecting_data": {
-      "_": "Collecting data"
-    },
     "debug": {
       "seed": {
-        "action": {
-          "_": "Load demo year"
-        },
-        "body": {
-          "_": "Replace saved sessions with about one year of plausible demo data."
-        },
-        "title": {
-          "_": "Debug demo data"
-        }
+        "action": "Load demo year",
+        "body": "Replace saved sessions with about one year of plausible demo data.",
+        "title": "Debug demo data"
       }
     },
-    "current_title": {
-      "_": "Current health"
-    },
-    "design_capacity": {
-      "_": "Design capacity"
-    },
-    "evolution": {
-      "latest": {
-        "_": "Most recent session"
-      },
-      "measured": {
-        "_": "Observed"
-      },
-      "note": {
-        "_": "Weak sessions are ignored."
-      },
-      "percent": {
-        "_": "Basic"
-      },
-      "temp": {
-        "_": "Heat-adjusted"
-      }
-    },
-    "history": {
-      "subtitle": {
-        "_": "Estimated full-capacity points from useful charging sessions."
-      },
-      "title": {
-        "_": "Battery health trend"
-      }
-    },
-    "insufficient_body": {
-      "_": "Battery health needs %1$s useful charging sessions before it can be estimated."
-    },
-    "insufficient_title": {
-      "_": "Insufficient data"
-    },
-    "summary": {
-      "estimated": {
-        "capacity": {
-          "_": "Estimated capacity"
-        }
-      },
-      "likely_range": {
-        "_": "Likely range: %1$s - %2$s"
-      },
-      "range": {
-        "_": "Likely range: %1$s - %2$s"
-      },
-      "sessions": {
-        "_": "Based on %1$s useful sessions"
-      }
-    },
-    "sessions_collected": {
-      "_": "%1$s of %2$s useful sessions collected"
-    },
-    "title": {
-      "_": "Battery Health"
-    },
-    "latest": {
-      "context": {
-        "_": "Observed level vs heat impact"
-      },
-      "heat": {
-        "penalty": {
-          "_": "Heat impact"
-        }
-      },
-      "not": {
-        "useful": {
-          "_": "Not useful yet"
-        }
-      },
-      "observed": {
-        "_": "Observed level"
-      },
-      "tip": {
-        "heat": {
-          "_": "Heat is lowering the estimate by %1$s. Let the phone cool for a cleaner reading."
-        },
-        "useful": {
-          "_": "This session can help estimate health."
-        },
-        "wait": {
-          "_": "Keep charging until this session becomes useful."
-        }
-      },
-      "useful": {
-        "_": "Useful for health"
-      }
-    },
-    "nav": {
-      "label": {
-        "_": "Health"
-      }
-    },
-    "estimated_capacity": {
-      "_": "Estimated capacity"
-    },
+    "title": "Battery Health",
     "trend": {
-      "collecting": {
-        "_": "Collecting data"
-      },
-      "declining": {
-        "_": "Declining"
-      },
-      "noisy": {
-        "_": "Noisy"
-      },
-      "stable": {
-        "_": "Stable"
+      "collecting": "Collecting data",
+      "declining": "Declining",
+      "noisy": "Noisy",
+      "stable": "Stable",
+      "title": "Battery health trend",
+      "subtitle": "Estimated full-capacity points from useful charging sessions."
+    },
+    "current": {
+      "title": "Current health"
+    },
+    "estimated": {
+      "capacity": "Estimated capacity"
+    },
+    "likely": {
+      "range": "Likely range: %1$s - %2$s"
+    },
+    "insufficient": {
+      "title": "Insufficient data",
+      "body": "Battery health needs %1$s useful charging sessions before it can be estimated."
+    },
+    "based": {
+      "on": {
+        "sessions": "Based on %1$s useful sessions"
       }
     },
-    "trend_subtitle": {
-      "_": "Estimated full-capacity points from useful charging sessions."
+    "sessions": {
+      "collected": "%1$s of %2$s useful sessions collected"
     },
-    "trend_title": {
-      "_": "Battery health trend"
-    },
-    "ready": {
-      "body": {
-        "_": "Battery health can now be estimated."
-      },
-      "count": {
-        "_": "%1$s useful sessions collected"
-      },
-      "title": {
-        "_": "Ready"
-      }
-    },
-    "status": {
-      "action": {
-        "_": "Keep charging while the app is open."
-      },
-      "body": {
-        "_": "Battery health needs %1$s useful charging sessions before it can be estimated."
-      },
-      "count": {
-        "_": "%1$s of %2$s useful sessions collected"
-      },
-      "insufficient": {
-        "title": {
-          "_": "Insufficient data"
-        }
-      }
-    }
-  },
-  "how": {
-    "it": {
-      "works": {
-        "charge": {
-          "body": {
-            "_": "Heat and dwell time both matter when the phone is charging."
-          },
-          "title": {
-            "_": "Charge model"
-          }
-        },
-        "estimated": {
-          "desc": {
-            "_": "Values can be predicted from the sessions we have."
-          }
-        },
-        "experimental": {
-          "desc": {
-            "_": "Experimental values stay clearly labeled and hidden from claims."
-          }
-        },
-        "grades": {
-          "title": {
-            "_": "Evidence grades"
-          }
-        },
-        "inferred": {
-          "desc": {
-            "_": "Inferred values combine measured signals with model rules."
-          }
-        },
-        "measured": {
-          "desc": {
-            "_": "Measured values come directly from the device."
-          }
-        },
-        "models": {
-          "title": {
-            "_": "Model rules"
-          }
-        },
-        "page": {
-          "title": {
-            "_": "Info"
-          }
-        },
-        "session": {
-          "body": {
-            "_": "Weak sessions are kept for history but not used for health."
-          },
-          "title": {
-            "_": "Session quality"
-          }
-        },
-        "subtitle": {
-          "_": "What is measured, inferred, and estimated."
-        },
-        "thermal": {
-          "body": {
-            "_": "Higher temperature and dwell time increase stress while charging."
-          },
-          "title": {
-            "_": "Thermal stress"
-          }
-        }
-      }
+    "collecting": {
+      "data": "Collecting data"
     }
   },
   "info": {
-    "nav": {
-      "label": {
-        "_": "Info"
-      }
-    },
-    "subtitle": {
-      "_": "What the app reads and how it labels it."
-    },
-    "title": {
-      "_": "Info"
-    }
-  },
-  "history": {
-    "nav": {
-      "label": {
-        "_": "History"
-      }
-    },
-    "title": {
-      "_": "History"
-    }
-  },
-  "ledger": {
-    "no": {
-      "sessions": {
-        "_": "No sessions yet",
-        "hint": {
-          "_": "Charge while the app is open or monitoring to build the ledger"
-        }
-      }
-    },
-    "recent": {
-      "note": {
-        "_": "Showing the newest %1$s of %2$s sessions"
-      }
-    },
-    "page": {
-      "title": {
-        "_": "Sessions"
-      }
-    },
-    "search": {
-      "empty": {
-        "hint": {
-          "_": "Try a source, date, temperature, or quality label"
-        },
-        "_": "No matching sessions"
+    "subtitle": "What the app reads and how it labels it.",
+    "title": "Info",
+    "grades": {
+      "title": "Evidence grades",
+      "measured": {
+        "body": "Measured values come directly from the device."
       },
-      "hint": {
-        "_": "Search sessions"
+      "estimated": {
+        "body": "Values can be predicted from the sessions we have."
       },
-      "label": {
-        "_": "Search"
+      "inferred": {
+        "body": "Inferred values combine measured signals with model rules."
+      },
+      "experimental": {
+        "body": "Experimental values stay clearly labeled and hidden from claims."
       }
     },
-    "subtitle": {
-      "_": "Recent charging sessions and evidence"
+    "models": {
+      "title": "Model rules",
+      "thermal": {
+        "title": "Thermal stress",
+        "body": "Higher temperature and dwell time increase stress while charging."
+      },
+      "charge": {
+        "title": "Charge model",
+        "body": "Heat and dwell time both matter when the phone is charging."
+      },
+      "session": {
+        "title": "Session quality",
+        "body": "Weak sessions are kept for history but not used for health."
+      }
+    },
+    "capability": {
+      "subtitle": "What this device can expose",
+      "title": "Device Capability Matrix"
+    },
+    "experimental": {
+      "desc": "Experimental metrics are disabled by default. They are useful for research, but not for precise battery-health claims.",
+      "disabled": "Experimental Metrics Disabled",
+      "title": "Experimental Metrics"
     }
   },
   "level": {
-    "label": {
-      "_": "Level"
-    }
+    "label": "Level"
   },
   "live": {
     "telemetry": {
-      "_": "Live Telemetry",
-      "subtitle": {
-        "_": "Current readings from the device"
-      }
+      "subtitle": "Current readings from the device",
+      "title": "Live Telemetry"
     }
   },
   "no": {
     "active": {
       "session": {
-        "yet": {
-          "_": "No active session yet"
-        }
+        "yet": "No active session yet"
       }
     },
     "battery": {
       "snapshot": {
-        "yet": {
-          "_": "No battery snapshot yet"
-        }
+        "yet": "No battery snapshot yet"
       }
     }
   },
@@ -717,405 +289,202 @@
     "channel": {
       "charge": {
         "target": {
-          "_": "Charge target alerts",
-          "description": {
-            "_": "Notifies when charging reaches the selected target"
-          },
-          "title": {
-            "_": "Charge target alerts"
-          }
+          "description": "Notifies when charging reaches the selected target",
+          "title": "Charge target alerts"
         }
       }
     }
   },
   "now": {
-    "nav": {
-      "label": {
-        "_": "Now"
-      }
-    },
-    "title": {
-      "_": "Now"
+    "stress": {
+      "label": "Battery Stress"
     }
   },
   "open": {
     "app": {
       "while": {
-        "charging": {
-          "_": "Open the app while charging"
-        }
+        "charging": "Open the app while charging"
       }
     }
   },
   "recommended": {
-    "label": {
-      "_": "Recommended"
-    }
+    "label": "Recommended"
   },
   "session": {
     "assessment": {
-      "incomplete": {
-        "_": "Incomplete session"
-      },
-      "useful": {
-        "_": "Useful session"
-      },
-      "weak": {
-        "_": "Weak session"
-      }
+      "incomplete": "Incomplete session",
+      "useful": "Useful session",
+      "weak": "Weak session"
     },
     "delta": {
-      "label": {
-        "_": "From %1$s%% to %2$s%%"
-      }
+      "label": "From %1$s%% to %2$s%%"
     },
     "headline": {
-      "delta": {
-        "_": "Gained %1$s"
-      }
+      "delta": "Gained %1$s"
     },
     "hint": {
-      "active": {
-        "_": "Keep charging to make this session useful"
-      },
-      "incomplete": {
-        "_": "Charging is still in progress"
-      },
-      "useful": {
-        "_": "Useful for health estimates"
-      }
+      "active": "Keep charging to make this session useful",
+      "incomplete": "Charging is still in progress",
+      "useful": "Useful for health estimates"
     },
     "quality": {
-      "active": {
-        "_": "Active"
-      },
-      "incomplete": {
-        "_": "Incomplete"
-      },
-      "useful": {
-        "_": "Useful"
-      },
-      "weak": {
-        "_": "Weak"
-      }
+      "active": "Active",
+      "incomplete": "Incomplete",
+      "useful": "Useful",
+      "weak": "Weak"
     },
     "source": {
-      "ac": {
-        "_": "AC"
-      },
-      "dock": {
-        "_": "Dock"
-      },
-      "unknown": {
-        "_": "Unknown"
-      },
-      "usb": {
-        "_": "USB"
-      },
-      "wireless": {
-        "_": "Wireless"
-      }
+      "ac": "AC",
+      "dock": "Dock",
+      "unknown": "Unknown",
+      "usb": "USB",
+      "wireless": "Wireless"
     },
     "temperature": {
-      "_": "Max %1$s°C",
+      "title": "Max %1$s°C",
       "with": {
-        "average": {
-          "_": "Max %1$s°C, avg %2$s°C"
-        }
+        "average": "Max %1$s°C, avg %2$s°C"
       }
     },
     "time": {
       "above": {
-        "85": {
-          "_": "%1$s above 85%%"
-        },
-        "90": {
-          "_": "%1$s above 90%%"
-        }
+        "85": "%1$s above 85%%",
+        "90": "%1$s above 90%%"
       },
-      "range": {
-        "_": "%1$s to %2$s"
-      }
+      "range": "%1$s to %2$s"
     }
   },
   "sessions": {
-    "active": {
-      "_": "Charging"
-    },
-    "empty_hint": {
-      "_": "Charge while the app is open to build battery history."
-    },
-    "empty_title": {
-      "_": "No sessions yet"
-    },
-    "incomplete": {
-      "_": "Incomplete"
-    },
-    "nav": {
-      "label": {
-        "_": "Sessions"
-      }
-    },
-    "recent_note": {
-      "_": "Showing the newest %1$s of %2$s sessions"
-    },
+    "active": "Charging",
+    "incomplete": "Incomplete",
     "search": {
-      "empty_hint": {
-        "_": "Try a source, date, temperature, or quality label"
-      },
-      "empty_title": {
-        "_": "No matching sessions"
-      },
-      "hint": {
-        "_": "Search sessions"
-      },
-      "label": {
-        "_": "Search"
+      "hint": "Search sessions",
+      "label": "Search",
+      "empty": {
+        "title": "No matching sessions",
+        "hint": "Try a source, date, temperature, or quality label"
       }
     },
-    "subtitle": {
-      "_": "Recent charging sessions and evidence"
+    "subtitle": "Recent charging sessions and evidence",
+    "title": "Sessions",
+    "useful": "Useful",
+    "weak": "Weak",
+    "recent": {
+      "note": "Showing the newest %1$s of %2$s sessions"
     },
-    "title": {
-      "_": "Sessions"
-    },
-    "useful": {
-      "_": "Useful"
-    },
-    "weak": {
-      "_": "Weak"
+    "empty": {
+      "title": "No sessions yet",
+      "hint": "Charge while the app is open to build battery history."
     }
   },
   "set": {
     "alarm": {
-      "target": {
-        "_": "Set alarm for %1$s"
-      }
+      "target": "Set alarm for %1$s"
     }
   },
   "settings": {
-    "title": {
-      "_": "Settings"
-    },
-    "experimental_description": {
-      "_": "Optional metrics for research or debugging."
-    },
-    "experimental_title": {
-      "_": "Experimental metrics"
-    },
+    "title": "Settings",
     "experimental": {
-      "toggle": {
-        "_": "Enable experimental metrics"
-      }
+      "toggle": "Enable experimental metrics",
+      "description": "Optional metrics for research or debugging.",
+      "title": "Experimental metrics"
     },
-    "subtitle": {
-      "_": "Choose how Battery Lumen appears."
-    },
-    "target_description": {
-      "_": "Choose the charge level that should trigger an alert."
-    },
-    "target_title": {
-      "_": "Charge target"
-    },
-    "page": {
-      "title": {
-        "_": "Settings"
-      }
-    },
+    "subtitle": "Choose how Battery Lumen appears.",
     "target": {
-      "desc": {
-        "_": "Choose the charge level that should trigger an alert."
-      },
-      "title": {
-        "_": "Charge target"
-      }
-    },
-    "temperature_description": {
-      "_": "Choose how temperatures are shown."
-    },
-    "temperature_title": {
-      "_": "Temperature unit"
+      "title": "Charge target",
+      "description": "Choose the charge level that should trigger an alert."
     },
     "temperature": {
-      "celsius": {
-        "_": "Celsius"
-      },
-      "desc": {
-        "_": "Choose how temperatures are shown."
-      },
-      "fahrenheit": {
-        "_": "Fahrenheit"
-      },
-      "title": {
-        "_": "Temperature unit"
-      }
-    },
-    "theme_description": {
-      "_": "Choose the theme that feels best."
-    },
-    "theme_title": {
-      "_": "Theme"
+      "celsius": "Celsius",
+      "fahrenheit": "Fahrenheit",
+      "title": "Temperature unit",
+      "description": "Choose how temperatures are shown.",
+      "preview": "Preview: %1$s"
     },
     "theme": {
-      "dark": {
-        "_": "Dark"
-      },
-      "desc": {
-        "_": "Choose the theme that feels best."
-      },
-      "light": {
-        "_": "Light"
-      },
-      "system": {
-        "_": "System"
-      },
-      "title": {
-        "_": "Theme"
-      }
+      "dark": "Dark",
+      "light": "Light",
+      "system": "System",
+      "title": "Theme",
+      "description": "Choose the theme that feels best."
     },
     "toggle": {
-      "off": {
-        "_": "Off"
-      },
-      "on": {
-        "_": "On"
-      }
+      "off": "Off",
+      "on": "On"
     }
   },
   "source": {
     "charging": {
-      "label": {
-        "_": "Power source"
-      }
+      "label": "Power source"
     },
-    "label": {
-      "_": "Source"
-    }
+    "label": "Source"
   },
   "state": {
-    "label": {
-      "_": "Status"
-    }
+    "label": "Status"
   },
   "stored": {
     "only": {
-      "label": {
-        "_": "Stored only"
-      }
+      "label": "Stored only"
     }
   },
   "stress": {
-    "excellent": {
-      "_": "Excellent"
-    },
-    "good": {
-      "_": "Good"
-    },
-    "high": {
-      "stress": {
-        "_": "High stress"
-      }
-    },
-    "normal": {
-      "_": "Normal"
-    },
-    "severe": {
-      "stress": {
-        "_": "Severe stress"
-      }
-    }
+    "excellent": "Excellent",
+    "good": "Good",
+    "normal": "Normal",
+    "high": "High stress",
+    "severe": "Severe stress"
   },
   "target": {
     "guidance": {
-      "note": {
-        "_": "Target Guidance Note"
-      }
+      "note": "Target Guidance Note"
     },
-    "label": {
-      "_": "Target"
-    },
+    "label": "Target",
     "reached": {
-      "body": {
-        "_": "Battery is at %1$s%%"
-      },
-      "snackbar": {
-        "_": "Target reached at %1$s%%"
-      },
-      "title": {
-        "_": "Target reached"
-      }
+      "body": "Battery is at %1$s%%",
+      "snackbar": "Target reached at %1$s%%",
+      "title": "Target reached"
     },
     "timing": {
-      "wait": {
-        "_": "Wait for enough charging data"
-      }
+      "wait": "Wait for enough charging data"
     }
   },
   "temperature": {
-    "label": {
-      "_": "Temperature"
-    }
+    "label": "Temperature"
   },
   "time": {
     "to": {
       "target": {
-        "label": {
-          "_": "Time to Target"
-        }
+        "label": "Time to Target"
       }
     }
   },
   "useful": {
-    "label": {
-      "_": "Useful"
-    }
+    "label": "Useful"
   },
   "value": {
     "delta": {
-      "percent": {
-        "_": "+%1$s%%"
-      }
+      "percent": "+%1$s%%"
     },
     "min": {
-      "short": {
-        "_": "~%1$s min"
-      }
+      "short": "~%1$s min"
     },
-    "mv": {
-      "_": "%1$s mV"
-    },
-    "mah": {
-      "_": "%1$s mAh"
-    },
-    "na": {
-      "_": "Not available"
-    },
-    "percent": {
-      "_": "%1$s%%"
-    },
+    "mv": "%1$s mV",
+    "mah": "%1$s mAh",
+    "na": "Not available",
+    "percent": "%1$s%%",
     "temp": {
-      "c": {
-        "_": "%1$s°C"
-      },
-      "f": {
-        "_": "%1$s°F"
-      }
+      "c": "%1$s°C",
+      "f": "%1$s°F"
     },
-    "ua": {
-      "_": "%1$s uA"
-    }
+    "ua": "%1$s uA"
   },
   "voltage": {
-    "label": {
-      "_": "Voltage"
-    }
+    "label": "Voltage"
   },
   "waiting": {
     "for": {
       "battery": {
-        "data": {
-          "_": "Waiting for battery data"
-        }
+        "data": "Waiting for battery data"
       }
     }
   }
