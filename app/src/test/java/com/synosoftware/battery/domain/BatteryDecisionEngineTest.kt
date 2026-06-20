@@ -19,7 +19,7 @@ class BatteryDecisionEngineTest {
         val decision = engine.analyze(snapshot, null, 85)
 
         assertEquals(StressLevel.HIGH_STRESS, decision.stress)
-        assertTrue(decision.action.contains("cool", ignoreCase = true))
+        assertEquals("decision_action_cool", decision.action.key)
     }
 
     @Test
@@ -33,7 +33,7 @@ class BatteryDecisionEngineTest {
         val decision = engine.analyze(snapshot, null, 85)
 
         assertEquals(StressLevel.HIGH_STRESS, decision.stress)
-        assertTrue(decision.action.contains("Unplug", ignoreCase = true))
+        assertEquals("decision_action_unplug_if_not_needed", decision.action.key)
     }
 
     @Test
@@ -47,7 +47,7 @@ class BatteryDecisionEngineTest {
         val decision = engine.analyze(snapshot, null, 85)
 
         assertTrue(decision.stress == StressLevel.GOOD || decision.stress == StressLevel.NORMAL)
-        assertTrue(decision.action.contains("Continue", ignoreCase = true))
+        assertEquals("decision_action_continue", decision.action.key)
     }
 
     @Test
@@ -91,6 +91,27 @@ class BatteryDecisionEngineTest {
         assertEquals(SessionQuality.USEFUL, assessment.quality)
         assertTrue(assessment.usefulForHealth)
         assertEquals(ConfidenceLevel.HIGH, assessment.confidence)
+    }
+
+    @Test
+    fun healthTrendUsesSessionAssessment() {
+        val session = sessionMetrics(
+            startedAtMs = 1_000L,
+            lastSeenAtMs = 46 * 60_000L,
+            startLevelPercent = 30,
+            currentLevelPercent = 70,
+            maxTemperatureC = 34f,
+            averageTemperatureC = 33f,
+            sampleCount = 6,
+            chargingSource = ChargingSource.AC,
+            chargingState = ChargingState.CHARGING,
+            status = SessionStatus.COMPLETED,
+        )
+
+        val trend = engine.healthTrend(session)
+
+        assertTrue(trend.usefulForHealth)
+        assertTrue(trend.measuredPercent > trend.percentOnlyEstimatePercent)
     }
 
     @Test
@@ -152,6 +173,8 @@ class BatteryDecisionEngineTest {
             lastSeenAtMs = lastSeenAtMs,
             startLevelPercent = startLevelPercent,
             currentLevelPercent = currentLevelPercent,
+            startChargeCounterUah = null,
+            currentChargeCounterUah = null,
             maxTemperatureC = maxTemperatureC,
             averageTemperatureC = averageTemperatureC,
             sampleCount = sampleCount,

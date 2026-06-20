@@ -1,7 +1,6 @@
 package com.synosoftware.battery.ui.screens
 
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -11,8 +10,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material3.Button
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text as AppText
@@ -22,8 +22,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.synosoftware.battery.BuildConfig
+import com.synosoftware.battery.R
+import com.synosoftware.battery.domain.ConfidenceLevel
+import com.synosoftware.battery.domain.EvidenceGrade
 import com.patrykandpatrick.vico.compose.cartesian.CartesianChartHost
 import com.patrykandpatrick.vico.compose.cartesian.axis.HorizontalAxis
 import com.patrykandpatrick.vico.compose.cartesian.axis.VerticalAxis
@@ -33,23 +38,28 @@ import com.patrykandpatrick.vico.compose.cartesian.data.lineSeries
 import com.patrykandpatrick.vico.compose.cartesian.layer.LineCartesianLayer
 import com.patrykandpatrick.vico.compose.cartesian.rememberCartesianChart
 import com.patrykandpatrick.vico.compose.common.Fill
-import com.synosoftware.battery.R
 import com.synosoftware.battery.i18n.T
 import com.synosoftware.battery.i18n.asString
+import com.synosoftware.battery.i18n.resolveText
 import com.synosoftware.battery.ui.components.EvidenceBadge
 import com.synosoftware.battery.ui.components.IconBadge
-import com.synosoftware.battery.ui.components.MetricTile
-import com.synosoftware.battery.ui.components.SectionHeader
+import com.synosoftware.battery.ui.components.PlainBadge
+import com.synosoftware.battery.ui.model.MIN_USEFUL_SESSION_COUNT
 import com.synosoftware.battery.ui.model.BatteryUiState
+import com.synosoftware.battery.ui.model.BatteryHealthEstimateUi
+import com.synosoftware.battery.ui.model.HealthTrendState
 import com.synosoftware.battery.ui.model.HealthTrendPointUi
 import kotlin.math.roundToInt
 
 @Composable
 fun HealthScreen(
     state: BatteryUiState,
+    onSeedDemoData: () -> Unit,
     contentPadding: PaddingValues,
 ) {
     val points = state.healthEvolution.points
+    val estimate = state.healthEstimate
+    val hasUsefulData = estimate.hasEstimate && points.isNotEmpty()
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -58,31 +68,20 @@ fun HealthScreen(
         verticalArrangement = Arrangement.spacedBy(14.dp),
     ) {
         item {
-            SectionHeader(
-                title = T("health_page_title").asString(),
-                subtitle = T("health_subtitle").asString(),
+            HealthStatusHeroCard(
+                estimate = estimate,
             )
         }
 
-        if (state.usefulSessionCount < 5) {
+        if (BuildConfig.DEBUG) {
             item {
-                HealthStatusCard(
-                    message = state.healthMessage.asString(),
-                )
+                DebugSeedDataCard(onSeedDemoData = onSeedDemoData)
             }
         }
 
-        if (points.isEmpty()) {
+        if (hasUsefulData && points.isNotEmpty()) {
             item {
-                HealthEmptyStateCard()
-            }
-        } else {
-            item {
-                HealthEvolutionChartCard(points = points)
-            }
-
-            item {
-                LatestComparisonRow(points = points)
+                HealthTrendChartCard(points = points)
             }
         }
 
@@ -91,66 +90,97 @@ fun HealthScreen(
 }
 
 @Composable
-private fun HealthStatusCard(
-    message: String,
+private fun HealthStatusHeroCard(
+    estimate: BatteryHealthEstimateUi,
 ) {
-    Surface(
-        modifier = Modifier.fillMaxWidth(),
-        shape = MaterialTheme.shapes.large,
-        color = MaterialTheme.colorScheme.surfaceContainerLow,
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.45f)),
-        tonalElevation = 0.dp,
-    ) {
-        Row(
-            modifier = Modifier.padding(16.dp),
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            IconBadge(
-                resId = R.drawable.lucide_info,
-                contentDescription = null,
-            )
-            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                AppText(
-                    text = T("health_status_title").asString(),
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
-                )
-                AppText(
-                    text = message,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun HealthEmptyStateCard() {
     Surface(
         modifier = Modifier.fillMaxWidth(),
         shape = MaterialTheme.shapes.extraLarge,
         color = MaterialTheme.colorScheme.surfaceContainer,
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.65f)),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.55f)),
         tonalElevation = 0.dp,
     ) {
-        Row(
+        Column(
             modifier = Modifier.padding(16.dp),
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-            verticalAlignment = Alignment.Top,
+            verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            IconBadge(
-                resId = R.drawable.lucide_heart,
-                contentDescription = null,
-            )
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                AppText(
-                    text = T("health_evolution_empty_title").asString(),
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                IconBadge(
+                    resId = R.drawable.lucide_heart,
+                    contentDescription = null,
+                )
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    AppText(
+                        text = if (estimate.hasEstimate) {
+                            T("health.current_title").asString()
+                        } else {
+                            T("health.insufficient_title").asString()
+                        },
+                        style = MaterialTheme.typography.headlineSmall,
+                        fontWeight = FontWeight.SemiBold,
+                    )
+                    if (estimate.hasEstimate) {
+                        AppText(
+                            text = T("health.estimated_capacity").asString(),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    } else {
+                        AppText(
+                            text = T("health.insufficient_body", MIN_USEFUL_SESSION_COUNT).asString(),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                }
+            }
+
+            if (estimate.hasEstimate) {
+                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    AppText(
+                        text = T("value_mah", estimate.estimatedCapacityMah).asString(),
+                        style = MaterialTheme.typography.displaySmall,
+                        fontWeight = FontWeight.SemiBold,
+                    )
+
+                    estimate.likelyRangeMah?.let { range ->
+                        AppText(
+                            text = T(
+                                "health.likely_range",
+                                T("value_mah", range.first).asString(),
+                                T("value_mah", range.last).asString(),
+                            ).asString(),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        PlainBadge(text = confidenceLabel(estimate.confidence))
+                        PlainBadge(text = trendLabel(estimate.trend))
+                        EvidenceBadge(grade = EvidenceGrade.ESTIMATED)
+                    }
+
+                    AppText(
+                        text = T("health.based_on_sessions", estimate.usefulSessionCount).asString(),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            } else {
+                LinearProgressIndicator(
+                    progress = { estimate.usefulSessionCount.coerceAtMost(MIN_USEFUL_SESSION_COUNT).toFloat() / MIN_USEFUL_SESSION_COUNT.toFloat() },
+                    modifier = Modifier.fillMaxWidth(),
                 )
                 AppText(
-                    text = T("health_evolution_empty_body").asString(),
+                    text = T("health.sessions_collected", estimate.usefulSessionCount, MIN_USEFUL_SESSION_COUNT).asString(),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                AppText(
+                    text = T("health.collecting_data").asString(),
+                    style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
@@ -159,32 +189,21 @@ private fun HealthEmptyStateCard() {
 }
 
 @Composable
-private fun HealthEvolutionChartCard(
+private fun HealthTrendChartCard(
     points: List<HealthTrendPointUi>,
 ) {
-    val measuredColor = MaterialTheme.colorScheme.primary
-    val tempColor = MaterialTheme.colorScheme.tertiary
-    val percentColor = MaterialTheme.colorScheme.secondary
+    val capacityColor = MaterialTheme.colorScheme.primary
+    val context = LocalContext.current
     val modelProducer = remember { CartesianChartModelProducer() }
     val labels = remember(points) { points.map { it.label } }
-    val measuredSeries = remember(points) { points.map { it.measuredPercent } }
-    val tempSeries = remember(points) { points.map { it.temperatureEstimatePercent } }
-    val percentSeries = remember(points) { points.map { it.percentOnlyEstimatePercent } }
-    val lineLayer = remember(measuredColor, tempColor, percentColor) {
+    val capacitySeries = remember(points) { points.map { it.estimatedCapacityMah } }
+    val lineLayer = remember(capacityColor) {
         LineCartesianLayer(
             lineProvider = LineCartesianLayer.LineProvider.series(
                 LineCartesianLayer.Line(
-                    fill = LineCartesianLayer.LineFill.single(Fill(measuredColor)),
+                    fill = LineCartesianLayer.LineFill.single(Fill(capacityColor)),
                     stroke = LineCartesianLayer.LineStroke.Continuous(thickness = 3.dp, cap = StrokeCap.Round),
-                    areaFill = LineCartesianLayer.AreaFill.single(Fill(measuredColor.copy(alpha = 0.12f))),
-                ),
-                LineCartesianLayer.Line(
-                    fill = LineCartesianLayer.LineFill.single(Fill(tempColor)),
-                    stroke = LineCartesianLayer.LineStroke.Continuous(thickness = 2.5.dp, cap = StrokeCap.Round),
-                ),
-                LineCartesianLayer.Line(
-                    fill = LineCartesianLayer.LineFill.single(Fill(percentColor)),
-                    stroke = LineCartesianLayer.LineStroke.Continuous(thickness = 2.5.dp, cap = StrokeCap.Round),
+                    areaFill = LineCartesianLayer.AreaFill.single(Fill(capacityColor.copy(alpha = 0.12f))),
                 ),
             ),
         )
@@ -193,7 +212,7 @@ private fun HealthEvolutionChartCard(
         lineLayer,
         startAxis = VerticalAxis.rememberStart(
             valueFormatter = CartesianValueFormatter { _, y, _ ->
-                "${y.roundToInt()}%"
+                context.resolveText(T("value_mah", y.roundToInt()))
             },
         ),
         bottomAxis = HorizontalAxis.rememberBottom(
@@ -203,12 +222,10 @@ private fun HealthEvolutionChartCard(
         ),
     )
 
-    LaunchedEffect(measuredSeries, tempSeries, percentSeries) {
+    LaunchedEffect(capacitySeries) {
         modelProducer.runTransaction {
             lineSeries {
-                series(y = measuredSeries)
-                series(y = tempSeries)
-                series(y = percentSeries)
+                series(y = capacitySeries)
             }
         }
     }
@@ -231,16 +248,15 @@ private fun HealthEvolutionChartCard(
             ) {
                 Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                     AppText(
-                        text = T("health_history_title").asString(),
+                        text = T("health.trend_title").asString(),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.SemiBold,
                     )
                     AppText(
-                        text = T("health_history_subtitle").asString(),
+                        text = T("health.trend_subtitle").asString(),
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
-                EvidenceBadge(text = T("evidence_estimated").asString())
             }
 
             CartesianChartHost(
@@ -251,14 +267,8 @@ private fun HealthEvolutionChartCard(
                     .height(260.dp),
             )
 
-            EvolutionLegendRow(
-                measuredColor = measuredColor,
-                tempColor = tempColor,
-                percentColor = percentColor,
-            )
-
             AppText(
-                text = T("health_evolution_note").asString(),
+                text = T("health.collecting_data").asString(),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -267,102 +277,53 @@ private fun HealthEvolutionChartCard(
 }
 
 @Composable
-private fun EvolutionLegendRow(
-    measuredColor: androidx.compose.ui.graphics.Color,
-    tempColor: androidx.compose.ui.graphics.Color,
-    percentColor: androidx.compose.ui.graphics.Color,
-) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-    ) {
-        EvolutionLegendItem(
-            color = measuredColor,
-            label = T("health_evolution_measured").asString(),
-            modifier = Modifier.weight(1f),
-        )
-        EvolutionLegendItem(
-            color = tempColor,
-            label = T("health_evolution_temp").asString(),
-            modifier = Modifier.weight(1f),
-        )
-        EvolutionLegendItem(
-            color = percentColor,
-            label = T("health_evolution_percent").asString(),
-            modifier = Modifier.weight(1f),
-        )
-    }
-}
-
-@Composable
-private fun EvolutionLegendItem(
-    color: androidx.compose.ui.graphics.Color,
-    label: String,
-    modifier: Modifier = Modifier,
+private fun DebugSeedDataCard(
+    onSeedDemoData: () -> Unit,
 ) {
     Surface(
-        modifier = modifier,
-        shape = MaterialTheme.shapes.medium,
+        modifier = Modifier.fillMaxWidth(),
+        shape = MaterialTheme.shapes.large,
         color = MaterialTheme.colorScheme.surfaceContainerLow,
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f)),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.45f)),
         tonalElevation = 0.dp,
     ) {
-        Row(
-            modifier = Modifier.padding(horizontal = 10.dp, vertical = 8.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalAlignment = Alignment.CenterVertically,
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            Spacer(
-                modifier = Modifier
-                    .size(10.dp)
-                    .background(color, MaterialTheme.shapes.small),
-            )
-            AppText(
-                text = label,
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onSurface,
-                fontWeight = FontWeight.Medium,
-            )
+            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                AppText(
+                    text = T("health_debug_seed_title").asString(),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                )
+                AppText(
+                    text = T("health_debug_seed_body").asString(),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            Button(onClick = onSeedDemoData) {
+                AppText(T("health_debug_seed_action").asString())
+            }
         }
     }
 }
 
 @Composable
-private fun LatestComparisonRow(
-    points: List<HealthTrendPointUi>,
-) {
-    val latest = points.last()
-    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        AppText(
-            text = T("health_evolution_latest").asString(),
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.SemiBold,
-        )
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(10.dp),
-            modifier = Modifier.fillMaxWidth(),
-        ) {
-            MetricTile(
-                modifier = Modifier.weight(1f),
-                iconRes = R.drawable.lucide_battery_full,
-                title = T("health_evolution_measured").asString(),
-                value = T("value_percent", latest.measuredPercent.roundToInt()).asString(),
-                evidence = T("evidence_measured").asString(),
-            )
-            MetricTile(
-                modifier = Modifier.weight(1f),
-                iconRes = R.drawable.lucide_thermometer,
-                title = T("health_evolution_temp").asString(),
-                value = T("value_percent", latest.temperatureEstimatePercent.roundToInt()).asString(),
-                evidence = T("evidence_estimated").asString(),
-            )
-            MetricTile(
-                modifier = Modifier.weight(1f),
-                iconRes = R.drawable.lucide_history,
-                title = T("health_evolution_percent").asString(),
-                value = T("value_percent", latest.percentOnlyEstimatePercent.roundToInt()).asString(),
-                evidence = T("evidence_estimated").asString(),
-            )
-        }
+private fun confidenceLabel(confidence: ConfidenceLevel): String {
+    return when (confidence) {
+        ConfidenceLevel.HIGH -> T("confidence_high").asString()
+        ConfidenceLevel.MEDIUM -> T("confidence_medium").asString()
+        ConfidenceLevel.LOW -> T("confidence_low").asString()
+    }
+}
+
+@Composable
+private fun trendLabel(trend: HealthTrendState): String {
+    return when (trend) {
+        HealthTrendState.COLLECTING -> T("health_trend_collecting").asString()
+        HealthTrendState.STABLE -> T("health_trend_stable").asString()
+        HealthTrendState.DECLINING -> T("health_trend_declining").asString()
+        HealthTrendState.NOISY -> T("health_trend_noisy").asString()
     }
 }

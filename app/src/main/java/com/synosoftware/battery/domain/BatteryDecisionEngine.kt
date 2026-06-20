@@ -9,13 +9,14 @@ class BatteryDecisionEngine {
         session: ChargeSessionMetrics?,
         targetPercent: Int,
     ): BatteryDecision {
+        val sessionAssessment = session?.let { assessSession(it) }
         val thermalStress = thermalStress(snapshot, session)
         val chargeStress = chargeLevelStress(snapshot, session)
         val combinedStress = maxBySeverity(thermalStress, chargeStress)
-        val confidence = confidence(snapshot, session)
+        val confidence = confidence(snapshot, session, sessionAssessment)
         val reason = buildReason(snapshot, thermalStress, chargeStress, session, targetPercent)
         val action = buildAction(snapshot, session, combinedStress, targetPercent)
-        val confidenceReason = buildConfidenceReason(snapshot, session, confidence)
+        val confidenceReason = buildConfidenceReason(confidence)
         val timeToTarget = estimateMinutes(snapshot, session, targetPercent)
         val timeToFull = estimateMinutes(snapshot, session, 100)
 
@@ -62,6 +63,19 @@ class BatteryDecisionEngine {
             thermalStress = thermalStress,
             chargeLevelStress = chargeStress,
             combinedStress = combinedStress,
+        )
+    }
+
+    fun healthTrend(session: ChargeSessionMetrics): SessionHealthTrend {
+        val measuredPercent = session.currentLevelPercent.toFloat().coerceIn(0f, 100f)
+        val sessionAssessment = assessSession(session)
+        val temperatureEstimatePercent = (measuredPercent - temperaturePenalty(session, sessionAssessment)).coerceIn(0f, 100f)
+        val percentOnlyEstimatePercent = (measuredPercent - percentPenalty(session)).coerceIn(0f, 100f)
+        return SessionHealthTrend(
+            usefulForHealth = sessionAssessment.usefulForHealth,
+            measuredPercent = measuredPercent,
+            temperatureEstimatePercent = temperatureEstimatePercent,
+            percentOnlyEstimatePercent = percentOnlyEstimatePercent,
         )
     }
 
@@ -167,9 +181,39 @@ class BatteryDecisionEngine {
         }
     }
 
+    private fun temperaturePenalty(
+        session: ChargeSessionMetrics,
+        sessionAssessment: SessionAssessment,
+    ): Float {
+        val maxTemperature = session.maxTemperatureC ?: session.averageTemperatureC ?: 0f
+        val base = when {
+            maxTemperature >= 45f -> 9f
+            maxTemperature >= 43f -> 7f
+            maxTemperature >= 40f -> 4.5f
+            maxTemperature >= 35f -> 1.5f
+            else -> 0f
+        }
+        val dwellPenalty = (session.timeAbove85Sec / 1_800f) * 1.2f + (session.timeAbove90Sec / 900f) * 1.8f
+        val qualityPenalty = if (sessionAssessment.usefulForHealth) -1f else 0.5f
+        return base + dwellPenalty + qualityPenalty
+    }
+
+    private fun percentPenalty(session: ChargeSessionMetrics): Float {
+        val chargePenalty = when {
+            session.currentLevelPercent >= 95 -> 8f
+            session.currentLevelPercent >= 90 -> 6f
+            session.currentLevelPercent >= 85 -> 4f
+            session.currentLevelPercent >= 80 -> 2f
+            else -> 0.5f
+        }
+        val durationPenalty = (session.sampleCount.coerceAtLeast(1) * 0.25f) + (session.gainPercent.coerceAtLeast(0) / 20f)
+        return chargePenalty + durationPenalty
+    }
+
     private fun confidence(
         snapshot: BatterySnapshot,
         session: ChargeSessionMetrics?,
+        sessionAssessment: SessionAssessment?,
     ): ConfidenceLevel {
         var score = 0
         if (snapshot.temperatureC != null) score += 1
@@ -179,7 +223,7 @@ class BatteryDecisionEngine {
         }
         if (snapshot.chargingState != ChargingState.UNKNOWN) score += 1
         if (session != null && session.sampleCount >= 2) score += 1
-        if (session != null && session.quality == SessionQuality.USEFUL) score += 1
+        if (sessionAssessment != null && sessionAssessment.usefulForHealth) score += 1
 
         return when {
             score >= 5 -> ConfidenceLevel.HIGH
@@ -236,8 +280,6 @@ class BatteryDecisionEngine {
     }
 
     private fun buildConfidenceReason(
-        snapshot: BatterySnapshot,
-        session: ChargeSessionMetrics?,
         confidence: ConfidenceLevel,
     ): com.synosoftware.battery.i18n.UiText {
         return when (confidence) {

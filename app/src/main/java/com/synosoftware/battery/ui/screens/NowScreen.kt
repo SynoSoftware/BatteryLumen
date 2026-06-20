@@ -23,6 +23,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text as AppText
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalInspectionMode
@@ -33,8 +37,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import com.synosoftware.battery.R
-import com.synosoftware.battery.data.sessionTemperatureText
 import com.synosoftware.battery.data.temperatureText
+import com.synosoftware.battery.domain.EvidenceGrade
 import com.synosoftware.battery.domain.StressLevel
 import com.synosoftware.battery.i18n.T
 import com.synosoftware.battery.i18n.asString
@@ -42,6 +46,7 @@ import com.synosoftware.battery.ui.components.EvidenceBadge
 import com.synosoftware.battery.ui.components.IconBadge
 import com.synosoftware.battery.ui.components.LabelValueRow
 import com.synosoftware.battery.ui.components.MetricTile
+import com.synosoftware.battery.ui.components.PlainBadge
 import com.synosoftware.battery.ui.components.LucideIcon
 import com.synosoftware.battery.ui.components.SectionHeader
 import com.synosoftware.battery.ui.model.BatteryUiState
@@ -102,6 +107,8 @@ fun NowScreen(
                         title = T("temperature_label").asString(),
                         value = temperatureText(snapshot?.temperatureC, state.temperatureUnit).asString(),
                         evidence = T("evidence_measured").asString(),
+                        evidenceGrade = EvidenceGrade.MEASURED,
+                        showEvidence = false,
                     )
                     MetricTile(
                         modifier = Modifier.weight(1f),
@@ -109,6 +116,8 @@ fun NowScreen(
                         title = T("level_label").asString(),
                         value = snapshot?.let { T("value_percent", it.levelPercent).asString() } ?: T("value_na").asString(),
                         evidence = T("evidence_measured").asString(),
+                        evidenceGrade = EvidenceGrade.MEASURED,
+                        showEvidence = false,
                     )
                     MetricTile(
                         modifier = Modifier.weight(1f),
@@ -116,6 +125,8 @@ fun NowScreen(
                         title = T("state_label").asString(),
                         value = snapshot?.let { T("charging_state_${it.chargingState.name.lowercase()}").asString() } ?: T("value_na").asString(),
                         evidence = T("evidence_measured").asString(),
+                        evidenceGrade = EvidenceGrade.MEASURED,
+                        showEvidence = false,
                     )
                 }
             }
@@ -142,19 +153,22 @@ fun NowScreen(
                         AppText(T("no_battery_snapshot_yet").asString())
                     } else {
                         LabelValueRow(
-                            T("charging_source_label").asString(),
+                            T("source_charging_label").asString(),
                             T("charging_source_${snapshot.chargingSource.name.lowercase()}").asString(),
                             T("evidence_measured").asString(),
+                            evidenceGrade = EvidenceGrade.MEASURED,
                         )
                         LabelValueRow(
                             T("voltage_label").asString(),
                             snapshot.voltageMv?.let { T("value_mv", it).asString() } ?: T("value_na").asString(),
                             T("evidence_measured").asString(),
+                            evidenceGrade = EvidenceGrade.MEASURED,
                         )
                         LabelValueRow(
                             T("current_label").asString(),
                             snapshot.currentUa?.let { T("value_ua", it).asString() } ?: T("value_na").asString(),
                             T("evidence_measured").asString(),
+                            evidenceGrade = EvidenceGrade.MEASURED,
                         )
                     }
                 }
@@ -221,7 +235,7 @@ private fun HeroDecisionCard(
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
-                EvidenceBadge(text = T("evidence_inferred").asString())
+                EvidenceBadge(grade = EvidenceGrade.INFERRED)
             }
 
             Row(
@@ -265,8 +279,8 @@ private fun HeroDecisionCard(
 
             if (decision != null) {
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    EvidenceBadge(text = T("confidence_${decision.confidence.name.lowercase()}").asString())
-                    EvidenceBadge(text = T("evidence_${decision.evidenceGrade.name.lowercase()}").asString())
+                    PlainBadge(text = T("confidence_${decision.confidence.name.lowercase()}").asString())
+                    EvidenceBadge(grade = decision.evidenceGrade)
                 }
                 AppText(
                     text = T("confidence_summary", confidenceText, decision.confidenceReason.asString()).asString(),
@@ -327,11 +341,13 @@ private fun TargetCard(
                         T("time_to_target_label").asString(),
                         decision.timeToTargetMinutes?.let { T("value_min_short", it).asString() } ?: T("value_na").asString(),
                         T("evidence_estimated").asString(),
+                        evidenceGrade = EvidenceGrade.ESTIMATED,
                     )
                     LabelValueRow(
                         T("full_charge_label").asString(),
                         decision.timeToFullMinutes?.let { T("value_min_short", it).asString() } ?: T("value_na").asString(),
                         T("evidence_estimated").asString(),
+                        evidenceGrade = EvidenceGrade.ESTIMATED,
                     )
                 }
             } else {
@@ -391,30 +407,51 @@ private fun SessionCard(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             } else {
+                PlainBadge(text = active.qualityLabel.asString())
+                AppText(
+                    text = active.headline.asString(),
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+                AppText(
+                    text = currentSessionHint(active).asString(),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
                 LabelValueRow(
                     T("temperature_label").asString(),
-                    sessionTemperatureText(active.maxTemperatureC, active.averageTemperatureC, state.temperatureUnit).asString(),
+                    active.temperatureLabel.asString(),
                     T("confidence_${active.confidence.name.lowercase()}").asString(),
+                    compactEvidence = true,
                 )
-                LabelValueRow(T("source_label").asString(), active.sourceLabel.asString(), if (active.usefulForHealth) T("useful_label").asString() else T("stored_only_label").asString())
-                LabelValueRow(T("above_85_label").asString(), active.timeAbove85Label.asString(), T("evidence_measured").asString())
-                LabelValueRow(T("above_90_label").asString(), active.timeAbove90Label.asString(), T("evidence_measured").asString())
+                LabelValueRow(
+                    T("source_charging_label").asString(),
+                    active.sourceLabel.asString(),
+                    if (active.usefulForHealth) T("useful_label").asString() else T("stored_only_label").asString(),
+                    compactEvidence = true,
+                )
             }
         }
     }
 }
 
+private fun currentSessionHint(active: com.synosoftware.battery.ui.model.BatterySessionUi) =
+    when {
+        active.usefulForHealth -> T("session_hint_useful")
+        active.active -> T("session_hint_active")
+        else -> T("session_hint_incomplete")
+    }
+
 @Composable
 private fun NotificationPermissionCard() {
     val context = LocalContext.current
+    var hasPermission by remember { mutableStateOf(hasNotificationPermission(context)) }
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission(),
-    ) { }
-    val requiresPermission = Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
-    val hasPermission = !requiresPermission || ContextCompat.checkSelfPermission(
-        context,
-        Manifest.permission.POST_NOTIFICATIONS,
-    ) == PackageManager.PERMISSION_GRANTED
+    ) { granted ->
+        hasPermission = granted
+    }
 
     if (hasPermission || LocalInspectionMode.current) {
         return
@@ -445,4 +482,11 @@ private fun NotificationPermissionCard() {
             }
         }
     }
+}
+
+private fun hasNotificationPermission(context: android.content.Context): Boolean {
+    return Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU || ContextCompat.checkSelfPermission(
+        context,
+        Manifest.permission.POST_NOTIFICATIONS,
+    ) == PackageManager.PERMISSION_GRANTED
 }

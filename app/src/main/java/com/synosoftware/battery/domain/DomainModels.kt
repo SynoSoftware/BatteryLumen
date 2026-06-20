@@ -92,6 +92,8 @@ data class ChargeSessionMetrics(
     val lastSeenAtMs: Long,
     val startLevelPercent: Int,
     val currentLevelPercent: Int,
+    val startChargeCounterUah: Int?,
+    val currentChargeCounterUah: Int?,
     val maxTemperatureC: Float?,
     val averageTemperatureC: Float?,
     val sampleCount: Int,
@@ -124,6 +126,14 @@ data class SessionAssessment(
     val thermalStress: StressLevel,
     val chargeLevelStress: StressLevel,
     val combinedStress: StressLevel,
+)
+
+@Serializable
+data class SessionHealthTrend(
+    val usefulForHealth: Boolean,
+    val measuredPercent: Float,
+    val temperatureEstimatePercent: Float,
+    val percentOnlyEstimatePercent: Float,
 )
 
 @Serializable

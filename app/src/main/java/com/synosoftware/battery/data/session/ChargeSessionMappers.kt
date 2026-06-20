@@ -4,11 +4,9 @@ import com.synosoftware.battery.data.formatDuration
 import com.synosoftware.battery.data.formatTimeRange
 import com.synosoftware.battery.domain.ChargeSessionMetrics
 import com.synosoftware.battery.domain.ChargingSource
-import com.synosoftware.battery.domain.ConfidenceLevel
-import com.synosoftware.battery.domain.EvidenceGrade
+import com.synosoftware.battery.domain.SessionAssessment
 import com.synosoftware.battery.domain.SessionQuality
 import com.synosoftware.battery.domain.SessionStatus
-import com.synosoftware.battery.domain.StressLevel
 import com.synosoftware.battery.i18n.T
 import com.synosoftware.battery.ui.model.BatterySessionUi
 
@@ -18,6 +16,8 @@ fun ChargeSessionEntity.toMetrics(): ChargeSessionMetrics {
         lastSeenAtMs = lastSeenAtMs,
         startLevelPercent = startLevelPercent,
         currentLevelPercent = currentLevelPercent,
+        startChargeCounterUah = startChargeCounterUah,
+        currentChargeCounterUah = currentChargeCounterUah,
         maxTemperatureC = maxTemperatureC,
         averageTemperatureC = averageTemperatureC,
         sampleCount = sampleCount,
@@ -26,14 +26,15 @@ fun ChargeSessionEntity.toMetrics(): ChargeSessionMetrics {
         chargingSource = runCatching { ChargingSource.valueOf(chargingSource) }.getOrDefault(ChargingSource.UNKNOWN),
         chargingState = runCatching { com.synosoftware.battery.domain.ChargingState.valueOf(chargingState) }.getOrDefault(com.synosoftware.battery.domain.ChargingState.UNKNOWN),
         status = runCatching { SessionStatus.valueOf(status) }.getOrDefault(SessionStatus.INCOMPLETE),
-        usefulForHealth = usefulForHealth,
-        quality = runCatching { SessionQuality.valueOf(quality) }.getOrDefault(SessionQuality.WEAK),
+        usefulForHealth = false,
+        quality = SessionQuality.INCOMPLETE,
         lastNotifiedTargetPercent = lastNotifiedTargetPercent,
     )
 }
 
-fun ChargeSessionEntity.toUi(): BatterySessionUi {
+fun ChargeSessionEntity.toUi(assessment: SessionAssessment): BatterySessionUi {
     val start = startedAtMs
+    val status = runCatching { SessionStatus.valueOf(status) }.getOrDefault(SessionStatus.INCOMPLETE)
     return BatterySessionUi(
         id = id,
         headline = T("session_headline_delta", T("value_delta_percent", (currentLevelPercent - startLevelPercent).coerceAtLeast(0))),
@@ -53,19 +54,19 @@ fun ChargeSessionEntity.toUi(): BatterySessionUi {
         currentTemperatureC = currentTemperatureC,
         sourceLabel = T("session_source_${chargingSource.lowercase()}"),
         qualityLabel = when {
-            usefulForHealth -> T("session_quality_useful")
-            status == SessionStatus.ACTIVE.name -> T("session_quality_active")
-            quality == SessionQuality.INCOMPLETE.name -> T("session_quality_incomplete")
-            else -> T("session_quality_weak")
+            assessment.quality == SessionQuality.USEFUL -> T("sessions.useful")
+            status == SessionStatus.ACTIVE -> T("sessions.active")
+            assessment.quality == SessionQuality.INCOMPLETE -> T("sessions.incomplete")
+            else -> T("sessions.weak")
         },
-        qualityEvidence = runCatching { EvidenceGrade.valueOf(evidenceGrade) }.getOrDefault(EvidenceGrade.INFERRED),
-        confidence = runCatching { ConfidenceLevel.valueOf(confidenceLevel) }.getOrDefault(ConfidenceLevel.LOW),
-        confidenceReason = T(confidenceReason),
-        usefulForHealth = usefulForHealth,
-        active = status == SessionStatus.ACTIVE.name,
-        thermalStress = runCatching { StressLevel.valueOf(thermalStress) }.getOrDefault(StressLevel.NORMAL),
-        chargeLevelStress = runCatching { StressLevel.valueOf(chargeLevelStress) }.getOrDefault(StressLevel.NORMAL),
-        combinedStress = runCatching { StressLevel.valueOf(combinedStress) }.getOrDefault(StressLevel.NORMAL),
+        qualityEvidence = assessment.evidenceGrade,
+        confidence = assessment.confidence,
+        confidenceReason = assessment.reason,
+        usefulForHealth = assessment.usefulForHealth,
+        active = status == SessionStatus.ACTIVE,
+        thermalStress = assessment.thermalStress,
+        chargeLevelStress = assessment.chargeLevelStress,
+        combinedStress = assessment.combinedStress,
         timeAbove85Label = T("session_time_above_85", formatDuration(timeAbove85Sec * 1000L)),
         timeAbove90Label = T("session_time_above_90", formatDuration(timeAbove90Sec * 1000L)),
     )

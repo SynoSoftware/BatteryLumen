@@ -12,10 +12,13 @@
 - `temperature` fields
 - `timeAbove85Sec`
 - `timeAbove90Sec`
-- `quality`
-- `confidenceLevel`
-- `usefulForHealth`
-- `stress` fields
+- `chargingSource`
+- `chargingState`
+- `sampleCount`
+- `lastNotifiedTargetPercent`
+- `gainPercent`
+
+Assessment fields such as quality, confidence, usefulness, and stress are derived by `BatteryDecisionEngine` on read, not stored as canonical session data.
 
 ## DataStore keys
 

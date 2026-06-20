@@ -43,7 +43,6 @@ class AppContainer(context: Context) {
         ChargeSessionRepository(
             database = database,
             dao = database.chargeSessionDao(),
-            decisionEngine = decisionEngine,
         )
     }
 

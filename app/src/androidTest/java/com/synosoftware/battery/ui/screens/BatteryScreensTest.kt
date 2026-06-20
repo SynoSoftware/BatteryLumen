@@ -13,6 +13,10 @@ import com.synosoftware.battery.domain.ConfidenceLevel
 import com.synosoftware.battery.domain.EvidenceGrade
 import com.synosoftware.battery.domain.StressLevel
 import com.synosoftware.battery.ui.model.BatteryUiState
+import com.synosoftware.battery.ui.model.BatteryHealthEstimateUi
+import com.synosoftware.battery.ui.model.HealthEvolutionUi
+import com.synosoftware.battery.ui.model.HealthTrendPointUi
+import com.synosoftware.battery.ui.model.HealthTrendState
 import org.junit.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test
@@ -45,16 +49,45 @@ class BatteryScreensTest {
     fun healthScreenShowsEmptyStateWhenNoEstimateIsAvailable() {
         composeRule.setContent {
             HealthScreen(
+                state = BatteryUiState(),
+                contentPadding = PaddingValues(),
+            )
+        }
+
+        composeRule.onNodeWithText("Insufficient data").assertIsDisplayed()
+        composeRule.onNodeWithText("Battery health needs 5 useful charging sessions before it can be estimated.").assertIsDisplayed()
+        composeRule.onNodeWithText("0 of 5 useful sessions collected").assertIsDisplayed()
+    }
+
+    @Test
+    fun healthScreenShowsEstimateSummaryAndTrend() {
+        composeRule.setContent {
+            HealthScreen(
                 state = BatteryUiState(
-                    healthMessage = "No battery-health estimate is shown in v0.",
-                    usefulSessionCount = 0,
+                    healthEstimate = BatteryHealthEstimateUi(
+                        estimatedCapacityMah = 3358,
+                        likelyRangeMah = 3220..3490,
+                        confidence = ConfidenceLevel.MEDIUM,
+                        usefulSessionCount = 7,
+                        trend = HealthTrendState.STABLE,
+                    ),
+                    healthEvolution = HealthEvolutionUi(
+                        points = listOf(
+                            HealthTrendPointUi(label = "Jun 11", estimatedCapacityMah = 3390f),
+                            HealthTrendPointUi(label = "Jun 14", estimatedCapacityMah = 3360f),
+                            HealthTrendPointUi(label = "Jun 17", estimatedCapacityMah = 3358f),
+                        ),
+                    ),
                 ),
                 contentPadding = PaddingValues(),
             )
         }
 
-        composeRule.onNodeWithText("No battery-health estimate is shown in v0.").assertIsDisplayed()
-        composeRule.onNodeWithText("Not enough useful sessions yet").assertIsDisplayed()
+        composeRule.onNodeWithText("Battery Health").assertIsDisplayed()
+        composeRule.onNodeWithText("Estimated capacity").assertIsDisplayed()
+        composeRule.onNodeWithText("3,358 mAh").assertIsDisplayed()
+        composeRule.onNodeWithText("Based on 7 useful sessions").assertIsDisplayed()
+        composeRule.onNodeWithText("Battery health trend").assertIsDisplayed()
     }
 
     @Test

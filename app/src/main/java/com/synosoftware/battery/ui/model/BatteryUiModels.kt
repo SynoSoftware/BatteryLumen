@@ -5,23 +5,31 @@ import com.synosoftware.battery.data.preferences.TemperatureUnit
 import com.synosoftware.battery.data.preferences.ThemeMode
 import com.synosoftware.battery.domain.BatteryDecision
 import com.synosoftware.battery.domain.BatterySnapshot
-import com.synosoftware.battery.domain.ChargeSessionMetrics
 import com.synosoftware.battery.domain.ConfidenceLevel
 import com.synosoftware.battery.domain.DeviceCapability
 import com.synosoftware.battery.domain.EvidenceGrade
 import com.synosoftware.battery.domain.StressLevel
-import com.synosoftware.battery.i18n.T
 import com.synosoftware.battery.i18n.UiText
+
+const val MIN_USEFUL_SESSION_COUNT = 5
 
 enum class BatteryTab(
     val route: String,
-    val label: String,
+    val titleKey: String,
+    val navLabelKey: String,
     val iconRes: Int,
 ) {
-    NOW("now", "battery_tab_now", R.drawable.lucide_battery_charging),
-    HEALTH("health", "battery_tab_health", R.drawable.lucide_heart),
-    LEDGER("ledger", "battery_tab_ledger", R.drawable.lucide_history),
-    HOW_IT_WORKS("how_it_works", "battery_tab_how_it_works", R.drawable.lucide_info),
+    NOW("now", "navigation.now", "navigation.now", R.drawable.lucide_battery_charging),
+    HEALTH("health", "health.title", "navigation.health", R.drawable.lucide_heart),
+    LEDGER("ledger", "sessions.title", "navigation.sessions", R.drawable.lucide_history),
+    HOW_IT_WORKS("how_it_works", "info.title", "navigation.info", R.drawable.lucide_info),
+}
+
+enum class HealthTrendState {
+    COLLECTING,
+    STABLE,
+    DECLINING,
+    NOISY,
 }
 
 data class BatterySessionUi(
@@ -49,10 +57,7 @@ data class BatterySessionUi(
 
 data class HealthTrendPointUi(
     val label: String,
-    val measuredPercent: Float,
-    val temperatureEstimatePercent: Float,
-    val percentOnlyEstimatePercent: Float,
-    val isUsefulSession: Boolean,
+    val estimatedCapacityMah: Float,
 )
 
 data class HealthEvolutionUi(
@@ -60,6 +65,17 @@ data class HealthEvolutionUi(
 ) {
     val hasData: Boolean
         get() = points.isNotEmpty()
+}
+
+data class BatteryHealthEstimateUi(
+    val estimatedCapacityMah: Int? = null,
+    val likelyRangeMah: IntRange? = null,
+    val confidence: ConfidenceLevel = ConfidenceLevel.LOW,
+    val usefulSessionCount: Int = 0,
+    val trend: HealthTrendState = HealthTrendState.COLLECTING,
+) {
+    val hasEstimate: Boolean
+        get() = estimatedCapacityMah != null
 }
 
 data class BatteryUiState(
@@ -71,15 +87,11 @@ data class BatteryUiState(
     val decision: BatteryDecision? = null,
     val activeSession: BatterySessionUi? = null,
     val sessions: List<BatterySessionUi> = emptyList(),
+    val healthEstimate: BatteryHealthEstimateUi = BatteryHealthEstimateUi(),
     val healthEvolution: HealthEvolutionUi = HealthEvolutionUi(),
-    val usefulSessionCount: Int = 0,
     val capabilities: List<DeviceCapability> = emptyList(),
-    val healthMessage: UiText = T("health_no_estimate_v0"),
-    val batteryHealthVisible: Boolean = false,
-    val selectedTab: BatteryTab = BatteryTab.NOW,
 )
 
 sealed interface BatteryEvent {
     data class TargetReached(val targetPercent: Int) : BatteryEvent
-    data class Message(val text: UiText) : BatteryEvent
 }

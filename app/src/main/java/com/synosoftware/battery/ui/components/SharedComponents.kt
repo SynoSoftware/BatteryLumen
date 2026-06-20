@@ -19,6 +19,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.synosoftware.battery.domain.EvidenceGrade
 import java.util.Locale
 
 @Composable
@@ -49,6 +50,7 @@ fun LabelValueRow(
     label: String,
     value: String,
     evidence: String,
+    evidenceGrade: EvidenceGrade? = null,
     compactEvidence: Boolean = false,
     modifier: Modifier = Modifier,
 ) {
@@ -73,26 +75,63 @@ fun LabelValueRow(
                 color = MaterialTheme.colorScheme.onSurface,
             )
         }
-        EvidenceBadge(
-            text = evidence,
-            compact = compactEvidence,
-        )
+        if (evidenceGrade != null) {
+            EvidenceBadge(
+                grade = evidenceGrade,
+                compact = compactEvidence,
+            )
+        } else {
+            PlainBadge(
+                text = evidence,
+                compact = compactEvidence,
+            )
+        }
     }
 }
 
 @Composable
 fun EvidenceBadge(
+    grade: EvidenceGrade,
+    compact: Boolean = false,
+    modifier: Modifier = Modifier,
+) {
+    BadgeContent(
+        text = if (compact) {
+            grade.name.firstOrNull()?.uppercaseChar()?.toString().orEmpty()
+        } else {
+            grade.name.lowercase(Locale.ROOT)
+        },
+        tone = evidenceTone(grade),
+        modifier = modifier,
+        compact = compact,
+    )
+}
+
+@Composable
+fun PlainBadge(
     text: String,
     compact: Boolean = false,
     modifier: Modifier = Modifier,
 ) {
-    val tone = evidenceTone(text)
-    val displayText = if (compact) {
-        text.firstOrNull()?.uppercaseChar()?.toString().orEmpty()
-    } else {
-        text
-    }
+    BadgeContent(
+        text = if (compact) {
+            text.firstOrNull()?.uppercaseChar()?.toString().orEmpty()
+        } else {
+            text
+        },
+        tone = evidenceTone(),
+        modifier = modifier,
+        compact = compact,
+    )
+}
 
+@Composable
+private fun BadgeContent(
+    text: String,
+    tone: EvidenceTone,
+    compact: Boolean,
+    modifier: Modifier = Modifier,
+) {
     Surface(
         modifier = modifier,
         color = tone.container,
@@ -102,7 +141,7 @@ fun EvidenceBadge(
         tonalElevation = 0.dp,
     ) {
         AppText(
-            text = displayText,
+            text = text,
             style = MaterialTheme.typography.labelSmall,
             fontWeight = FontWeight.SemiBold,
             modifier = Modifier.padding(horizontal = if (compact) 8.dp else 12.dp, vertical = 5.dp),
@@ -117,7 +156,9 @@ fun MetricTile(
     title: String,
     value: String,
     evidence: String,
+    evidenceGrade: EvidenceGrade? = null,
     iconRes: Int? = null,
+    showEvidence: Boolean = true,
     modifier: Modifier = Modifier,
 ) {
     Surface(
@@ -142,16 +183,31 @@ fun MetricTile(
                 title.uppercase(Locale.ROOT),
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 1,
+                softWrap = false,
+                overflow = TextOverflow.Ellipsis,
             )
             AppText(
                 value,
                 style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.SemiBold,
+                maxLines = 1,
+                softWrap = false,
+                overflow = TextOverflow.Ellipsis,
             )
-            EvidenceBadge(
-                text = evidence,
-                compact = false,
-            )
+            if (showEvidence) {
+                if (evidenceGrade != null) {
+                    EvidenceBadge(
+                        grade = evidenceGrade,
+                        compact = false,
+                    )
+                } else {
+                    PlainBadge(
+                        text = evidence,
+                        compact = false,
+                    )
+                }
+            }
         }
     }
 }
@@ -185,32 +241,34 @@ private data class EvidenceTone(
 )
 
 @Composable
-private fun evidenceTone(text: String): EvidenceTone {
-    return when {
-        text.contains("Measured", ignoreCase = true) -> EvidenceTone(
+private fun evidenceTone(grade: EvidenceGrade): EvidenceTone {
+    return when (grade) {
+        EvidenceGrade.MEASURED -> EvidenceTone(
             container = MaterialTheme.colorScheme.primary.copy(alpha = 0.18f),
             content = MaterialTheme.colorScheme.primary,
             border = MaterialTheme.colorScheme.primary.copy(alpha = 0.38f),
         )
-        text.contains("Estimated", ignoreCase = true) -> EvidenceTone(
+        EvidenceGrade.ESTIMATED -> EvidenceTone(
             container = MaterialTheme.colorScheme.surfaceContainerLowest,
             content = MaterialTheme.colorScheme.primary,
             border = MaterialTheme.colorScheme.primary.copy(alpha = 0.75f),
         )
-        text.contains("Inferred", ignoreCase = true) -> EvidenceTone(
+        EvidenceGrade.INFERRED -> EvidenceTone(
             container = MaterialTheme.colorScheme.surfaceContainerHigh,
             content = MaterialTheme.colorScheme.onSurfaceVariant,
             border = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.9f),
         )
-        text.contains("Experimental", ignoreCase = true) -> EvidenceTone(
+        EvidenceGrade.EXPERIMENTAL -> EvidenceTone(
             container = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.75f),
             content = MaterialTheme.colorScheme.onTertiaryContainer,
             border = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.95f),
         )
-        else -> EvidenceTone(
-            container = MaterialTheme.colorScheme.surfaceContainerHighest,
-            content = MaterialTheme.colorScheme.onSurfaceVariant,
-            border = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.9f),
-        )
     }
 }
+
+@Composable
+private fun evidenceTone(): EvidenceTone = EvidenceTone(
+    container = MaterialTheme.colorScheme.surfaceContainerHighest,
+    content = MaterialTheme.colorScheme.onSurfaceVariant,
+    border = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.9f),
+)

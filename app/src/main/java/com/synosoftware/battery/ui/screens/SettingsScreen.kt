@@ -50,12 +50,12 @@ fun SettingsScreen(
         item {
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 AppText(
-                    text = T("settings_page_title").asString(),
+                    text = T("settings.title").asString(),
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.SemiBold,
                 )
                 AppText(
-                    text = T("settings_subtitle").asString(),
+                    text = T("settings.subtitle").asString(),
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
@@ -64,8 +64,8 @@ fun SettingsScreen(
         item {
             SettingsCard(
                 iconRes = R.drawable.lucide_battery_full,
-                title = T("settings_target_title").asString(),
-                subtitle = T("settings_target_desc").asString(),
+                title = T("settings.target_title").asString(),
+                subtitle = T("settings.target_description").asString(),
             ) {
                 ChoiceRow(
                     choices = listOf(80, 85, 90, 100),
@@ -79,8 +79,8 @@ fun SettingsScreen(
         item {
             SettingsCard(
                 iconRes = R.drawable.lucide_thermometer,
-                title = T("settings_temperature_title").asString(),
-                subtitle = T("settings_temperature_desc").asString(),
+                title = T("settings.temperature_title").asString(),
+                subtitle = T("settings.temperature_description").asString(),
             ) {
                 ChoiceRow(
                     choices = TemperatureUnit.entries,
@@ -109,8 +109,8 @@ fun SettingsScreen(
         item {
             SettingsCard(
                 iconRes = R.drawable.lucide_settings,
-                title = T("settings_theme_title").asString(),
-                subtitle = T("settings_theme_desc").asString(),
+                title = T("settings.theme_title").asString(),
+                subtitle = T("settings.theme_description").asString(),
             ) {
                 ChoiceRow(
                     choices = listOf(ThemeMode.SYSTEM, ThemeMode.LIGHT, ThemeMode.DARK),
@@ -130,8 +130,8 @@ fun SettingsScreen(
         item {
                 SettingsCard(
                 iconRes = R.drawable.lucide_zap,
-                title = T("experimental_metrics_title").asString(),
-                subtitle = T("experimental_metrics_desc").asString(),
+                title = T("settings.experimental_title").asString(),
+                subtitle = T("settings.experimental_description").asString(),
             ) {
                 ToggleRow(
                     label = T("settings_experimental_toggle").asString(),

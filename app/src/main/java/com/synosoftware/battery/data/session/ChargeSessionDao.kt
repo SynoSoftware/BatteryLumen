@@ -12,13 +12,16 @@ interface ChargeSessionDao {
     fun observeSessions(): Flow<List<ChargeSessionEntity>>
 
     @Query("SELECT * FROM charge_sessions WHERE status = 'ACTIVE' ORDER BY startedAtMs DESC LIMIT 1")
-    fun observeActiveSession(): Flow<ChargeSessionEntity?>
-
-    @Query("SELECT * FROM charge_sessions WHERE status = 'ACTIVE' ORDER BY startedAtMs DESC LIMIT 1")
     suspend fun getActiveSession(): ChargeSessionEntity?
+
+    @Query("DELETE FROM charge_sessions")
+    suspend fun deleteAll()
 
     @Insert
     suspend fun insert(session: ChargeSessionEntity): Long
+
+    @Insert
+    suspend fun insertAll(sessions: List<ChargeSessionEntity>)
 
     @Update
     suspend fun update(session: ChargeSessionEntity)

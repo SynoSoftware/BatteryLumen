@@ -12,22 +12,29 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text as AppText
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.synosoftware.battery.R
 import com.synosoftware.battery.data.sessionTemperatureText
+import com.synosoftware.battery.domain.EvidenceGrade
 import com.synosoftware.battery.i18n.T
 import com.synosoftware.battery.i18n.asString
 import com.synosoftware.battery.ui.components.EvidenceBadge
 import com.synosoftware.battery.ui.components.IconBadge
 import com.synosoftware.battery.ui.components.LabelValueRow
 import com.synosoftware.battery.ui.components.SectionHeader
+import com.synosoftware.battery.ui.components.PlainBadge
 import com.synosoftware.battery.ui.model.BatteryUiState
 
 @Composable
@@ -35,6 +42,24 @@ fun LedgerScreen(
     state: BatteryUiState,
     contentPadding: PaddingValues,
 ) {
+    var searchQuery by rememberSaveable { mutableStateOf("") }
+    val totalSessions = state.sessions.size
+    val query = searchQuery.trim()
+    val filteredSessions = if (query.isEmpty()) {
+        state.sessions
+    } else {
+        state.sessions.filter { session ->
+            listOf(
+                session.timeRange.asString(),
+                session.temperatureLabel.asString(),
+                session.sourceLabel.asString(),
+                session.qualityLabel.asString(),
+                session.confidenceReason.asString(),
+            ).joinToString(" ").contains(query, ignoreCase = true)
+        }
+    }
+    val sessionsToShow = if (query.isEmpty()) filteredSessions.take(12) else filteredSessions
+
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -44,17 +69,42 @@ fun LedgerScreen(
     ) {
         item {
             SectionHeader(
-                title = T("ledger_page_title").asString(),
-                subtitle = T("ledger_subtitle").asString(),
+                title = T("sessions.title").asString(),
+                subtitle = T("sessions.subtitle").asString(),
             )
+        }
+
+        item {
+            OutlinedTextField(
+                value = searchQuery,
+                onValueChange = { searchQuery = it },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true,
+                label = { AppText(T("sessions.search.label").asString()) },
+                placeholder = { AppText(T("sessions.search.hint").asString()) },
+            )
+        }
+
+        if (query.isEmpty() && totalSessions > sessionsToShow.size) {
+            item {
+                AppText(
+                    text = T("sessions.recent_note", sessionsToShow.size, totalSessions).asString(),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
         }
 
         if (state.sessions.isEmpty()) {
             item {
                 EmptyLedgerCard()
             }
+        } else if (sessionsToShow.isEmpty()) {
+            item {
+                EmptySearchCard()
+            }
         } else {
-            items(state.sessions, key = { it.id }) { session ->
+            items(sessionsToShow, key = { it.id }) { session ->
                 SessionCard(
                     session = session,
                     temperatureUnit = state.temperatureUnit,
@@ -84,12 +134,42 @@ private fun EmptyLedgerCard() {
                 contentDescription = null,
             )
             AppText(
-                text = T("ledger_no_sessions").asString(),
+                text = T("sessions.empty_title").asString(),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold,
             )
             AppText(
-                text = T("ledger_no_sessions_hint").asString(),
+                text = T("sessions.empty_hint").asString(),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+    }
+}
+
+@Composable
+private fun EmptySearchCard() {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = MaterialTheme.shapes.large,
+        color = MaterialTheme.colorScheme.surfaceContainerLow,
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.45f)),
+        tonalElevation = 0.dp,
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            IconBadge(
+                resId = R.drawable.lucide_history,
+                contentDescription = null,
+            )
+            AppText(
+                text = T("sessions.search.empty_title").asString(),
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold,
+            )
+            AppText(
+                text = T("sessions.search.empty_hint").asString(),
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
@@ -107,12 +187,10 @@ private fun SessionCard(
         else -> MaterialTheme.colorScheme.outline
     }
     val note = when {
-        session.usefulForHealth -> T("useful_label").asString()
-        session.active -> T("session_quality_active").asString()
+        session.usefulForHealth -> T("sessions.useful").asString()
+        session.active -> T("sessions.active").asString()
         else -> T("stored_only_label").asString()
     }
-    val evidence = T("evidence_${session.qualityEvidence.name.lowercase()}").asString()
-
     Surface(
         modifier = Modifier.fillMaxWidth(),
         shape = MaterialTheme.shapes.large,
@@ -139,20 +217,19 @@ private fun SessionCard(
                             contentDescription = null,
                         )
                         AppText(
-                            text = "${session.headline.asString()}",
+                            text = session.timeRange.asString(),
                             style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.SemiBold,
+                            maxLines = 1,
                         )
                     }
-                    AppText(
-                        text = "${session.timeRange.asString()}  ${session.deltaLabel.asString()}",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
                 }
                 Column(horizontalAlignment = Alignment.End, verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                    EvidenceBadge(text = session.qualityLabel.asString())
-                    EvidenceBadge(text = evidence, compact = true)
+                    PlainBadge(text = session.qualityLabel.asString())
+                    EvidenceBadge(
+                        grade = session.qualityEvidence,
+                        compact = true,
+                    )
                 }
             }
 
@@ -169,33 +246,30 @@ private fun SessionCard(
                     note,
                     compactEvidence = true,
                 )
-                LabelValueRow(
-                    T("above_85_label").asString(),
-                    session.timeAbove85Label.asString(),
-                    T("evidence_measured").asString(),
-                    compactEvidence = true,
-                )
-                LabelValueRow(
-                    T("above_90_label").asString(),
-                    session.timeAbove90Label.asString(),
-                    T("evidence_measured").asString(),
-                    compactEvidence = true,
-                )
+                Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
+                    LabelValueRow(
+                        T("above_85_label").asString(),
+                        session.timeAbove85Label.asString(),
+                        T("evidence_measured").asString(),
+                        evidenceGrade = EvidenceGrade.MEASURED,
+                        compactEvidence = true,
+                        modifier = Modifier.weight(1f),
+                    )
+                    LabelValueRow(
+                        T("above_90_label").asString(),
+                        session.timeAbove90Label.asString(),
+                        T("evidence_measured").asString(),
+                        evidenceGrade = EvidenceGrade.MEASURED,
+                        compactEvidence = true,
+                        modifier = Modifier.weight(1f),
+                    )
+                }
             }
-
-            Surface(
-                shape = MaterialTheme.shapes.medium,
-                color = MaterialTheme.colorScheme.surfaceContainerLowest,
-                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)),
-                tonalElevation = 0.dp,
-            ) {
-                AppText(
-                    text = session.confidenceReason.asString(),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(14.dp),
-                )
-            }
+            AppText(
+                text = session.confidenceReason.asString(),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
         }
     }
 }

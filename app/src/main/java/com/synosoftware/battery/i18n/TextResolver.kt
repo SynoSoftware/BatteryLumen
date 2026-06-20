@@ -39,7 +39,9 @@ private fun Context.resolveCatalogValue(key: String): String? {
     val catalog = localizationCatalog ?: synchronized(LocalizationLock) {
         localizationCatalog ?: runCatching {
             assets.open(LocalizationAsset).use { stream ->
-                LocalizationJson.parseToJsonElement(stream.bufferedReader().readText()).jsonObject
+                LocalizationJson.parseToJsonElement(
+                    stream.bufferedReader().readText().removePrefix("\uFEFF"),
+                ).jsonObject
             }
         }.getOrNull()?.also { localizationCatalog = it }
     } ?: return null
@@ -53,8 +55,34 @@ private fun JsonObject.resolveKey(key: String): String? {
         return direct.content
     }
 
+    val dotPath = resolvePath(key, '.')
+    if (dotPath != null) {
+        return dotPath
+    }
+
     var current: JsonElement = this
     for (segment in key.split('_')) {
+        current = when (current) {
+            is JsonObject -> current[segment] ?: return null
+            else -> return null
+        }
+    }
+
+    return when (current) {
+        is JsonPrimitive -> current.content
+        is JsonObject -> {
+            val leaf = current["_"]
+            if (leaf is JsonPrimitive && leaf.isString) leaf.content else null
+        }
+        else -> null
+    }
+}
+
+private fun JsonObject.resolvePath(key: String, delimiter: Char): String? {
+    if (delimiter !in key) return null
+
+    var current: JsonElement = this
+    for (segment in key.split(delimiter)) {
         current = when (current) {
             is JsonObject -> current[segment] ?: return null
             else -> return null
@@ -87,6 +115,7 @@ private fun formatText(template: String, args: List<UiArg>, context: Context): S
 
 private fun Context.fallbackText(text: UiText): String {
     val label = text.key
+        .replace('.', ' ')
         .replace('_', ' ')
         .replace(Regex("\\b(v\\d+)\\b"), "")
         .trim()

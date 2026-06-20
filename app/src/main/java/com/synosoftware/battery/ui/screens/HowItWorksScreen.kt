@@ -19,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.synosoftware.battery.R
+import com.synosoftware.battery.domain.EvidenceGrade
 import com.synosoftware.battery.i18n.T
 import com.synosoftware.battery.i18n.asString
 import com.synosoftware.battery.ui.components.EvidenceBadge
@@ -41,8 +42,8 @@ fun HowItWorksScreen(
     ) {
         item {
             SectionHeader(
-                title = T("how_it_works_page_title").asString(),
-                subtitle = T("how_it_works_subtitle").asString(),
+                title = T("info.title").asString(),
+                subtitle = T("info.subtitle").asString(),
             )
         }
 
@@ -53,18 +54,22 @@ fun HowItWorksScreen(
             ) {
                 GradeRow(
                     badge = T("evidence_measured").asString(),
+                    grade = EvidenceGrade.MEASURED,
                     body = T("how_it_works_measured_desc").asString(),
                 )
                 GradeRow(
                     badge = T("evidence_estimated").asString(),
+                    grade = EvidenceGrade.ESTIMATED,
                     body = T("how_it_works_estimated_desc").asString(),
                 )
                 GradeRow(
                     badge = T("evidence_inferred").asString(),
+                    grade = EvidenceGrade.INFERRED,
                     body = T("how_it_works_inferred_desc").asString(),
                 )
                 GradeRow(
                     badge = T("evidence_experimental").asString(),
+                    grade = EvidenceGrade.EXPERIMENTAL,
                     body = T("how_it_works_experimental_desc").asString(),
                 )
             }
@@ -79,16 +84,19 @@ fun HowItWorksScreen(
                     title = T("how_it_works_thermal_title").asString(),
                     body = T("how_it_works_thermal_body").asString(),
                     badge = T("evidence_inferred").asString(),
+                    grade = EvidenceGrade.INFERRED,
                 )
                 RuleRow(
                     title = T("how_it_works_charge_title").asString(),
                     body = T("how_it_works_charge_body").asString(),
                     badge = T("evidence_estimated").asString(),
+                    grade = EvidenceGrade.ESTIMATED,
                 )
                 RuleRow(
                     title = T("how_it_works_session_title").asString(),
                     body = T("how_it_works_session_body").asString(),
                     badge = T("evidence_inferred").asString(),
+                    grade = EvidenceGrade.INFERRED,
                 )
             }
         }
@@ -160,13 +168,14 @@ private fun RegistryCard(
 @Composable
 private fun GradeRow(
     badge: String,
+    grade: EvidenceGrade,
     body: String,
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        EvidenceBadge(text = badge)
+        EvidenceBadge(grade = grade)
         AppText(
             text = body,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -180,10 +189,11 @@ private fun RuleRow(
     title: String,
     body: String,
     badge: String,
+    grade: EvidenceGrade,
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            EvidenceBadge(text = badge, compact = true)
+            EvidenceBadge(grade = grade, compact = true)
             AppText(
                 text = title,
                 style = MaterialTheme.typography.titleSmall,
