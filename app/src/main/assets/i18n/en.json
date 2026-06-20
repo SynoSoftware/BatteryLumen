@@ -98,10 +98,10 @@
       "wireless": "Wireless"
     },
     "state": {
-      "charging": "Charging State Charging",
-      "discharging": "Charging State Discharging",
-      "full": "Charging State Full",
-      "unknown": "Charging State Unknown"
+      "charging": "Charging",
+      "discharging": "Discharging",
+      "full": "Full",
+      "unknown": "Unknown"
     }
   },
   "confidence": {
@@ -153,6 +153,9 @@
       "at": {
         "target": "At target while charging"
       },
+      "charge": {
+        "label": "Charge-level stress"
+      },
       "hot": {
         "charging": "Charging while hot: %1$s°C"
       },
@@ -163,6 +166,12 @@
         "charging": "Not charging"
       },
       "reasonable": "Charging looks reasonable"
+    },
+    "details": {
+      "hint": "Open the details to inspect the evidence."
+    },
+    "thermal": {
+      "label": "Thermal stress"
     }
   },
   "evidence": {
@@ -194,16 +203,29 @@
       "noisy": "Noisy",
       "stable": "Stable",
       "title": "Battery health trend",
-      "subtitle": "Estimated full-capacity points from useful charging sessions."
+      "subtitle": "Estimated full-capacity points from useful charging sessions.",
+      "confidence": "Based on %1$s useful sessions",
+      "note": "The chart shows useful-session estimates, not exact wear."
     },
     "current": {
       "title": "Current health"
     },
+    "summary": {
+      "title": "Health summary"
+    },
+    "approx": {
+      "percent": "~%1$s%%"
+    },
+    "capacity": {
+      "reference": "Capacity reference: %1$s"
+    },
     "estimated": {
+      "health": "Estimated health",
       "capacity": "Estimated capacity"
     },
     "likely": {
-      "range": "Likely range: %1$s - %2$s"
+      "range": "Likely range: %1$s - %2$s",
+      "rangePercent": "Likely range: %1$s - %2$s"
     },
     "insufficient": {
       "title": "Insufficient data",
@@ -256,7 +278,10 @@
     },
     "capability": {
       "subtitle": "What this device can expose",
-      "title": "Device Capability Matrix"
+      "summary": "%1$s signals available",
+      "title": "Device capabilities",
+      "hide": "Hide",
+      "show": "Show"
     },
     "experimental": {
       "desc": "Experimental metrics are disabled by default. They are useful for research, but not for precise battery-health claims.",
@@ -271,6 +296,33 @@
     "telemetry": {
       "subtitle": "Current readings from the device",
       "title": "Live Telemetry"
+    }
+  },
+  "daily": {
+    "summary": {
+      "above": {
+        "85": {
+          "issue": "Spent %1$s above 85%% today"
+        },
+        "90": {
+          "issue": "Spent %1$s above 90%% today"
+        }
+      },
+      "collecting": "Collecting data",
+      "good": "Good",
+      "issue": {
+        "hot": "Hot charging today"
+      },
+      "no": {
+        "issue": "No major issue"
+      },
+      "based": {
+        "on": "Based on %1$s sessions today"
+      },
+      "normal": "Normal",
+      "risky": "Risky",
+      "title": "Today",
+      "waiting": "Open the app while charging to build today's summary."
     }
   },
   "no": {
@@ -296,8 +348,16 @@
     }
   },
   "now": {
+    "details": {
+      "hide": "Hide details",
+      "show": "Show details",
+      "title": "Decision details"
+    },
+    "health": {
+      "title": "Health summary"
+    },
     "stress": {
-      "label": "Battery Stress"
+      "label": "Charging risk"
     }
   },
   "open": {
@@ -384,6 +444,13 @@
   },
   "settings": {
     "title": "Settings",
+    "design": {
+      "title": "Design capacity",
+      "description": "Optional reference used to convert health into percent.",
+      "label": "Reference capacity",
+      "placeholder": "e.g. 5000",
+      "supporting": "Leave blank if you do not know the original capacity."
+    },
     "experimental": {
       "toggle": "Enable experimental metrics",
       "description": "Optional metrics for research or debugging.",
@@ -431,12 +498,12 @@
     "excellent": "Excellent",
     "good": "Good",
     "normal": "Normal",
-    "high": "High stress",
-    "severe": "Severe stress"
+    "high": "High risk",
+    "severe": "Severe risk"
   },
   "target": {
     "guidance": {
-      "note": "Target Guidance Note"
+      "note": "Your alarm follows the selected stop point."
     },
     "label": "Target",
     "reached": {

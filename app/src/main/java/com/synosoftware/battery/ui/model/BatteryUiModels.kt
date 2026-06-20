@@ -9,6 +9,7 @@ import com.synosoftware.battery.domain.ConfidenceLevel
 import com.synosoftware.battery.domain.DeviceCapability
 import com.synosoftware.battery.domain.EvidenceGrade
 import com.synosoftware.battery.domain.StressLevel
+import com.synosoftware.battery.i18n.T
 import com.synosoftware.battery.i18n.UiText
 
 const val MIN_USEFUL_SESSION_COUNT = 5
@@ -70,16 +71,33 @@ data class HealthEvolutionUi(
 data class BatteryHealthEstimateUi(
     val estimatedCapacityMah: Int? = null,
     val likelyRangeMah: IntRange? = null,
+    val healthPercent: Int? = null,
+    val healthRangePercent: IntRange? = null,
     val confidence: ConfidenceLevel = ConfidenceLevel.LOW,
     val usefulSessionCount: Int = 0,
     val trend: HealthTrendState = HealthTrendState.COLLECTING,
 ) {
     val hasEstimate: Boolean
         get() = estimatedCapacityMah != null
+
+    val hasHealthPercent: Boolean
+        get() = healthPercent != null
+}
+
+data class DailyChargingSummaryUi(
+    val headline: UiText = T("daily.summary.collecting"),
+    val detail: UiText = T("daily.summary.waiting"),
+    val confidence: ConfidenceLevel = ConfidenceLevel.LOW,
+    val evidenceGrade: EvidenceGrade = EvidenceGrade.INFERRED,
+    val sessionCount: Int = 0,
+) {
+    val hasData: Boolean
+        get() = sessionCount > 0
 }
 
 data class BatteryUiState(
     val targetChargePercent: Int = 85,
+    val designCapacityMah: Int? = null,
     val experimentalMetricsEnabled: Boolean = false,
     val temperatureUnit: TemperatureUnit = TemperatureUnit.CELSIUS,
     val themeMode: ThemeMode = ThemeMode.SYSTEM,
@@ -89,6 +107,7 @@ data class BatteryUiState(
     val sessions: List<BatterySessionUi> = emptyList(),
     val healthEstimate: BatteryHealthEstimateUi = BatteryHealthEstimateUi(),
     val healthEvolution: HealthEvolutionUi = HealthEvolutionUi(),
+    val dailySummary: DailyChargingSummaryUi = DailyChargingSummaryUi(),
     val capabilities: List<DeviceCapability> = emptyList(),
 )
 

@@ -1,6 +1,7 @@
 package com.synosoftware.battery.ui.components
 
 import androidx.annotation.DrawableRes
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -93,6 +94,7 @@ fun LabelValueRow(
 fun EvidenceBadge(
     grade: EvidenceGrade,
     compact: Boolean = false,
+    onClick: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
 ) {
     BadgeContent(
@@ -102,7 +104,7 @@ fun EvidenceBadge(
             grade.name.lowercase(Locale.ROOT)
         },
         tone = evidenceTone(grade),
-        modifier = modifier,
+        modifier = if (onClick == null) modifier else modifier.clickable(onClick = onClick),
         compact = compact,
     )
 }

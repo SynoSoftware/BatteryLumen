@@ -12,7 +12,9 @@ import com.synosoftware.battery.domain.ChargingState
 import com.synosoftware.battery.domain.ConfidenceLevel
 import com.synosoftware.battery.domain.EvidenceGrade
 import com.synosoftware.battery.domain.StressLevel
+import com.synosoftware.battery.i18n.T
 import com.synosoftware.battery.ui.model.BatteryUiState
+import com.synosoftware.battery.ui.model.DailyChargingSummaryUi
 import com.synosoftware.battery.ui.model.BatteryHealthEstimateUi
 import com.synosoftware.battery.ui.model.HealthEvolutionUi
 import com.synosoftware.battery.ui.model.HealthTrendPointUi
@@ -39,7 +41,11 @@ class BatteryScreensTest {
 
         composeRule.onNodeWithText("Battery stress").assertIsDisplayed()
         composeRule.onNodeWithText("High stress").assertIsDisplayed()
-        composeRule.onNodeWithText("Inferred · INFERRED").assertIsDisplayed()
+        composeRule.onNodeWithText("Health summary").assertIsDisplayed()
+        composeRule.onNodeWithText("Today").assertIsDisplayed()
+        composeRule.onNodeWithText("Decision details").assertIsDisplayed()
+        composeRule.onNodeWithText("Show details").performClick()
+        composeRule.onNodeWithText("Thermal stress").assertIsDisplayed()
         composeRule.onNodeWithText("90%").performClick()
 
         assertEquals(90, selectedTarget)
@@ -50,6 +56,7 @@ class BatteryScreensTest {
         composeRule.setContent {
             HealthScreen(
                 state = BatteryUiState(),
+                onSeedDemoData = {},
                 contentPadding = PaddingValues(),
             )
         }
@@ -71,6 +78,12 @@ class BatteryScreensTest {
                         usefulSessionCount = 7,
                         trend = HealthTrendState.STABLE,
                     ),
+                    dailySummary = DailyChargingSummaryUi(
+                        headline = T("daily.summary.good"),
+                        detail = T("daily.summary.no.issue"),
+                        confidence = ConfidenceLevel.HIGH,
+                        sessionCount = 2,
+                    ),
                     healthEvolution = HealthEvolutionUi(
                         points = listOf(
                             HealthTrendPointUi(label = "Jun 11", estimatedCapacityMah = 3390f),
@@ -79,6 +92,7 @@ class BatteryScreensTest {
                         ),
                     ),
                 ),
+                onSeedDemoData = {},
                 contentPadding = PaddingValues(),
             )
         }
@@ -125,10 +139,10 @@ class BatteryScreensTest {
                 stress = StressLevel.HIGH_STRESS,
                 thermalStress = StressLevel.HIGH_STRESS,
                 chargeLevelStress = StressLevel.HIGH_STRESS,
-                reason = "Battery is 42.0°C while charging.",
-                action = "Unplug now or let the phone cool.",
+                reason = T("decision.reason.hot.charging", "42.0"),
+                action = T("decision.action.cool"),
                 confidence = ConfidenceLevel.HIGH,
-                confidenceReason = "temperature is direct; battery level is direct; current is available",
+                confidenceReason = T("confidence.reason.high"),
                 evidenceGrade = EvidenceGrade.INFERRED,
                 targetPercent = 85,
                 bestStopPercent = 85,

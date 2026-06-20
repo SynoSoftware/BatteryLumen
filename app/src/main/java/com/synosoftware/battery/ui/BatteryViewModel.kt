@@ -3,6 +3,7 @@ package com.synosoftware.battery.ui
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.synosoftware.battery.data.battery.BatteryMonitor
+import com.synosoftware.battery.data.formatDuration
 import com.synosoftware.battery.data.notification.ChargingNotificationManager
 import com.synosoftware.battery.data.preferences.SettingsRepository
 import com.synosoftware.battery.data.preferences.TemperatureUnit
@@ -16,16 +17,20 @@ import com.synosoftware.battery.domain.BatteryDecisionEngine
 import com.synosoftware.battery.domain.BatterySnapshot
 import com.synosoftware.battery.domain.ChargeSessionMetrics
 import com.synosoftware.battery.domain.DeviceCapabilityMatrix
+import com.synosoftware.battery.domain.EvidenceGrade
 import com.synosoftware.battery.domain.SessionStatus
 import com.synosoftware.battery.domain.SessionAssessment
 import com.synosoftware.battery.ui.model.BatteryEvent
 import com.synosoftware.battery.ui.model.BatteryHealthEstimateUi
+import com.synosoftware.battery.ui.model.DailyChargingSummaryUi
 import com.synosoftware.battery.ui.model.MIN_USEFUL_SESSION_COUNT
 import com.synosoftware.battery.ui.model.HealthEvolutionUi
 import com.synosoftware.battery.ui.model.HealthTrendState
 import com.synosoftware.battery.ui.model.HealthTrendPointUi
 import com.synosoftware.battery.ui.model.BatteryUiState
+import com.synosoftware.battery.i18n.T
 import java.text.SimpleDateFormat
+import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 import kotlin.math.roundToInt
@@ -84,9 +89,14 @@ class BatteryViewModel(
             decisionEngine.analyze(current, activeMetrics, preferences.targetChargePercent)
         }
         val healthEvolution = buildHealthEvolution(sessionViews)
-        val healthEstimate = buildHealthEstimate(healthEvolution.points)
+        val healthEstimate = buildHealthEstimate(
+            points = healthEvolution.points,
+            designCapacityMah = preferences.designCapacityMah,
+        )
+        val dailySummary = buildDailySummary(sessionViews, snapshot)
         BatteryUiState(
             targetChargePercent = preferences.targetChargePercent,
+            designCapacityMah = preferences.designCapacityMah,
             experimentalMetricsEnabled = preferences.experimentalMetricsEnabled,
             temperatureUnit = preferences.temperatureUnit,
             themeMode = preferences.themeMode,
@@ -96,6 +106,7 @@ class BatteryViewModel(
             sessions = sessionViews.map { it.ui },
             healthEstimate = healthEstimate,
             healthEvolution = healthEvolution,
+            dailySummary = dailySummary,
             capabilities = DeviceCapabilityMatrix.defaultCapabilities(),
         )
     }.stateIn(
@@ -124,6 +135,12 @@ class BatteryViewModel(
     fun setTargetChargePercent(targetPercent: Int) {
         viewModelScope.launch {
             settingsRepository.setTargetChargePercent(targetPercent)
+        }
+    }
+
+    fun setDesignCapacityMah(capacityMah: Int?) {
+        viewModelScope.launch {
+            settingsRepository.setDesignCapacityMah(capacityMah)
         }
     }
 
@@ -179,12 +196,17 @@ class BatteryViewModel(
         return HealthEvolutionUi(points = ordered)
     }
 
-    private fun buildHealthEstimate(points: List<HealthTrendPointUi>): BatteryHealthEstimateUi {
+    private fun buildHealthEstimate(
+        points: List<HealthTrendPointUi>,
+        designCapacityMah: Int?,
+    ): BatteryHealthEstimateUi {
         val capacities = points.map { it.estimatedCapacityMah }.filter { it.isFinite() && it > 0f }
         if (capacities.size < MIN_USEFUL_SESSION_COUNT) {
             return BatteryHealthEstimateUi(
                 estimatedCapacityMah = null,
                 likelyRangeMah = null,
+                healthPercent = null,
+                healthRangePercent = null,
                 confidence = com.synosoftware.battery.domain.ConfidenceLevel.LOW,
                 usefulSessionCount = capacities.size,
                 trend = if (capacities.isEmpty()) HealthTrendState.COLLECTING else HealthTrendState.NOISY,
@@ -208,13 +230,82 @@ class BatteryViewModel(
             else -> HealthTrendState.NOISY
         }
 
+        val percentReference = designCapacityMah?.takeIf { it > 0 }?.toFloat()
+        val healthPercent = percentReference?.let { reference ->
+            (median / reference * 100f).roundToInt()
+        }
+        val healthRangePercent = percentReference?.let { reference ->
+            (low / reference * 100f).roundToInt()..(high / reference * 100f).roundToInt()
+        }
+
         return BatteryHealthEstimateUi(
             estimatedCapacityMah = median.roundToInt(),
             likelyRangeMah = low.roundToInt()..high.roundToInt(),
+            healthPercent = healthPercent,
+            healthRangePercent = healthRangePercent,
             confidence = confidence,
             usefulSessionCount = capacities.size,
             trend = trend,
         )
+    }
+
+    private fun buildDailySummary(
+        sessions: List<SessionView>,
+        snapshot: BatterySnapshot?,
+    ): DailyChargingSummaryUi {
+        val todayStartMs = startOfDayMs()
+        val todaySessions = sessions.filter { it.entity.lastSeenAtMs >= todayStartMs }
+        if (todaySessions.isEmpty()) {
+            return DailyChargingSummaryUi(
+                headline = T("daily.summary.collecting"),
+                detail = T("daily.summary.waiting"),
+                confidence = com.synosoftware.battery.domain.ConfidenceLevel.LOW,
+                evidenceGrade = EvidenceGrade.INFERRED,
+                sessionCount = 0,
+            )
+        }
+
+        val totalAbove85Sec = todaySessions.sumOf { it.metrics.timeAbove85Sec }
+        val totalAbove90Sec = todaySessions.sumOf { it.metrics.timeAbove90Sec }
+        val hottestTemperature = buildList {
+            snapshot?.temperatureC?.let { add(it) }
+            todaySessions.mapNotNull { it.metrics.maxTemperatureC }.forEach { add(it) }
+        }.maxOrNull()
+        val hot = hottestTemperature != null && hottestTemperature >= 43f
+
+        val headline = when {
+            hot || totalAbove90Sec >= 30 * 60L -> T("daily.summary.risky")
+            totalAbove85Sec >= 45 * 60L -> T("daily.summary.normal")
+            else -> T("daily.summary.good")
+        }
+        val detail = when {
+            hot -> T("daily.summary.issue.hot")
+            totalAbove90Sec >= 15 * 60L -> T("daily.summary.above.90.issue", formatDuration(totalAbove90Sec * 1000L))
+            totalAbove85Sec >= 30 * 60L -> T("daily.summary.above.85.issue", formatDuration(totalAbove85Sec * 1000L))
+            else -> T("daily.summary.no.issue")
+        }
+        val confidence = when {
+            todaySessions.size >= MIN_USEFUL_SESSION_COUNT -> com.synosoftware.battery.domain.ConfidenceLevel.HIGH
+            todaySessions.size >= 2 -> com.synosoftware.battery.domain.ConfidenceLevel.MEDIUM
+            else -> com.synosoftware.battery.domain.ConfidenceLevel.LOW
+        }
+
+        return DailyChargingSummaryUi(
+            headline = headline,
+            detail = detail,
+            confidence = confidence,
+            evidenceGrade = EvidenceGrade.INFERRED,
+            sessionCount = todaySessions.size,
+        )
+    }
+
+    private fun startOfDayMs(): Long {
+        val calendar = Calendar.getInstance()
+        calendar.set(Calendar.HOUR_OF_DAY, 0)
+        calendar.set(Calendar.MINUTE, 0)
+        calendar.set(Calendar.SECOND, 0)
+        calendar.set(Calendar.MILLISECOND, 0)
+        return calendar.timeInMillis
     }
 
     private fun isDeclining(capacities: List<Float>): Boolean {

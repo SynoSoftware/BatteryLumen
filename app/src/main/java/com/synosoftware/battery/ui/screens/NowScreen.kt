@@ -3,6 +3,7 @@ package com.synosoftware.battery.ui.screens
 import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
@@ -15,7 +16,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Button
 import androidx.compose.material3.FilterChip
@@ -26,12 +26,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalInspectionMode
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -42,18 +42,23 @@ import com.synosoftware.battery.domain.EvidenceGrade
 import com.synosoftware.battery.domain.StressLevel
 import com.synosoftware.battery.i18n.T
 import com.synosoftware.battery.i18n.asString
-import com.synosoftware.battery.i18n.chargingSourceText
 import com.synosoftware.battery.i18n.chargingStateText
+import com.synosoftware.battery.i18n.chargingSourceText
 import com.synosoftware.battery.i18n.confidenceText
+import com.synosoftware.battery.i18n.healthApproxPercentText
+import com.synosoftware.battery.i18n.healthCapacityRangeText
+import com.synosoftware.battery.i18n.healthPercentRangeText
+import com.synosoftware.battery.i18n.healthTrendText
 import com.synosoftware.battery.i18n.stressText
 import com.synosoftware.battery.ui.components.EvidenceBadge
 import com.synosoftware.battery.ui.components.IconBadge
 import com.synosoftware.battery.ui.components.LabelValueRow
+import com.synosoftware.battery.ui.components.LucideIcon
 import com.synosoftware.battery.ui.components.MetricTile
 import com.synosoftware.battery.ui.components.PlainBadge
-import com.synosoftware.battery.ui.components.LucideIcon
 import com.synosoftware.battery.ui.components.SectionHeader
 import com.synosoftware.battery.ui.model.BatteryUiState
+import com.synosoftware.battery.ui.model.MIN_USEFUL_SESSION_COUNT
 
 @Composable
 fun NowScreen(
@@ -63,7 +68,7 @@ fun NowScreen(
 ) {
     val snapshot = state.currentSnapshot
     val decision = state.decision
-    val stressTone = when (decision?.stress) {
+    val riskTone = when (decision?.stress) {
         StressLevel.EXCELLENT, StressLevel.GOOD, StressLevel.NORMAL, null -> MaterialTheme.colorScheme.primary
         StressLevel.HIGH_STRESS -> MaterialTheme.colorScheme.tertiary
         StressLevel.SEVERE_STRESS -> MaterialTheme.colorScheme.error
@@ -88,14 +93,18 @@ fun NowScreen(
         item {
             HeroDecisionCard(
                 decision = decision,
-                stressTone = stressTone,
+                riskTone = riskTone,
                 containerColor = heroContainer,
                 borderColor = heroBorder,
             )
         }
 
         item {
-            NotificationPermissionCard()
+            TargetCard(
+                state = state,
+                decision = decision,
+                onTargetSelected = onTargetSelected,
+            )
         }
 
         item {
@@ -137,60 +146,25 @@ fun NowScreen(
         }
 
         item {
-            Surface(
-                modifier = Modifier.fillMaxWidth(),
-                shape = MaterialTheme.shapes.extraLarge,
-                color = MaterialTheme.colorScheme.surfaceContainer,
-                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.65f)),
-                tonalElevation = 0.dp,
-            ) {
-                Column(
-                    modifier = Modifier.padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
-                ) {
-                    AppText(
-                        text = T("source.label").asString(),
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.SemiBold,
-                    )
-                    if (snapshot == null) {
-                        AppText(T("no.battery.snapshot.yet").asString())
-                    } else {
-                        LabelValueRow(
-                            T("source.charging.label").asString(),
-                            chargingSourceText(snapshot.chargingSource).asString(),
-                            T("evidence.measured").asString(),
-                            evidenceGrade = EvidenceGrade.MEASURED,
-                        )
-                        LabelValueRow(
-                            T("voltage.label").asString(),
-                            snapshot.voltageMv?.let { T("value.mv", it).asString() } ?: T("value.na").asString(),
-                            T("evidence.measured").asString(),
-                            evidenceGrade = EvidenceGrade.MEASURED,
-                        )
-                        LabelValueRow(
-                            T("current.label").asString(),
-                            snapshot.currentUa?.let { T("value.ua", it).asString() } ?: T("value.na").asString(),
-                            T("evidence.measured").asString(),
-                            evidenceGrade = EvidenceGrade.MEASURED,
-                        )
-                    }
-                }
-            }
-        }
-
-        item {
-            TargetCard(
-                state = state,
-                decision = decision,
-                onTargetSelected = onTargetSelected,
+            HealthSummaryCard(
+                estimate = state.healthEstimate,
             )
         }
 
         item {
-            SessionCard(
+            DailySummaryCard(
+                summary = state.dailySummary,
+            )
+        }
+
+        item {
+            DecisionDetailsCard(
                 state = state,
             )
+        }
+
+        item {
+            NotificationPermissionCard()
         }
 
         item { Spacer(Modifier.height(12.dp)) }
@@ -200,11 +174,11 @@ fun NowScreen(
 @Composable
 private fun HeroDecisionCard(
     decision: com.synosoftware.battery.domain.BatteryDecision?,
-    stressTone: androidx.compose.ui.graphics.Color,
+    riskTone: androidx.compose.ui.graphics.Color,
     containerColor: androidx.compose.ui.graphics.Color,
     borderColor: androidx.compose.ui.graphics.Color,
 ) {
-    val stressLabel = decision?.stress?.let { stressText(it).asString() } ?: T("waiting.for.battery.data").asString()
+    val riskLabel = decision?.stress?.let { stressText(it).asString() } ?: T("waiting.for.battery.data").asString()
     val reason = decision?.reason?.asString() ?: T("open.app.while.charging").asString()
     val action = decision?.action?.asString() ?: T("continue.charging.or.set.target").asString()
     val confidenceSummaryText = decision?.confidence?.let { confidenceText(it).asString() } ?: T("waiting.for.battery.data").asString()
@@ -253,10 +227,10 @@ private fun HeroDecisionCard(
                 )
                 Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                     AppText(
-                        text = stressLabel,
+                        text = riskLabel,
                         style = MaterialTheme.typography.headlineMedium,
                         fontWeight = FontWeight.SemiBold,
-                        color = stressTone,
+                        color = riskTone,
                     )
                     AppText(
                         text = reason,
@@ -347,12 +321,6 @@ private fun TargetCard(
                         T("evidence.estimated").asString(),
                         evidenceGrade = EvidenceGrade.ESTIMATED,
                     )
-                    LabelValueRow(
-                        T("full.charge.label").asString(),
-                        decision.timeToFullMinutes?.let { T("value.min.short", it).asString() } ?: T("value.na").asString(),
-                        T("evidence.estimated").asString(),
-                        evidenceGrade = EvidenceGrade.ESTIMATED,
-                    )
                 }
             } else {
                 AppText(
@@ -385,8 +353,8 @@ private fun TargetCard(
 }
 
 @Composable
-private fun SessionCard(
-    state: BatteryUiState,
+private fun HealthSummaryCard(
+    estimate: com.synosoftware.battery.ui.model.BatteryHealthEstimateUi,
 ) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
@@ -397,55 +365,256 @@ private fun SessionCard(
     ) {
         Column(
             modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             AppText(
-                text = T("current.session.label").asString(),
+                text = T("health.summary.title").asString(),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold,
             )
-            val active = state.activeSession
-            if (active == null) {
+            if (estimate.hasEstimate) {
+                val capacityMah = requireNotNull(estimate.estimatedCapacityMah)
+                if (estimate.hasHealthPercent) {
+                    val healthPercent = requireNotNull(estimate.healthPercent)
+                    AppText(
+                        text = healthApproxPercentText(healthPercent).asString(),
+                        style = MaterialTheme.typography.headlineMedium,
+                        fontWeight = FontWeight.SemiBold,
+                    )
+                    estimate.healthRangePercent?.let { range ->
+                        AppText(
+                            text = healthPercentRangeText(range).asString(),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                    AppText(
+                        text = T(
+                            "health.capacity.reference",
+                            T("value.mah", capacityMah).asString(),
+                        ).asString(),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                } else {
+                    AppText(
+                        text = T("value.mah", capacityMah).asString(),
+                        style = MaterialTheme.typography.headlineMedium,
+                        fontWeight = FontWeight.SemiBold,
+                    )
+                    estimate.likelyRangeMah?.let { range ->
+                        AppText(
+                            text = healthCapacityRangeText(range).asString(),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                }
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    PlainBadge(text = confidenceText(estimate.confidence).asString())
+                    PlainBadge(text = healthTrendText(estimate.trend).asString())
+                    EvidenceBadge(grade = EvidenceGrade.ESTIMATED)
+                }
                 AppText(
-                    text = T("no.active.session.yet").asString(),
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            } else {
-                PlainBadge(text = active.qualityLabel.asString())
-                AppText(
-                    text = active.headline.asString(),
-                    style = MaterialTheme.typography.headlineSmall,
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onSurface,
-                )
-                AppText(
-                    text = currentSessionHint(active).asString(),
+                    text = T("health.based.on.sessions", estimate.usefulSessionCount).asString(),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
-                LabelValueRow(
-                    T("temperature.label").asString(),
-                    active.temperatureLabel.asString(),
-                    confidenceText(active.confidence).asString(),
-                    compactEvidence = true,
+            } else {
+                AppText(
+                    text = T("health.insufficient.body", MIN_USEFUL_SESSION_COUNT).asString(),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
-                LabelValueRow(
-                    T("source.charging.label").asString(),
-                    active.sourceLabel.asString(),
-                    if (active.usefulForHealth) T("useful.label").asString() else T("stored.only.label").asString(),
-                    compactEvidence = true,
+                AppText(
+                    text = T("health.sessions.collected", estimate.usefulSessionCount, MIN_USEFUL_SESSION_COUNT).asString(),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                AppText(
+                    text = T("health.collecting.data").asString(),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
         }
     }
 }
 
-private fun currentSessionHint(active: com.synosoftware.battery.ui.model.BatterySessionUi) =
-    when {
-        active.usefulForHealth -> T("session.hint.useful")
-        active.active -> T("session.hint.active")
-        else -> T("session.hint.incomplete")
+@Composable
+private fun DailySummaryCard(
+    summary: com.synosoftware.battery.ui.model.DailyChargingSummaryUi,
+) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = MaterialTheme.shapes.extraLarge,
+        color = MaterialTheme.colorScheme.surfaceContainer,
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.65f)),
+        tonalElevation = 0.dp,
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            AppText(
+                text = T("daily.summary.title").asString(),
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold,
+            )
+            AppText(
+                text = summary.headline.asString(),
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.SemiBold,
+            )
+            AppText(
+                text = summary.detail.asString(),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                PlainBadge(text = confidenceText(summary.confidence).asString())
+                EvidenceBadge(grade = summary.evidenceGrade)
+            }
+            if (summary.hasData) {
+                AppText(
+                    text = T("daily.summary.based.on", summary.sessionCount).asString(),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
     }
+}
+
+@Composable
+private fun DecisionDetailsCard(
+    state: BatteryUiState,
+) {
+    val decision = state.decision
+    val snapshot = state.currentSnapshot
+    val active = state.activeSession
+    var expanded by rememberSaveable { mutableStateOf(false) }
+
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = MaterialTheme.shapes.extraLarge,
+        color = MaterialTheme.colorScheme.surfaceContainer,
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.65f)),
+        tonalElevation = 0.dp,
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                AppText(
+                    text = T("now.details.title").asString(),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                )
+                FilterChip(
+                    selected = expanded,
+                    onClick = { expanded = !expanded },
+                    label = {
+                        AppText(
+                            text = if (expanded) T("now.details.hide").asString() else T("now.details.show").asString(),
+                        )
+                    },
+                )
+            }
+
+            if (!expanded) {
+                AppText(
+                    text = T("decision.details.hint").asString(),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            } else if (decision == null) {
+                AppText(
+                    text = T("waiting.for.battery.data").asString(),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            } else {
+                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    LabelValueRow(
+                        T("decision.thermal.label").asString(),
+                        stressText(decision.thermalStress).asString(),
+                        T("evidence.inferred").asString(),
+                        evidenceGrade = EvidenceGrade.INFERRED,
+                        compactEvidence = true,
+                    )
+                    LabelValueRow(
+                        T("decision.charge.label").asString(),
+                        stressText(decision.chargeLevelStress).asString(),
+                        T("evidence.inferred").asString(),
+                        evidenceGrade = EvidenceGrade.INFERRED,
+                        compactEvidence = true,
+                    )
+                    if (snapshot != null) {
+                        LabelValueRow(
+                            T("source.label").asString(),
+                            chargingSourceText(snapshot.chargingSource).asString(),
+                            T("evidence.measured").asString(),
+                            evidenceGrade = EvidenceGrade.MEASURED,
+                            compactEvidence = true,
+                        )
+                    }
+                    if (active != null) {
+                        LabelValueRow(
+                            T("above.85.label").asString(),
+                            active.timeAbove85Label.asString(),
+                            T("evidence.measured").asString(),
+                            evidenceGrade = EvidenceGrade.MEASURED,
+                            compactEvidence = true,
+                        )
+                        LabelValueRow(
+                            T("above.90.label").asString(),
+                            active.timeAbove90Label.asString(),
+                            T("evidence.measured").asString(),
+                            evidenceGrade = EvidenceGrade.MEASURED,
+                            compactEvidence = true,
+                        )
+                    }
+                    if (decision.timeToFullMinutes != null) {
+                        LabelValueRow(
+                            T("full.charge.label").asString(),
+                            T("value.min.short", decision.timeToFullMinutes).asString(),
+                            T("evidence.estimated").asString(),
+                            evidenceGrade = EvidenceGrade.ESTIMATED,
+                            compactEvidence = true,
+                        )
+                    }
+                    if (snapshot != null) {
+                        LabelValueRow(
+                            T("voltage.label").asString(),
+                            snapshot.voltageMv?.let { T("value.mv", it).asString() } ?: T("value.na").asString(),
+                            T("evidence.measured").asString(),
+                            evidenceGrade = EvidenceGrade.MEASURED,
+                            compactEvidence = true,
+                        )
+                        LabelValueRow(
+                            T("current.label").asString(),
+                            snapshot.currentUa?.let { T("value.ua", it).asString() } ?: T("value.na").asString(),
+                            T("evidence.measured").asString(),
+                            evidenceGrade = EvidenceGrade.MEASURED,
+                            compactEvidence = true,
+                        )
+                    }
+                    AppText(
+                        text = decision.confidenceReason.asString(),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
+        }
+    }
+}
 
 @Composable
 private fun NotificationPermissionCard() {

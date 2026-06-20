@@ -27,7 +27,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.synosoftware.battery.BuildConfig
 import com.synosoftware.battery.R
-import com.synosoftware.battery.domain.ConfidenceLevel
 import com.synosoftware.battery.domain.EvidenceGrade
 import com.patrykandpatrick.vico.compose.cartesian.CartesianChartHost
 import com.patrykandpatrick.vico.compose.cartesian.axis.HorizontalAxis
@@ -40,6 +39,11 @@ import com.patrykandpatrick.vico.compose.cartesian.rememberCartesianChart
 import com.patrykandpatrick.vico.compose.common.Fill
 import com.synosoftware.battery.i18n.T
 import com.synosoftware.battery.i18n.asString
+import com.synosoftware.battery.i18n.confidenceText
+import com.synosoftware.battery.i18n.healthApproxPercentText
+import com.synosoftware.battery.i18n.healthCapacityRangeText
+import com.synosoftware.battery.i18n.healthPercentRangeText
+import com.synosoftware.battery.i18n.healthTrendText
 import com.synosoftware.battery.i18n.resolveText
 import com.synosoftware.battery.ui.components.EvidenceBadge
 import com.synosoftware.battery.ui.components.IconBadge
@@ -47,7 +51,6 @@ import com.synosoftware.battery.ui.components.PlainBadge
 import com.synosoftware.battery.ui.model.MIN_USEFUL_SESSION_COUNT
 import com.synosoftware.battery.ui.model.BatteryUiState
 import com.synosoftware.battery.ui.model.BatteryHealthEstimateUi
-import com.synosoftware.battery.ui.model.HealthTrendState
 import com.synosoftware.battery.ui.model.HealthTrendPointUi
 import kotlin.math.roundToInt
 
@@ -79,9 +82,12 @@ fun HealthScreen(
             }
         }
 
-        if (hasUsefulData && points.isNotEmpty()) {
+        if (hasUsefulData) {
             item {
-                HealthTrendChartCard(points = points)
+                HealthTrendChartCard(
+                    points = points,
+                    estimate = estimate,
+                )
             }
         }
 
@@ -124,7 +130,11 @@ private fun HealthStatusHeroCard(
                     )
                     if (estimate.hasEstimate) {
                         AppText(
-                            text = T("health.estimated.capacity").asString(),
+                            text = if (estimate.hasHealthPercent) {
+                                T("health.estimated.health").asString()
+                            } else {
+                                T("health.estimated.capacity").asString()
+                            },
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     } else {
@@ -137,28 +147,49 @@ private fun HealthStatusHeroCard(
             }
 
             if (estimate.hasEstimate) {
+                val capacityMah = requireNotNull(estimate.estimatedCapacityMah)
                 Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                    AppText(
-                        text = T("value.mah", estimate.estimatedCapacityMah).asString(),
-                        style = MaterialTheme.typography.displaySmall,
-                        fontWeight = FontWeight.SemiBold,
-                    )
-
-                    estimate.likelyRangeMah?.let { range ->
+                    if (estimate.hasHealthPercent) {
+                        val healthPercent = requireNotNull(estimate.healthPercent)
+                        AppText(
+                            text = healthApproxPercentText(healthPercent).asString(),
+                            style = MaterialTheme.typography.displaySmall,
+                            fontWeight = FontWeight.SemiBold,
+                        )
+                        estimate.healthRangePercent?.let { range ->
+                            AppText(
+                                text = healthPercentRangeText(range).asString(),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
                         AppText(
                             text = T(
-                                "health.likely.range",
-                                T("value.mah", range.first).asString(),
-                                T("value.mah", range.last).asString(),
+                                "health.capacity.reference",
+                                T("value.mah", capacityMah).asString(),
                             ).asString(),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
+                    } else {
+                        AppText(
+                            text = T("value.mah", capacityMah).asString(),
+                            style = MaterialTheme.typography.displaySmall,
+                            fontWeight = FontWeight.SemiBold,
+                        )
+
+                        estimate.likelyRangeMah?.let { range ->
+                            AppText(
+                                text = healthCapacityRangeText(range).asString(),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
                     }
 
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        PlainBadge(text = confidenceLabel(estimate.confidence))
-                        PlainBadge(text = trendLabel(estimate.trend))
+                        PlainBadge(text = confidenceText(estimate.confidence).asString())
+                        PlainBadge(text = healthTrendText(estimate.trend).asString())
                         EvidenceBadge(grade = EvidenceGrade.ESTIMATED)
                     }
 
@@ -191,6 +222,7 @@ private fun HealthStatusHeroCard(
 @Composable
 private fun HealthTrendChartCard(
     points: List<HealthTrendPointUi>,
+    estimate: BatteryHealthEstimateUi,
 ) {
     val capacityColor = MaterialTheme.colorScheme.primary
     val context = LocalContext.current
@@ -257,6 +289,17 @@ private fun HealthTrendChartCard(
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
+                Column(
+                    horizontalAlignment = Alignment.End,
+                    verticalArrangement = Arrangement.spacedBy(6.dp),
+                ) {
+                    PlainBadge(text = confidenceText(estimate.confidence).asString())
+                    AppText(
+                        text = T("health.trend.confidence", estimate.usefulSessionCount).asString(),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
             }
 
             CartesianChartHost(
@@ -268,7 +311,7 @@ private fun HealthTrendChartCard(
             )
 
             AppText(
-                text = T("health.collecting.data").asString(),
+                text = T("health.trend.note").asString(),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -306,24 +349,5 @@ private fun DebugSeedDataCard(
                 AppText(T("health.debug.seed.action").asString())
             }
         }
-    }
-}
-
-@Composable
-private fun confidenceLabel(confidence: ConfidenceLevel): String {
-    return when (confidence) {
-        ConfidenceLevel.HIGH -> T("confidence.high").asString()
-        ConfidenceLevel.MEDIUM -> T("confidence.medium").asString()
-        ConfidenceLevel.LOW -> T("confidence.low").asString()
-    }
-}
-
-@Composable
-private fun trendLabel(trend: HealthTrendState): String {
-    return when (trend) {
-        HealthTrendState.COLLECTING -> T("health.trend.collecting").asString()
-        HealthTrendState.STABLE -> T("health.trend.stable").asString()
-        HealthTrendState.DECLINING -> T("health.trend.declining").asString()
-        HealthTrendState.NOISY -> T("health.trend.noisy").asString()
     }
 }

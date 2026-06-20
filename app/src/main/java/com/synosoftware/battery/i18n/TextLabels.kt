@@ -1,8 +1,10 @@
 package com.synosoftware.battery.i18n
 
+import androidx.compose.runtime.Composable
 import com.synosoftware.battery.domain.ChargingSource
 import com.synosoftware.battery.domain.ChargingState
 import com.synosoftware.battery.domain.ConfidenceLevel
+import com.synosoftware.battery.ui.model.HealthTrendState
 import com.synosoftware.battery.domain.SessionQuality
 import com.synosoftware.battery.domain.StressLevel
 
@@ -20,6 +22,39 @@ fun confidenceReasonText(confidence: ConfidenceLevel): UiText {
         ConfidenceLevel.MEDIUM -> T("confidence.reason.medium")
         ConfidenceLevel.LOW -> T("confidence.reason.low")
     }
+}
+
+@Composable
+fun healthTrendText(trend: HealthTrendState): UiText {
+    return when (trend) {
+        HealthTrendState.COLLECTING -> T("health.trend.collecting")
+        HealthTrendState.STABLE -> T("health.trend.stable")
+        HealthTrendState.DECLINING -> T("health.trend.declining")
+        HealthTrendState.NOISY -> T("health.trend.noisy")
+    }
+}
+
+@Composable
+fun healthApproxPercentText(percent: Int): UiText {
+    return T("health.approx.percent", percent)
+}
+
+@Composable
+fun healthPercentRangeText(range: IntRange): UiText {
+    return T(
+        "health.likely.rangePercent",
+        T("value.percent", range.first).asString(),
+        T("value.percent", range.last).asString(),
+    )
+}
+
+@Composable
+fun healthCapacityRangeText(range: IntRange): UiText {
+    return T(
+        "health.likely.range",
+        T("value.mah", range.first).asString(),
+        T("value.mah", range.last).asString(),
+    )
 }
 
 fun stressText(stress: StressLevel): UiText {

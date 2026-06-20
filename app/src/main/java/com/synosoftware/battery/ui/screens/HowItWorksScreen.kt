@@ -11,15 +11,22 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text as AppText
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.synosoftware.battery.R
 import com.synosoftware.battery.domain.EvidenceGrade
+import com.synosoftware.battery.domain.DeviceCapability
 import com.synosoftware.battery.i18n.T
 import com.synosoftware.battery.i18n.asString
 import com.synosoftware.battery.ui.components.EvidenceBadge
@@ -33,6 +40,7 @@ fun HowItWorksScreen(
     state: BatteryUiState,
     contentPadding: PaddingValues,
 ) {
+    var capabilitiesExpanded by rememberSaveable { mutableStateOf(false) }
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -53,22 +61,18 @@ fun HowItWorksScreen(
                 title = T("info.grades.title").asString(),
             ) {
                 GradeRow(
-                    badge = T("evidence.measured").asString(),
                     grade = EvidenceGrade.MEASURED,
                     body = T("info.grades.measured.body").asString(),
                 )
                 GradeRow(
-                    badge = T("evidence.estimated").asString(),
                     grade = EvidenceGrade.ESTIMATED,
                     body = T("info.grades.estimated.body").asString(),
                 )
                 GradeRow(
-                    badge = T("evidence.inferred").asString(),
                     grade = EvidenceGrade.INFERRED,
                     body = T("info.grades.inferred.body").asString(),
                 )
                 GradeRow(
-                    badge = T("evidence.experimental").asString(),
                     grade = EvidenceGrade.EXPERIMENTAL,
                     body = T("info.grades.experimental.body").asString(),
                 )
@@ -83,38 +87,27 @@ fun HowItWorksScreen(
                 RuleRow(
                     title = T("info.models.thermal.title").asString(),
                     body = T("info.models.thermal.body").asString(),
-                    badge = T("evidence.inferred").asString(),
                     grade = EvidenceGrade.INFERRED,
                 )
                 RuleRow(
                     title = T("info.models.charge.title").asString(),
                     body = T("info.models.charge.body").asString(),
-                    badge = T("evidence.estimated").asString(),
                     grade = EvidenceGrade.ESTIMATED,
                 )
                 RuleRow(
                     title = T("info.models.session.title").asString(),
                     body = T("info.models.session.body").asString(),
-                    badge = T("evidence.inferred").asString(),
                     grade = EvidenceGrade.INFERRED,
                 )
             }
         }
 
         item {
-            RegistryCard(
-                iconRes = R.drawable.lucide_battery_full,
-                title = T("info.capability.title").asString(),
-            ) {
-                AppText(
-                    text = T("info.capability.subtitle").asString(),
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-                Spacer(Modifier.height(4.dp))
-                state.capabilities.forEach { capability ->
-                    CapabilityRow(capability = capability)
-                }
-            }
+            CapabilityCard(
+                capabilities = state.capabilities,
+                expanded = capabilitiesExpanded,
+                onToggleExpanded = { capabilitiesExpanded = !capabilitiesExpanded },
+            )
         }
 
         item {
@@ -132,6 +125,53 @@ fun HowItWorksScreen(
         }
 
         item { Spacer(Modifier.height(12.dp)) }
+    }
+}
+
+@Composable
+private fun CapabilityCard(
+    capabilities: List<DeviceCapability>,
+    expanded: Boolean,
+    onToggleExpanded: () -> Unit,
+) {
+    RegistryCard(
+        iconRes = R.drawable.lucide_battery_full,
+        title = T("info.capability.title").asString(),
+    ) {
+        AppText(
+            text = T("info.capability.subtitle").asString(),
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Spacer(Modifier.height(4.dp))
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            AppText(
+                text = T("info.capability.summary", capabilities.size).asString(),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            FilterChip(
+                selected = expanded,
+                onClick = onToggleExpanded,
+                label = {
+                    AppText(
+                        text = if (expanded) {
+                            T("info.capability.hide").asString()
+                        } else {
+                            T("info.capability.show").asString()
+                        },
+                    )
+                },
+            )
+        }
+        if (expanded) {
+            Spacer(Modifier.height(4.dp))
+            capabilities.forEach { capability ->
+                CapabilityRow(capability = capability)
+            }
+        }
     }
 }
 
@@ -167,7 +207,6 @@ private fun RegistryCard(
 
 @Composable
 private fun GradeRow(
-    badge: String,
     grade: EvidenceGrade,
     body: String,
 ) {
@@ -188,7 +227,6 @@ private fun GradeRow(
 private fun RuleRow(
     title: String,
     body: String,
-    badge: String,
     grade: EvidenceGrade,
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -208,7 +246,7 @@ private fun RuleRow(
 }
 
 @Composable
-private fun CapabilityRow(capability: com.synosoftware.battery.domain.DeviceCapability) {
+private fun CapabilityRow(capability: DeviceCapability) {
     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
         LabelValueRow(
             label = capability.label.asString(),

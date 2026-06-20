@@ -25,6 +25,7 @@ enum class ThemeMode {
 
 data class UserPreferences(
     val targetChargePercent: Int = 85,
+    val designCapacityMah: Int? = null,
     val experimentalMetricsEnabled: Boolean = false,
     val temperatureUnit: TemperatureUnit = TemperatureUnit.CELSIUS,
     val themeMode: ThemeMode = ThemeMode.SYSTEM,
@@ -34,6 +35,7 @@ class SettingsRepository(
     private val context: Context,
 ) {
     private val targetKey = intPreferencesKey("target_charge_percent")
+    private val designCapacityKey = intPreferencesKey("design_capacity_mah")
     private val experimentalKey = booleanPreferencesKey("experimental_metrics_enabled")
     private val temperatureUnitKey = stringPreferencesKey("temperature_unit")
     private val themeModeKey = stringPreferencesKey("theme_mode")
@@ -45,6 +47,16 @@ class SettingsRepository(
     suspend fun setTargetChargePercent(percent: Int) {
         context.userPreferencesDataStore.edit { prefs ->
             prefs[targetKey] = percent.coerceIn(50, 100)
+        }
+    }
+
+    suspend fun setDesignCapacityMah(capacityMah: Int?) {
+        context.userPreferencesDataStore.edit { prefs ->
+            if (capacityMah == null || capacityMah <= 0) {
+                prefs.remove(designCapacityKey)
+            } else {
+                prefs[designCapacityKey] = capacityMah
+            }
         }
     }
 
@@ -68,6 +80,7 @@ class SettingsRepository(
 
     private fun Preferences.toUserPreferences(): UserPreferences {
         val targetChargePercent = this[targetKey] ?: 85
+        val designCapacityMah = this[designCapacityKey]
         val experimentalMetricsEnabled = this[experimentalKey] ?: false
         val temperatureUnit = runCatching {
             TemperatureUnit.valueOf(this[temperatureUnitKey] ?: TemperatureUnit.CELSIUS.name)
@@ -77,6 +90,7 @@ class SettingsRepository(
         }.getOrDefault(ThemeMode.SYSTEM)
         return UserPreferences(
             targetChargePercent = targetChargePercent,
+            designCapacityMah = designCapacityMah,
             experimentalMetricsEnabled = experimentalMetricsEnabled,
             temperatureUnit = temperatureUnit,
             themeMode = themeMode,

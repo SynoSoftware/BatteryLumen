@@ -12,12 +12,18 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text as AppText
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -35,11 +41,20 @@ import com.synosoftware.battery.ui.model.BatteryUiState
 fun SettingsScreen(
     state: BatteryUiState,
     onTargetSelected: (Int) -> Unit,
+    onDesignCapacitySelected: (Int?) -> Unit,
     onTemperatureUnitSelected: (TemperatureUnit) -> Unit,
     onExperimentalMetricsChanged: (Boolean) -> Unit,
     onThemeModeSelected: (ThemeMode) -> Unit,
     contentPadding: PaddingValues,
 ) {
+    var designCapacityText by rememberSaveable { mutableStateOf(state.designCapacityMah?.toString().orEmpty()) }
+    LaunchedEffect(state.designCapacityMah) {
+        val expected = state.designCapacityMah?.toString().orEmpty()
+        if (designCapacityText != expected) {
+            designCapacityText = expected
+        }
+    }
+
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -78,6 +93,33 @@ fun SettingsScreen(
 
         item {
             SettingsCard(
+                iconRes = R.drawable.lucide_heart,
+                title = T("settings.design.title").asString(),
+                subtitle = T("settings.design.description").asString(),
+            ) {
+                OutlinedTextField(
+                    value = designCapacityText,
+                    onValueChange = { input ->
+                        val digits = input.filter(Char::isDigit)
+                        designCapacityText = digits
+                        onDesignCapacitySelected(digits.toIntOrNull())
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true,
+                    label = { AppText(T("settings.design.label").asString()) },
+                    placeholder = { AppText(T("settings.design.placeholder").asString()) },
+                    supportingText = {
+                        AppText(
+                            text = T("settings.design.supporting").asString(),
+                            style = MaterialTheme.typography.bodySmall,
+                        )
+                    },
+                )
+            }
+        }
+
+        item {
+            SettingsCard(
                 iconRes = R.drawable.lucide_thermometer,
                 title = T("settings.temperature.title").asString(),
                 subtitle = T("settings.temperature.description").asString(),
@@ -96,7 +138,7 @@ fun SettingsScreen(
                 if (state.currentSnapshot != null) {
                     AppText(
                         text = T(
-                            "settings_temperature_preview",
+                            "settings.temperature.preview",
                             temperatureText(state.currentSnapshot.temperatureC, state.temperatureUnit),
                         ).asString(),
                         style = MaterialTheme.typography.bodySmall,
@@ -128,7 +170,7 @@ fun SettingsScreen(
         }
 
         item {
-                SettingsCard(
+            SettingsCard(
                 iconRes = R.drawable.lucide_zap,
                 title = T("settings.experimental.title").asString(),
                 subtitle = T("settings.experimental.description").asString(),

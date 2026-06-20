@@ -152,6 +152,7 @@ fun BatteryAppRoot(
                     SettingsScreen(
                         state = state,
                         onTargetSelected = viewModel::setTargetChargePercent,
+                        onDesignCapacitySelected = viewModel::setDesignCapacityMah,
                         onTemperatureUnitSelected = viewModel::setTemperatureUnit,
                         onExperimentalMetricsChanged = viewModel::setExperimentalMetricsEnabled,
                         onThemeModeSelected = viewModel::setThemeMode,
