@@ -1,15 +1,10 @@
 # Contributing
 
-Thanks for helping improve Battery Lumen.
+Keep changes small and aligned with the SRS and the code.
 
-## Principles
-
-- Keep the app honest about measured, estimated, inferred, and experimental values
-- Prefer local-first changes
-- Avoid fake precision
-
-## Workflow
-
-- Open an issue before larger changes
-- Add tests for model logic and data behavior
-- Keep docs updated when model rules change
+- User-facing text goes through `T("...")` and `app/src/main/assets/i18n/en.json`.
+- App icons use Lucide-derived vector drawables only.
+- Measured, estimated, inferred, and experimental values must stay separate.
+- Update docs when model rules, thresholds, confidence labels, or stored fields change.
+- Run `.\gradlew.bat assembleDebug --warning-mode all`.
+- Add tests for model, storage, or migration changes.

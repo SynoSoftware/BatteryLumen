@@ -1,29 +1,9 @@
 # Daily Summary
 
-## Feature
-Per-day charging quality summary.
+Summarize one day of charging behavior from sessions, max temperature, and time above charge and heat thresholds.
 
-## Why it matters
-This gives a compact behavior summary without requiring users to inspect individual sessions.
+Hot means 43 C or above. The summary is risky when the phone spends 30 minutes above 90 percent, 45 minutes above 85 percent, or has a hot session.
 
-## Inputs needed
-Daily sessions, max temperature, time above charge thresholds, and session quality.
-
-## Evidence grade
-Inferred.
-
-## Confidence rules
-Medium only when the day has enough observed charging time.
-Low when the device was mostly unobserved.
-
-## Overclaiming risks
-Do not turn the summary into a moral score.
-Do not present a single bad session as a verdict on the battery.
-
-## Blocked by
-Session aggregation and health/trend logic.
-
-## Acceptance tests
-- A quiet day can still produce a summary.
-- A hot day highlights temperature and time-above-threshold.
-- Weak observations are labeled.
+- Quiet days still show a summary.
+- Hot or high-charge days show the reason.
+- Sparse days read low confidence.

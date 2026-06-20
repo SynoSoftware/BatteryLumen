@@ -1,22 +1,9 @@
-# Privacy Policy
+# Privacy
 
-Battery Lumen is local-first.
+Battery Lumen keeps data on device.
 
-## By default
+Stored data: battery readings, charging sessions, target charge, design capacity, experimental-metrics toggle, temperature unit, and theme mode.
 
-- No account
-- No cloud sync
-- No telemetry
-- No ads
-- No required network access
+No account, no cloud sync, no telemetry, no ads, and no required network access.
 
-## Stored data
-
-- Battery readings
-- Session records
-- User settings
-
-## Export
-
-- CSV
-- JSON
+Export keeps evidence and confidence labels with the data.

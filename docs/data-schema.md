@@ -1,41 +1,21 @@
 # Data Schema
 
-## Room tables
+`charge_sessions` is the canonical record of charging evidence.
 
-### `charge_sessions`
+Stored columns:
 
-- `startedAtMs`
-- `lastSeenAtMs`
-- `endedAtMs`
-- `startLevelPercent`
-- `currentLevelPercent`
-- `startChargeCounterUah`
-- `currentChargeCounterUah`
-- `startTemperatureC`
-- `currentTemperatureC`
-- `maxTemperatureC`
-- `averageTemperatureC`
-- `timeAbove85Sec`
-- `timeAbove90Sec`
-- `timeAbove35Sec`
-- `timeAbove40Sec`
-- `timeAbove43Sec`
-- `timeAbove45Sec`
-- `timeAbove80Sec`
-- `timeAbove95Sec`
-- `chargingSource`
-- `chargingState`
-- `status`
-- `sampleCount`
-- `lastNotifiedTargetPercent`
-- `gainPercent`
+- Time: `startedAtMs`, `lastSeenAtMs`, `endedAtMs`
+- Level: `startLevelPercent`, `currentLevelPercent`, `gainPercent`
+- Charge counter: `startChargeCounterUah`, `currentChargeCounterUah`
+- Temperature: `startTemperatureC`, `currentTemperatureC`, `maxTemperatureC`, `averageTemperatureC`
+- Heat exposure: `timeAbove35Sec`, `timeAbove40Sec`, `timeAbove43Sec`, `timeAbove45Sec`
+- Charge exposure: `timeAbove80Sec`, `timeAbove85Sec`, `timeAbove90Sec`, `timeAbove95Sec`
+- State: `chargingSource`, `chargingState`, `status`, `sampleCount`, `lastNotifiedTargetPercent`
 
-The session table stores raw exposure facts only. Assessment fields such as quality, confidence, usefulness, stress, and capacity trend are derived in domain code on read, not stored as canonical session data.
+`status` uses `ACTIVE`, `COMPLETED`, or `INCOMPLETE`.
 
-Health percent is not a canonical stored value. When a design-capacity setting exists, the UI may convert the capacity estimate in mAh into a percentage for display.
+Domain code derives stress, quality, confidence, and health display values on read.
 
-## DataStore keys
+`DataStore` keeps `target_charge_percent`, `design_capacity_mah`, `experimental_metrics_enabled`, `temperature_unit`, and `theme_mode`.
 
-- `target_charge_percent`
-- `experimental_metrics_enabled`
-- `temperature_unit`
+Health percent is display-only and requires a design-capacity setting.

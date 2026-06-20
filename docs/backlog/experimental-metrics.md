@@ -1,28 +1,11 @@
 # Experimental Metrics
 
-## Feature
-Optional experimental metrics such as wear-per-session and lifetime proxies.
+Keep wear-per-session, lifetime proxies, stress indices, and efficiency scores out of the main product.
 
-## Why it matters
-These may be interesting, but they are not core product claims.
+Examples: wear per session, lifetime cost proxy, relative stress index, charging efficiency score.
 
-## Inputs needed
-Future model validation and better device capability data.
+These values stay disabled by default, labeled experimental, and unable to override current advice. They can be promoted only after model documentation and tests justify it.
 
-## Evidence grade
-Experimental.
-
-## Confidence rules
-Always low unless the metric is later promoted with strong evidence.
-
-## Overclaiming risks
-Do not treat experimental metrics as truth.
-Do not surface them in the main charging decision flow.
-
-## Blocked by
-Future validation, model documentation, and product evidence review.
-
-## Acceptance tests
-- Experimental metrics are clearly labeled.
-- They are not shown by default.
-- They never override core advice.
+- The label is visible.
+- The settings gate is explicit.
+- Export preserves the experimental label.

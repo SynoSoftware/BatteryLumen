@@ -1,18 +1,13 @@
 # Research Notes
 
-This file tracks the product's evidence-based battery guidance.
+Battery Lumen uses temperature, state of charge, time near full, charge rate when available, and capacity fade over time.
 
-## Current v0 focus
+Useful-session gate:
 
-- Temperature
-- Charge level
-- Time spent near full charge
-- Useful session quality
+- At least 30 percent gain
+- At least 10 minutes
+- At least 2 samples
+- Not wireless
+- Below 45 C
 
-## Later work
-
-- Health estimation
-- Capacity trends
-- Daily summaries
-- Export
-- Experimental metrics
+Use those signals for advice. Keep device-varying estimates labeled estimated and keep weak or unproven metrics experimental.

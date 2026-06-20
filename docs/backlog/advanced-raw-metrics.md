@@ -1,28 +1,9 @@
 # Advanced Raw Metrics
 
-## Feature
-Advanced raw battery metrics like voltage, current, charge counter, and plug details.
+Expose voltage, current, average current, charge counter, and plug source for users who want detail.
 
-## Why it matters
-These values are useful for power users and for improving future models.
+These values are measured when the device exposes them. Missing values stay unavailable, units and source labels are required, and raw metrics stay below primary advice.
 
-## Inputs needed
-BatteryManager support and device-specific availability rules.
-
-## Evidence grade
-Measured when available, unavailable otherwise.
-
-## Confidence rules
-Show raw metrics only when the device exposes them and the app can label them correctly.
-
-## Overclaiming risks
-Do not let raw metrics dominate the main UI.
-Do not invent reliability where the device does not support it.
-
-## Blocked by
-Capability matrix, UI placement rules, and model validation.
-
-## Acceptance tests
-- Unsupported metrics show as unavailable.
-- Supported metrics retain unit and source labels.
-- Raw metrics stay secondary.
+- Unsupported metrics do not render as zero.
+- Supported metrics show value, unit, and source.
+- Main UI still leads with action and stress.

@@ -1,14 +1,7 @@
 # Device Compatibility
 
-Battery Lumen relies on Android battery broadcasts and BatteryManager properties.
+Battery Lumen reads Android battery broadcasts and `BatteryManager` properties.
 
-## Best experience
+Battery level, charging state, plug type, and timestamps are available on most devices. Temperature, voltage, current, and charge counter depend on the device.
 
-- A device that exposes temperature
-- A device that exposes current or charge counter values
-- The app being opened while charging
-
-## Fallbacks
-
-- Unsupported readings are labeled unavailable
-- Health remains empty until enough useful sessions exist
+If a device hides current or charge counter, the app still works with level and temperature. Health waits for 5 useful sessions.

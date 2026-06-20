@@ -1,37 +1,29 @@
 # Battery Lumen
 
-Battery Lumen is an Android charging decision assistant focused on evidence quality, local-first storage, and honest battery guidance.
+Battery Lumen stores battery readings and charging sessions on device.
 
-## Current scope
+The app has four screens: Now, Health, Ledger, and Info.
 
-- Native Android only
-- Kotlin + Compose + Room + DataStore + WorkManager
-- Charge-session ledger from day one
-- Now screen first, Health as an empty state until enough useful data exists
+- Now shows stress, action, time to target, and confidence.
+- Health shows an estimated capacity range after 5 useful sessions.
+- Ledger stores session history with temperature and charge exposure.
+- Info explains the evidence labels and model thresholds.
+- Values are labeled measured, estimated, inferred, or experimental.
+- No account, cloud sync, ads, telemetry, or root.
 
-## Product stance
+Built with Kotlin, Jetpack Compose, Room, DataStore, WorkManager, and Material 3.
 
-- Measured, estimated, inferred, and experimental values are labeled separately
-- No backend
-- No telemetry by default
-- No fake precision
-- Lucide is the only icon set
-- UI assets stay vector-only
+Build:
 
-## Asset policy
+```powershell
+$env:JAVA_HOME='C:\Program Files\Android\Android Studio\jbr'
+.\gradlew.bat assembleDebug --warning-mode all
+```
 
-- App icons use Lucide-derived vector drawables
-- Bitmap UI assets are not allowed
-- See [`docs/icon-policy.md`](docs/icon-policy.md) for the enforcement rules
+Docs:
 
-## Localization policy
-
-- Use `T("...")` for user-facing text keys
-- Keep the catalog in [`app/src/main/assets/i18n/en.json`](app/src/main/assets/i18n/en.json)
-- See [`docs/i18n-policy.md`](docs/i18n-policy.md) for the rules
-
-## Repo layout
-
-- `app/` Android application
-- `docs/backlog/` tracked future work
-- `battery srs.md` and `ui-ux specs.md` source requirements
+- [Product requirements](specs/battery%20srs.md)
+- [UI requirements](specs/ui-ux%20specs.md)
+- [Model notes](docs/model-documentation.md)
+- [Stored data](docs/data-schema.md)
+- [Backlog](docs/backlog/README.md)

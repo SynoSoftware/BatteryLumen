@@ -2,8 +2,8 @@
 
 ## Unreleased
 
-- Initial Android scaffold
-- v0 charging decision assistant
-- Session ledger
-- Evidence labels
-- Backlog docs for future features
+- Android scaffold.
+- Live charging advice.
+- Local charge-session ledger.
+- Evidence labels.
+- Backlog docs for health, export, daily summary, and experimental metrics.
