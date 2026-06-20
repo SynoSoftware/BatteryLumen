@@ -65,35 +65,21 @@ class BatteryDecisionEngine {
         )
     }
 
-    fun healthTrend(session: ChargeSessionMetrics): SessionHealthTrend {
-        val measuredPercent = session.currentLevelPercent.toFloat().coerceIn(0f, 100f)
-        val sessionAssessment = assessSession(session)
-        val temperatureEstimatePercent = (measuredPercent - temperaturePenalty(session, sessionAssessment)).coerceIn(0f, 100f)
-        val percentOnlyEstimatePercent = (measuredPercent - percentPenalty(session)).coerceIn(0f, 100f)
-        return SessionHealthTrend(
-            usefulForHealth = sessionAssessment.usefulForHealth,
-            measuredPercent = measuredPercent,
-            temperatureEstimatePercent = temperatureEstimatePercent,
-            percentOnlyEstimatePercent = percentOnlyEstimatePercent,
-        )
-    }
-
     private fun thermalStress(
         snapshot: BatterySnapshot,
         session: ChargeSessionMetrics?,
     ): StressLevel {
-        val temp = snapshot.temperatureC ?: session?.maxTemperatureC
-        var stress = when {
-            temp == null -> StressLevel.NORMAL
-            temp < 35f -> StressLevel.GOOD
-            temp < 40f -> StressLevel.NORMAL
-            temp < 43f -> StressLevel.HIGH_STRESS
-            temp < 45f -> StressLevel.HIGH_STRESS
-            else -> StressLevel.SEVERE_STRESS
+        val temp = snapshot.temperatureC ?: session?.maxTemperatureC ?: session?.averageTemperatureC
+        var stress = thermalSeverity(temp)
+
+        if (session != null) {
+            stress = maxBySeverity(stress, sessionThermalStress(session))
         }
-        if (snapshot.chargingState == ChargingState.CHARGING && temp != null && temp >= 43f) {
+
+        if (isChargingLike(snapshot) && temp != null && temp >= 43f) {
             stress = stress.escalate()
         }
+
         return stress
     }
 
@@ -101,58 +87,84 @@ class BatteryDecisionEngine {
         snapshot: BatterySnapshot,
         session: ChargeSessionMetrics?,
     ): StressLevel {
-        val level = snapshot.levelPercent
-        var stress = when {
-            level >= 95 -> StressLevel.HIGH_STRESS
-            level >= 90 -> StressLevel.HIGH_STRESS
-            level >= 85 -> StressLevel.HIGH_STRESS
-            level >= 80 -> StressLevel.NORMAL
-            level >= 50 -> StressLevel.GOOD
-            else -> StressLevel.NORMAL
-        }
+        var stress = chargeSeverity(snapshot.levelPercent, isChargingLike(snapshot))
 
-        val highChargeMinutes = session?.timeAbove85Sec?.div(60) ?: 0L
-        val veryHighChargeMinutes = session?.timeAbove90Sec?.div(60) ?: 0L
-
-        if (snapshot.chargingState == ChargingState.CHARGING) {
-            if (highChargeMinutes >= 30) {
-                stress = stress.escalate()
-            }
-            if (veryHighChargeMinutes >= 15) {
-                stress = stress.escalate()
-            }
+        if (session != null) {
+            stress = maxBySeverity(stress, sessionChargeLevelStress(session))
         }
 
         return stress
     }
 
-    private fun sessionThermalStress(session: ChargeSessionMetrics): StressLevel {
-        val temp = session.maxTemperatureC
+    private fun thermalSeverity(tempC: Float?): StressLevel {
         return when {
-            temp == null -> StressLevel.NORMAL
-            temp < 35f -> StressLevel.GOOD
-            temp < 40f -> StressLevel.NORMAL
-            temp < 43f -> StressLevel.HIGH_STRESS
+            tempC == null -> StressLevel.GOOD
+            tempC < 35f -> StressLevel.GOOD
+            tempC < 40f -> StressLevel.NORMAL
+            tempC < 45f -> StressLevel.HIGH_STRESS
             else -> StressLevel.SEVERE_STRESS
         }
     }
 
-    private fun sessionChargeLevelStress(session: ChargeSessionMetrics): StressLevel {
-        val level = session.currentLevelPercent
-        var stress = when {
-            level >= 95 -> StressLevel.HIGH_STRESS
-            level >= 90 -> StressLevel.HIGH_STRESS
-            level >= 85 -> StressLevel.HIGH_STRESS
-            level >= 80 -> StressLevel.NORMAL
-            level >= 50 -> StressLevel.GOOD
-            else -> StressLevel.NORMAL
+    private fun chargeSeverity(levelPercent: Int, chargingLike: Boolean): StressLevel {
+        return if (chargingLike) {
+            when {
+                levelPercent < 80 -> StressLevel.GOOD
+                levelPercent < 85 -> StressLevel.NORMAL
+                levelPercent < 90 -> StressLevel.NORMAL
+                levelPercent < 95 -> StressLevel.HIGH_STRESS
+                else -> StressLevel.HIGH_STRESS
+            }
+        } else {
+            when {
+                levelPercent >= 95 -> StressLevel.NORMAL
+                levelPercent >= 90 -> StressLevel.GOOD
+                else -> StressLevel.GOOD
+            }
         }
-        if (session.timeAbove85Sec >= 30 * 60) {
-            stress = stress.escalate()
+    }
+
+    private fun sessionThermalStress(session: ChargeSessionMetrics): StressLevel {
+        var stress = thermalSeverity(session.maxTemperatureC ?: session.averageTemperatureC)
+
+        if (session.timeAbove45Sec >= 3 * 60) {
+            return StressLevel.SEVERE_STRESS
+        }
+        if (session.timeAbove43Sec >= 10 * 60) {
+            stress = maxBySeverity(stress, StressLevel.HIGH_STRESS)
+        }
+        if (session.timeAbove40Sec >= 30 * 60) {
+            stress = maxBySeverity(stress, StressLevel.NORMAL)
+        }
+        if (session.timeAbove35Sec >= 60 * 60) {
+            stress = maxBySeverity(stress, StressLevel.GOOD)
+        }
+
+        return stress
+    }
+
+    private fun sessionChargeLevelStress(session: ChargeSessionMetrics): StressLevel {
+        var stress = when {
+            session.currentLevelPercent >= 95 -> StressLevel.HIGH_STRESS
+            session.currentLevelPercent >= 90 -> StressLevel.HIGH_STRESS
+            session.currentLevelPercent >= 85 -> StressLevel.NORMAL
+            session.currentLevelPercent >= 80 -> StressLevel.NORMAL
+            else -> StressLevel.GOOD
+        }
+
+        if (session.timeAbove95Sec >= 60 * 60) {
+            stress = maxBySeverity(stress, StressLevel.HIGH_STRESS)
         }
         if (session.timeAbove90Sec >= 15 * 60) {
-            stress = stress.escalate()
+            stress = maxBySeverity(stress, StressLevel.HIGH_STRESS)
         }
+        if (session.timeAbove85Sec >= 30 * 60) {
+            stress = maxBySeverity(stress, StressLevel.NORMAL)
+        }
+        if (session.timeAbove80Sec >= 60 * 60) {
+            stress = maxBySeverity(stress, StressLevel.NORMAL)
+        }
+
         return stress
     }
 
@@ -160,6 +172,7 @@ class BatteryDecisionEngine {
         if (session.status == SessionStatus.INCOMPLETE) {
             return SessionQuality.INCOMPLETE
         }
+
         val gain = session.gainPercent
         val durationMinutes = session.durationMinutes
         val maxTemp = session.maxTemperatureC ?: 0f
@@ -180,35 +193,6 @@ class BatteryDecisionEngine {
         }
     }
 
-    private fun temperaturePenalty(
-        session: ChargeSessionMetrics,
-        sessionAssessment: SessionAssessment,
-    ): Float {
-        val maxTemperature = session.maxTemperatureC ?: session.averageTemperatureC ?: 0f
-        val base = when {
-            maxTemperature >= 45f -> 9f
-            maxTemperature >= 43f -> 7f
-            maxTemperature >= 40f -> 4.5f
-            maxTemperature >= 35f -> 1.5f
-            else -> 0f
-        }
-        val dwellPenalty = (session.timeAbove85Sec / 1_800f) * 1.2f + (session.timeAbove90Sec / 900f) * 1.8f
-        val qualityPenalty = if (sessionAssessment.usefulForHealth) -1f else 0.5f
-        return base + dwellPenalty + qualityPenalty
-    }
-
-    private fun percentPenalty(session: ChargeSessionMetrics): Float {
-        val chargePenalty = when {
-            session.currentLevelPercent >= 95 -> 8f
-            session.currentLevelPercent >= 90 -> 6f
-            session.currentLevelPercent >= 85 -> 4f
-            session.currentLevelPercent >= 80 -> 2f
-            else -> 0.5f
-        }
-        val durationPenalty = (session.sampleCount.coerceAtLeast(1) * 0.25f) + (session.gainPercent.coerceAtLeast(0) / 20f)
-        return chargePenalty + durationPenalty
-    }
-
     private fun confidence(
         snapshot: BatterySnapshot,
         session: ChargeSessionMetrics?,
@@ -217,10 +201,8 @@ class BatteryDecisionEngine {
         var score = 0
         if (snapshot.temperatureC != null) score += 1
         if (snapshot.levelPercent in 0..100) score += 1
-        if (snapshot.voltageMv != null || snapshot.currentUa != null || snapshot.chargeCounterUah != null) {
-            score += 1
-        }
-        if (snapshot.chargingState != ChargingState.UNKNOWN) score += 1
+        if (isChargingLike(snapshot)) score += 1
+        if (isCurrentReliable(snapshot)) score += 1
         if (session != null && session.sampleCount >= 2) score += 1
         if (sessionAssessment != null && sessionAssessment.usefulForHealth) score += 1
 
@@ -238,18 +220,32 @@ class BatteryDecisionEngine {
         session: ChargeSessionMetrics?,
         targetPercent: Int,
     ): com.synosoftware.battery.i18n.UiText {
-        val temperature = snapshot.temperatureC ?: session?.maxTemperatureC
+        val temperature = snapshot.temperatureC ?: session?.maxTemperatureC ?: session?.averageTemperatureC
         return when {
-            temperature != null && temperature >= 43f ->
+            isChargingLike(snapshot) && temperature != null && temperature >= 45f ->
                 T("decision.reason.hot.charging", temperature.roundOne())
-            snapshot.levelPercent >= targetPercent && snapshot.chargingState == ChargingState.CHARGING ->
-                T("decision.reason.at.target")
-            chargeStress.severity >= StressLevel.HIGH_STRESS.severity && snapshot.chargingState == ChargingState.CHARGING ->
+
+            isChargingLike(snapshot) && temperature != null && temperature >= 43f && snapshot.levelPercent >= 90 ->
+                T("decision.reason.hot.charging", temperature.roundOne())
+
+            isChargingLike(snapshot) && temperature != null && temperature >= 40f && snapshot.levelPercent >= 85 ->
+                T("decision.reason.hot.charging", temperature.roundOne())
+
+            session != null && session.timeAbove95Sec >= 60 * 60 ->
                 T("decision.reason.near.full")
+
+            chargeStress.severity >= StressLevel.HIGH_STRESS.severity && isChargingLike(snapshot) ->
+                T("decision.reason.near.full")
+
+            isChargingLike(snapshot) && snapshot.levelPercent >= targetPercent ->
+                T("decision.reason.at.target")
+
             thermalStress.severity >= StressLevel.HIGH_STRESS.severity ->
                 T("decision.reason.hot.label")
-            snapshot.chargingState == ChargingState.CHARGING ->
+
+            isChargingLike(snapshot) ->
                 T("decision.reason.reasonable")
+
             else ->
                 T("decision.reason.not.charging")
         }
@@ -261,18 +257,26 @@ class BatteryDecisionEngine {
         combinedStress: StressLevel,
         targetPercent: Int,
     ): com.synosoftware.battery.i18n.UiText {
-        val temperature = snapshot.temperatureC ?: session?.maxTemperatureC
+        val temperature = snapshot.temperatureC ?: session?.maxTemperatureC ?: session?.averageTemperatureC
         return when {
-            snapshot.chargingState != ChargingState.CHARGING ->
+            !isChargingLike(snapshot) ->
                 T("decision.action.not.charging")
+
             combinedStress == StressLevel.SEVERE_STRESS ->
                 T("decision.action.unplug.now")
+
+            temperature != null && temperature >= 45f ->
+                T("decision.action.unplug.now")
+
             temperature != null && temperature >= 40f ->
                 T("decision.action.cool")
+
             snapshot.levelPercent >= targetPercent && targetPercent < 100 ->
                 T("decision.action.unplug.if.not.needed")
+
             combinedStress.severity >= StressLevel.HIGH_STRESS.severity ->
                 T("decision.action.avoid.full")
+
             else ->
                 T("decision.action.continue")
         }
@@ -293,7 +297,7 @@ class BatteryDecisionEngine {
         session: ChargeSessionMetrics?,
         targetPercent: Int,
     ): Int? {
-        if (snapshot.chargingState != ChargingState.CHARGING) {
+        if (!isChargingLike(snapshot)) {
             return null
         }
         if (snapshot.levelPercent >= targetPercent) {
@@ -312,6 +316,10 @@ class BatteryDecisionEngine {
         }
         val remaining = targetPercent - snapshot.levelPercent
         return ceil(remaining / rate).toInt().coerceAtLeast(1)
+    }
+
+    private fun isChargingLike(snapshot: BatterySnapshot): Boolean {
+        return snapshot.chargingState == ChargingState.CHARGING || snapshot.chargingState == ChargingState.FULL
     }
 
     private fun maxBySeverity(first: StressLevel, second: StressLevel): StressLevel {

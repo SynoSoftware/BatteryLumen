@@ -32,6 +32,12 @@ fun ChargeSessionEntity.toMetrics(): ChargeSessionMetrics {
         usefulForHealth = false,
         quality = SessionQuality.INCOMPLETE,
         lastNotifiedTargetPercent = lastNotifiedTargetPercent,
+        timeAbove35Sec = timeAbove35Sec,
+        timeAbove40Sec = timeAbove40Sec,
+        timeAbove43Sec = timeAbove43Sec,
+        timeAbove45Sec = timeAbove45Sec,
+        timeAbove80Sec = timeAbove80Sec,
+        timeAbove95Sec = timeAbove95Sec,
     )
 }
 

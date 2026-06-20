@@ -23,6 +23,20 @@ class BatteryDecisionEngineTest {
     }
 
     @Test
+    fun veryHotChargingIsSevereAndUnplugsNow() {
+        val snapshot = snapshot(
+            levelPercent = 91,
+            temperatureC = 45f,
+            chargingState = ChargingState.CHARGING,
+        )
+
+        val decision = engine.analyze(snapshot, null, 85)
+
+        assertEquals(StressLevel.SEVERE_STRESS, decision.stress)
+        assertEquals("decision.action.unplug.now", decision.action.key)
+    }
+
+    @Test
     fun fullCoolChargingStaysHighStressAndSuggestsUnpluggingWhenNotNeeded() {
         val snapshot = snapshot(
             levelPercent = 100,
@@ -48,6 +62,31 @@ class BatteryDecisionEngineTest {
 
         assertTrue(decision.stress == StressLevel.GOOD || decision.stress == StressLevel.NORMAL)
         assertEquals("decision.action.continue", decision.action.key)
+    }
+
+    @Test
+    fun longTimeNearFullRaisesStress() {
+        val session = sessionMetrics(
+            startedAtMs = 1_000L,
+            lastSeenAtMs = 61 * 60_000L,
+            startLevelPercent = 50,
+            currentLevelPercent = 96,
+            maxTemperatureC = 36f,
+            averageTemperatureC = 35f,
+            sampleCount = 6,
+            chargingSource = ChargingSource.AC,
+            chargingState = ChargingState.CHARGING,
+            status = SessionStatus.COMPLETED,
+            timeAbove85Sec = 35 * 60L,
+            timeAbove90Sec = 20 * 60L,
+            timeAbove95Sec = 65 * 60L,
+        )
+
+        val assessment = engine.assessSession(session)
+
+        assertEquals(SessionQuality.USEFUL, assessment.quality)
+        assertEquals(StressLevel.HIGH_STRESS, assessment.chargeLevelStress)
+        assertEquals(StressLevel.HIGH_STRESS, assessment.combinedStress)
     }
 
     @Test
@@ -91,27 +130,6 @@ class BatteryDecisionEngineTest {
         assertEquals(SessionQuality.USEFUL, assessment.quality)
         assertTrue(assessment.usefulForHealth)
         assertEquals(ConfidenceLevel.HIGH, assessment.confidence)
-    }
-
-    @Test
-    fun healthTrendUsesSessionAssessment() {
-        val session = sessionMetrics(
-            startedAtMs = 1_000L,
-            lastSeenAtMs = 46 * 60_000L,
-            startLevelPercent = 30,
-            currentLevelPercent = 70,
-            maxTemperatureC = 34f,
-            averageTemperatureC = 33f,
-            sampleCount = 6,
-            chargingSource = ChargingSource.AC,
-            chargingState = ChargingState.CHARGING,
-            status = SessionStatus.COMPLETED,
-        )
-
-        val trend = engine.healthTrend(session)
-
-        assertTrue(trend.usefulForHealth)
-        assertTrue(trend.measuredPercent > trend.percentOnlyEstimatePercent)
     }
 
     @Test
@@ -167,6 +185,14 @@ class BatteryDecisionEngineTest {
         chargingSource: ChargingSource,
         chargingState: ChargingState,
         status: SessionStatus,
+        timeAbove85Sec: Long = 0L,
+        timeAbove90Sec: Long = 0L,
+        timeAbove35Sec: Long = 0L,
+        timeAbove40Sec: Long = 0L,
+        timeAbove43Sec: Long = 0L,
+        timeAbove45Sec: Long = 0L,
+        timeAbove80Sec: Long = 0L,
+        timeAbove95Sec: Long = 0L,
     ): ChargeSessionMetrics {
         return ChargeSessionMetrics(
             startedAtMs = startedAtMs,
@@ -178,14 +204,20 @@ class BatteryDecisionEngineTest {
             maxTemperatureC = maxTemperatureC,
             averageTemperatureC = averageTemperatureC,
             sampleCount = sampleCount,
-            timeAbove85Sec = 0L,
-            timeAbove90Sec = 0L,
             chargingSource = chargingSource,
             chargingState = chargingState,
             status = status,
             usefulForHealth = false,
             quality = SessionQuality.INCOMPLETE,
             lastNotifiedTargetPercent = null,
+            timeAbove85Sec = timeAbove85Sec,
+            timeAbove90Sec = timeAbove90Sec,
+            timeAbove35Sec = timeAbove35Sec,
+            timeAbove40Sec = timeAbove40Sec,
+            timeAbove43Sec = timeAbove43Sec,
+            timeAbove45Sec = timeAbove45Sec,
+            timeAbove80Sec = timeAbove80Sec,
+            timeAbove95Sec = timeAbove95Sec,
         )
     }
 }

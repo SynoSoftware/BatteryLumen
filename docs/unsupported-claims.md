@@ -7,3 +7,4 @@ Open Battery does not claim to:
 - Compute exact lifetime cost of a charge
 - Guarantee charge-stop behavior on devices that do not support it
 - Show fake precision in health estimates
+- Treat health percent as canonical when only a capacity estimate is available

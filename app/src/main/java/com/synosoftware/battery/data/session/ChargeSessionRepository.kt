@@ -124,6 +124,12 @@ class ChargeSessionRepository(
             timeAbove90Sec = 0L,
             lastNotifiedTargetPercent = if (snapshot.levelPercent >= targetPercent) targetPercent else null,
             gainPercent = 0,
+            timeAbove35Sec = 0L,
+            timeAbove40Sec = 0L,
+            timeAbove43Sec = 0L,
+            timeAbove45Sec = 0L,
+            timeAbove80Sec = 0L,
+            timeAbove95Sec = 0L,
         )
     }
 
@@ -133,8 +139,7 @@ class ChargeSessionRepository(
         targetPercent: Int,
     ): UpdateResult {
         val deltaSec = ((snapshot.timestampMs - existing.lastSeenAtMs).coerceAtLeast(0L)) / 1000L
-        val timeAbove85 = existing.timeAbove85Sec + if (existing.currentLevelPercent >= 85) deltaSec else 0L
-        val timeAbove90 = existing.timeAbove90Sec + if (existing.currentLevelPercent >= 90) deltaSec else 0L
+        val exposure = accumulateExposure(existing, deltaSec)
         val sampleCount = existing.sampleCount + 1
         val averageTemperature = when {
             existing.averageTemperatureC == null -> snapshot.temperatureC
@@ -155,8 +160,14 @@ class ChargeSessionRepository(
             chargingSource = snapshot.chargingSource.name,
             chargingState = snapshot.chargingState.name,
             sampleCount = sampleCount,
-            timeAbove85Sec = timeAbove85,
-            timeAbove90Sec = timeAbove90,
+            timeAbove35Sec = exposure.timeAbove35Sec,
+            timeAbove40Sec = exposure.timeAbove40Sec,
+            timeAbove43Sec = exposure.timeAbove43Sec,
+            timeAbove45Sec = exposure.timeAbove45Sec,
+            timeAbove80Sec = exposure.timeAbove80Sec,
+            timeAbove85Sec = exposure.timeAbove85Sec,
+            timeAbove90Sec = exposure.timeAbove90Sec,
+            timeAbove95Sec = exposure.timeAbove95Sec,
             lastNotifiedTargetPercent = if (crossedTarget) targetPercent else existing.lastNotifiedTargetPercent,
             gainPercent = newGain,
         )
@@ -263,8 +274,14 @@ class ChargeSessionRepository(
             chargingState = ChargingState.DISCHARGING.name,
             status = SessionStatus.COMPLETED.name,
             sampleCount = random.nextInt(3, 9),
+            timeAbove35Sec = if (highTemp >= 35f) durationMinutes * 60L else 0L,
+            timeAbove40Sec = if (highTemp >= 40f) ((durationMinutes - 10).coerceAtLeast(0) * 60L) else 0L,
+            timeAbove43Sec = if (highTemp >= 43f) ((durationMinutes - 20).coerceAtLeast(0) * 60L) else 0L,
+            timeAbove45Sec = if (highTemp >= 45f) ((durationMinutes - 30).coerceAtLeast(0) * 60L) else 0L,
+            timeAbove80Sec = if (endLevel >= 80) ((durationMinutes - 5).coerceAtLeast(0) * 60L) else 0L,
             timeAbove85Sec = timeAbove85Sec,
             timeAbove90Sec = timeAbove90Sec,
+            timeAbove95Sec = if (endLevel >= 95) ((durationMinutes - 45).coerceAtLeast(0) * 60L) else 0L,
             lastNotifiedTargetPercent = null,
             gainPercent = (endLevel - startLevel).coerceAtLeast(0),
         )
@@ -299,10 +316,59 @@ class ChargeSessionRepository(
             chargingState = ChargingState.CHARGING.name,
             status = SessionStatus.ACTIVE.name,
             sampleCount = random.nextInt(2, 6),
+            timeAbove35Sec = 0L,
+            timeAbove40Sec = 0L,
+            timeAbove43Sec = 0L,
+            timeAbove45Sec = 0L,
+            timeAbove80Sec = 0L,
             timeAbove85Sec = 0L,
             timeAbove90Sec = 0L,
+            timeAbove95Sec = 0L,
             lastNotifiedTargetPercent = null,
             gainPercent = (currentLevel - startLevel).coerceAtLeast(0),
+        )
+    }
+
+    private data class ExposureTotals(
+        val timeAbove35Sec: Long,
+        val timeAbove40Sec: Long,
+        val timeAbove43Sec: Long,
+        val timeAbove45Sec: Long,
+        val timeAbove80Sec: Long,
+        val timeAbove85Sec: Long,
+        val timeAbove90Sec: Long,
+        val timeAbove95Sec: Long,
+    )
+
+    private fun accumulateExposure(
+        existing: ChargeSessionEntity,
+        deltaSec: Long,
+    ): ExposureTotals {
+        if (deltaSec <= 0L || deltaSec > 30 * MINUTE_MS / 1000L) {
+            return ExposureTotals(
+                timeAbove35Sec = existing.timeAbove35Sec,
+                timeAbove40Sec = existing.timeAbove40Sec,
+                timeAbove43Sec = existing.timeAbove43Sec,
+                timeAbove45Sec = existing.timeAbove45Sec,
+                timeAbove80Sec = existing.timeAbove80Sec,
+                timeAbove85Sec = existing.timeAbove85Sec,
+                timeAbove90Sec = existing.timeAbove90Sec,
+                timeAbove95Sec = existing.timeAbove95Sec,
+            )
+        }
+
+        val previousTemperature = existing.currentTemperatureC ?: existing.averageTemperatureC ?: existing.maxTemperatureC
+        val previousLevel = existing.currentLevelPercent
+
+        return ExposureTotals(
+            timeAbove35Sec = existing.timeAbove35Sec + if (previousTemperature != null && previousTemperature >= 35f) deltaSec else 0L,
+            timeAbove40Sec = existing.timeAbove40Sec + if (previousTemperature != null && previousTemperature >= 40f) deltaSec else 0L,
+            timeAbove43Sec = existing.timeAbove43Sec + if (previousTemperature != null && previousTemperature >= 43f) deltaSec else 0L,
+            timeAbove45Sec = existing.timeAbove45Sec + if (previousTemperature != null && previousTemperature >= 45f) deltaSec else 0L,
+            timeAbove80Sec = existing.timeAbove80Sec + if (previousLevel >= 80) deltaSec else 0L,
+            timeAbove85Sec = existing.timeAbove85Sec + if (previousLevel >= 85) deltaSec else 0L,
+            timeAbove90Sec = existing.timeAbove90Sec + if (previousLevel >= 90) deltaSec else 0L,
+            timeAbove95Sec = existing.timeAbove95Sec + if (previousLevel >= 95) deltaSec else 0L,
         )
     }
 

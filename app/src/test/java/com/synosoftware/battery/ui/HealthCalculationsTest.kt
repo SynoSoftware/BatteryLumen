@@ -1,27 +1,38 @@
 package com.synosoftware.battery.ui
 
-import com.synosoftware.battery.ui.model.HealthTrendPointUi
-import com.synosoftware.battery.ui.model.HealthTrendState
+import com.synosoftware.battery.domain.CapacityPoint
+import com.synosoftware.battery.domain.CapacityTrend
+import com.synosoftware.battery.domain.DataQuality
+import com.synosoftware.battery.domain.estimateCapacity
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
 class HealthCalculationsTest {
     @Test
-    fun buildHealthEstimateUsesChronologicalSamplesForTrendAndDesignCapacityForPercent() {
-        val estimate = buildHealthEstimate(
-            points = listOf(
-                HealthTrendPointUi(label = "Jan 1", estimatedCapacityMah = 4200f),
-                HealthTrendPointUi(label = "Jan 8", estimatedCapacityMah = 4100f),
-                HealthTrendPointUi(label = "Jan 15", estimatedCapacityMah = 4000f),
-                HealthTrendPointUi(label = "Jan 22", estimatedCapacityMah = 3900f),
-                HealthTrendPointUi(label = "Jan 29", estimatedCapacityMah = 3800f),
+    fun estimateCapacityUsesChronologicalSamplesAndUiMapperUsesDesignCapacityForPercent() {
+        val estimate = estimateCapacity(
+            listOf(
+                point(1_000L, 4_200.0),
+                point(2_000L, 4_100.0),
+                point(3_000L, 4_000.0),
+                point(4_000L, 3_900.0),
+                point(5_000L, 3_800.0),
             ),
-            designCapacityMah = 5000,
         )
 
-        assertEquals(HealthTrendState.DECLINING, estimate.trend)
-        assertEquals(4000, estimate.estimatedCapacityMah)
-        assertEquals(80, estimate.healthPercent)
-        assertEquals(78..82, estimate.healthRangePercent)
+        val ui = estimate.toUi(5_000)
+
+        assertEquals(CapacityTrend.DECLINING, estimate.trend)
+        assertEquals(4_000, estimate.estimatedCapacityMah)
+        assertEquals(80, ui.healthPercent)
+        assertEquals(78..82, ui.healthRangePercent)
+    }
+
+    private fun point(timestampMs: Long, capacityMah: Double): CapacityPoint {
+        return CapacityPoint(
+            timestampMs = timestampMs,
+            estimatedFullCapacityMah = capacityMah,
+            quality = DataQuality.USEFUL,
+        )
     }
 }

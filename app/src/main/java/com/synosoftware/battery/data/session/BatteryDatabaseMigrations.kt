@@ -91,3 +91,14 @@ internal val MIGRATION_2_3 = object : Migration(2, 3) {
         db.execSQL("ALTER TABLE `charge_sessions` ADD COLUMN `currentChargeCounterUah` INTEGER")
     }
 }
+
+internal val MIGRATION_3_4 = object : Migration(3, 4) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("ALTER TABLE `charge_sessions` ADD COLUMN `timeAbove35Sec` INTEGER NOT NULL DEFAULT 0")
+        db.execSQL("ALTER TABLE `charge_sessions` ADD COLUMN `timeAbove40Sec` INTEGER NOT NULL DEFAULT 0")
+        db.execSQL("ALTER TABLE `charge_sessions` ADD COLUMN `timeAbove43Sec` INTEGER NOT NULL DEFAULT 0")
+        db.execSQL("ALTER TABLE `charge_sessions` ADD COLUMN `timeAbove45Sec` INTEGER NOT NULL DEFAULT 0")
+        db.execSQL("ALTER TABLE `charge_sessions` ADD COLUMN `timeAbove80Sec` INTEGER NOT NULL DEFAULT 0")
+        db.execSQL("ALTER TABLE `charge_sessions` ADD COLUMN `timeAbove95Sec` INTEGER NOT NULL DEFAULT 0")
+    }
+}

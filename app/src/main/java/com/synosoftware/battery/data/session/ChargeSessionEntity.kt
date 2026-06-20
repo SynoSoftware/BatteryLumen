@@ -26,4 +26,10 @@ data class ChargeSessionEntity(
     val timeAbove90Sec: Long,
     val lastNotifiedTargetPercent: Int? = null,
     val gainPercent: Int,
+    val timeAbove35Sec: Long = 0L,
+    val timeAbove40Sec: Long = 0L,
+    val timeAbove43Sec: Long = 0L,
+    val timeAbove45Sec: Long = 0L,
+    val timeAbove80Sec: Long = 0L,
+    val timeAbove95Sec: Long = 0L,
 )

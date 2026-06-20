@@ -13,6 +13,10 @@ import com.synosoftware.battery.data.session.ChargeSessionEntity
 import com.synosoftware.battery.data.session.ChargeSessionRepository
 import com.synosoftware.battery.data.session.toMetrics
 import com.synosoftware.battery.data.session.toUi
+import com.synosoftware.battery.domain.CapacityPoint
+import com.synosoftware.battery.domain.DataQuality
+import com.synosoftware.battery.domain.buildCapacityPoints
+import com.synosoftware.battery.domain.estimateCapacity
 import com.synosoftware.battery.domain.BatteryDecisionEngine
 import com.synosoftware.battery.domain.BatterySnapshot
 import com.synosoftware.battery.domain.ChargeSessionMetrics
@@ -26,6 +30,7 @@ import com.synosoftware.battery.ui.model.HealthEvolutionUi
 import com.synosoftware.battery.ui.model.HealthTrendPointUi
 import com.synosoftware.battery.ui.model.BatteryUiState
 import com.synosoftware.battery.ui.model.MIN_USEFUL_SESSION_COUNT
+import com.synosoftware.battery.ui.toUi
 import com.synosoftware.battery.i18n.T
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -81,15 +86,13 @@ class BatteryViewModel(
         }
         val activeView = sessionViews.firstOrNull { it.metrics.status == SessionStatus.ACTIVE }
         val activeSession = activeView?.ui
+        val capacityPoints = buildCapacityPoints(sessionViews.map { it.metrics })
         val decision = snapshot?.let { current ->
             val activeMetrics = activeView?.metrics
             decisionEngine.analyze(current, activeMetrics, preferences.targetChargePercent)
         }
-        val healthEvolution = buildHealthEvolution(sessionViews)
-        val healthEstimate = buildHealthEstimate(
-            points = healthEvolution.points,
-            designCapacityMah = preferences.designCapacityMah,
-        )
+        val healthEvolution = buildHealthEvolution(capacityPoints)
+        val healthEstimate = estimateCapacity(capacityPoints).toUi(preferences.designCapacityMah)
         val dailySummary = buildDailySummary(sessionViews, snapshot)
         BatteryUiState(
             targetChargePercent = preferences.targetChargePercent,
@@ -165,27 +168,13 @@ class BatteryViewModel(
         }
     }
 
-    private fun buildHealthEvolution(sessions: List<SessionView>): HealthEvolutionUi {
-        val ordered = sessions
-            .sortedBy { it.entity.endedAtMs ?: it.entity.lastSeenAtMs }
-            .filter { it.assessment.usefulForHealth && it.metrics.status == SessionStatus.COMPLETED }
-            .mapNotNull { session ->
-                val metrics = session.metrics
-                val startCounter = metrics.startChargeCounterUah ?: return@mapNotNull null
-                val currentCounter = metrics.currentChargeCounterUah ?: return@mapNotNull null
-                val deltaCounter = currentCounter - startCounter
-                val gainPercent = (metrics.currentLevelPercent - metrics.startLevelPercent).coerceAtLeast(0)
-                if (gainPercent < 30 || deltaCounter <= 0) {
-                    return@mapNotNull null
-                }
-                val estimatedCapacityMah = (deltaCounter / (gainPercent / 100f)) / 1000f
-                if (estimatedCapacityMah <= 0f) {
-                    return@mapNotNull null
-                }
-                val pointTimeMs = session.entity.endedAtMs ?: session.entity.lastSeenAtMs
+    private fun buildHealthEvolution(points: List<CapacityPoint>): HealthEvolutionUi {
+        val ordered = points
+            .filter { it.quality == DataQuality.USEFUL }
+            .map {
                 HealthTrendPointUi(
-                    label = dateFormatter.format(Date(pointTimeMs)),
-                    estimatedCapacityMah = estimatedCapacityMah,
+                    label = dateFormatter.format(Date(it.timestampMs)),
+                    estimatedCapacityMah = it.estimatedFullCapacityMah.toFloat(),
                 )
             }
             .takeLast(12)
