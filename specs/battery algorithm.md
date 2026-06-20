@@ -910,9 +910,8 @@ So the right framing is:
 
 The safest product name would be something like:
 
-**Open Battery Decision Assistant for Android Phones**
+**Battery Lumen Decision Assistant for Android Phones**
 
 Not:
 
 **Universal Lithium-Ion Battery Health Scientist**
-

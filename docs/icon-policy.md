@@ -1,6 +1,6 @@
 # Icon Policy
 
-Open Battery uses Lucide as the only icon set in the app UI.
+Battery Lumen uses Lucide as the only icon set in the app UI.
 
 ## Rules
 

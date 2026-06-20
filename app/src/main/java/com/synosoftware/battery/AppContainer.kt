@@ -20,7 +20,7 @@ class AppContainer(context: Context) {
         Room.databaseBuilder(
             appContext,
             BatteryDatabase::class.java,
-            "open_battery.db",
+            "battery_lumen.db",
         )
             .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
             .build()

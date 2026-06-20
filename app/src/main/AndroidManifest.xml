@@ -9,11 +9,11 @@
         android:allowBackup="true"
         android:label="@string/app_name"
         android:supportsRtl="true"
-        android:theme="@style/Theme.OpenBattery">
+        android:theme="@style/Theme.BatteryLumen">
         <activity
             android:name=".MainActivity"
             android:exported="true"
-            android:theme="@style/Theme.OpenBattery">
+            android:theme="@style/Theme.BatteryLumen">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

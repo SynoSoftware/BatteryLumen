@@ -1,6 +1,6 @@
 # Unsupported Claims
 
-Open Battery does not claim to:
+Battery Lumen does not claim to:
 
 - Predict exact battery lifespan remaining
 - Measure exact wear from one session

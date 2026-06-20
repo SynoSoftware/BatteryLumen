@@ -1,4 +1,4 @@
-# Software Requirements Specification: Open Battery Decision Assistant
+# Software Requirements Specification: Battery Lumen Decision Assistant
 
 ## 1. Purpose
 

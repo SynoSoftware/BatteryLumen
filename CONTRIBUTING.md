@@ -1,6 +1,6 @@
 # Contributing
 
-Thanks for helping improve Open Battery.
+Thanks for helping improve Battery Lumen.
 
 ## Principles
 

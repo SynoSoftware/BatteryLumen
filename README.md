@@ -1,6 +1,6 @@
-# Open Battery
+# Battery Lumen
 
-Open Battery is an Android charging decision assistant focused on evidence quality, local-first storage, and honest battery guidance.
+Battery Lumen is an Android charging decision assistant focused on evidence quality, local-first storage, and honest battery guidance.
 
 ## Current scope
 

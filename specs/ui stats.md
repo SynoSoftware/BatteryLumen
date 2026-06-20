@@ -1,6 +1,6 @@
 Aligned to the SRS and corrected for the omissions from the prior draft.
 
-# Fixed Bucket Plan — Open Battery Decision Assistant
+# Fixed Bucket Plan - Battery Lumen Decision Assistant
 
 ## Product intent
 

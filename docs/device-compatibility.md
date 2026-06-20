@@ -1,6 +1,6 @@
 # Device Compatibility
 
-Open Battery relies on Android battery broadcasts and BatteryManager properties.
+Battery Lumen relies on Android battery broadcasts and BatteryManager properties.
 
 ## Best experience
 

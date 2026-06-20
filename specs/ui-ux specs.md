@@ -1,4 +1,4 @@
-# Product UI Specification: Open Battery Decision Assistant
+# Product UI Specification: Battery Lumen Decision Assistant
 
 ## 1. Product Goal
 

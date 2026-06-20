@@ -1,6 +1,6 @@
 # I18n Policy
 
-Open Battery keeps user-facing text in the JSON localization catalog at `app/src/main/assets/i18n/en.json`.
+Battery Lumen keeps user-facing text in the JSON localization catalog at `app/src/main/assets/i18n/en.json`.
 
 ## Rules
 

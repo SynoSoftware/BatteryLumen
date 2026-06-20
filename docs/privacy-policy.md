@@ -1,6 +1,6 @@
 # Privacy Policy
 
-Open Battery is local-first.
+Battery Lumen is local-first.
 
 ## By default
 

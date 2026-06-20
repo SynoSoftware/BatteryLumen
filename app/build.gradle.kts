@@ -38,6 +38,13 @@ extensions.configure<ApplicationExtension> {
     }
 
     packaging {
+        jniLibs {
+            keepDebugSymbols += listOf(
+                "**/libandroidx.graphics.path.so",
+                "**/libdatastore_shared_counter.so",
+            )
+        }
+
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
