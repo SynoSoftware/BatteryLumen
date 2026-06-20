@@ -73,6 +73,7 @@ fun HealthScreen(
         item {
             HealthStatusHeroCard(
                 estimate = estimate,
+                designCapacityMah = state.designCapacityMah,
             )
         }
 
@@ -98,6 +99,7 @@ fun HealthScreen(
 @Composable
 private fun HealthStatusHeroCard(
     estimate: BatteryHealthEstimateUi,
+    designCapacityMah: Int?,
 ) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
@@ -166,7 +168,7 @@ private fun HealthStatusHeroCard(
                         AppText(
                             text = T(
                                 "health.capacity.reference",
-                                T("value.mah", capacityMah).asString(),
+                                designCapacityMah?.takeIf { it > 0 }?.let { T("value.mah", it).asString() } ?: T("value.na"),
                             ).asString(),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,

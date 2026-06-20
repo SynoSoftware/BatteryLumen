@@ -6,6 +6,8 @@ import com.synosoftware.battery.data.battery.BatteryMonitor
 import com.synosoftware.battery.data.notification.ChargingNotificationManager
 import com.synosoftware.battery.data.preferences.SettingsRepository
 import com.synosoftware.battery.data.session.BatteryDatabase
+import com.synosoftware.battery.data.session.MIGRATION_1_2
+import com.synosoftware.battery.data.session.MIGRATION_2_3
 import com.synosoftware.battery.data.session.ChargeSessionRepository
 import com.synosoftware.battery.domain.BatteryDecisionEngine
 import com.synosoftware.battery.ui.BatteryViewModelFactory
@@ -19,7 +21,7 @@ class AppContainer(context: Context) {
             BatteryDatabase::class.java,
             "open_battery.db",
         )
-            .fallbackToDestructiveMigration(dropAllTables = true)
+            .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
             .build()
     }
 

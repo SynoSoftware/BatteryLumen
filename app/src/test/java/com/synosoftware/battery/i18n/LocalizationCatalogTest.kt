@@ -68,6 +68,23 @@ class LocalizationCatalogTest {
         }
     }
 
+    @Test
+    fun englishCatalogContainsEveryLiteralTKeyInSource() {
+        val strings = loadStrings()
+        val catalogPaths = strings.map { it.path.joinToString(".") }.toSet()
+        val sourceKeys = collectLiteralKeys()
+        val missing = sourceKeys.filterNot(catalogPaths::contains).sorted()
+
+        if (missing.isNotEmpty()) {
+            fail(
+                buildString {
+                    appendLine("Missing localization keys referenced in source:")
+                    missing.forEach { appendLine(it) }
+                },
+            )
+        }
+    }
+
     private fun loadStrings(): List<CatalogString> {
         val catalogFile = listOf(
             File("src/main/assets/i18n/en.json"),
@@ -79,6 +96,27 @@ class LocalizationCatalogTest {
         val strings = mutableListOf<CatalogString>()
         collectStrings(root, emptyList(), strings)
         return strings
+    }
+
+    private fun collectLiteralKeys(): Set<String> {
+        val roots = listOf(
+            File("app/src/main/java"),
+            File("app/src/androidTest/java"),
+            File("app/src/test/java"),
+        ).filter { it.exists() }
+
+        val pattern = Regex("""\bT\("([^"]+)""")
+        val keys = mutableSetOf<String>()
+        roots.forEach { root ->
+            root.walkTopDown()
+                .filter { it.isFile && it.extension == "kt" }
+                .forEach { file ->
+                    pattern.findAll(file.readText()).forEach { match ->
+                        keys += match.groupValues[1]
+                    }
+                }
+        }
+        return keys
     }
 
     private fun collectStrings(

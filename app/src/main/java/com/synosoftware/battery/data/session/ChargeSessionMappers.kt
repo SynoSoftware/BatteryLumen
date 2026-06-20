@@ -2,6 +2,8 @@ package com.synosoftware.battery.data.session
 
 import com.synosoftware.battery.data.formatDuration
 import com.synosoftware.battery.data.formatTimeRange
+import com.synosoftware.battery.data.preferences.TemperatureUnit
+import com.synosoftware.battery.data.sessionTemperatureText
 import com.synosoftware.battery.domain.ChargeSessionMetrics
 import com.synosoftware.battery.domain.ChargingSource
 import com.synosoftware.battery.domain.SessionAssessment
@@ -33,7 +35,10 @@ fun ChargeSessionEntity.toMetrics(): ChargeSessionMetrics {
     )
 }
 
-fun ChargeSessionEntity.toUi(assessment: SessionAssessment): BatterySessionUi {
+fun ChargeSessionEntity.toUi(
+    assessment: SessionAssessment,
+    temperatureUnit: TemperatureUnit,
+): BatterySessionUi {
     val start = startedAtMs
     val status = runCatching { SessionStatus.valueOf(status) }.getOrDefault(SessionStatus.INCOMPLETE)
     val source = runCatching { ChargingSource.valueOf(chargingSource) }.getOrDefault(ChargingSource.UNKNOWN)
@@ -42,15 +47,7 @@ fun ChargeSessionEntity.toUi(assessment: SessionAssessment): BatterySessionUi {
         headline = T("session.headline.delta", T("value.delta.percent", (currentLevelPercent - startLevelPercent).coerceAtLeast(0))),
         timeRange = T("session.time.range", formatTimeRange(start, endedAtMs)),
         deltaLabel = T("session.delta.label", startLevelPercent, currentLevelPercent),
-        temperatureLabel = if (averageTemperatureC != null) {
-            T(
-                "session.temperature.with.average",
-                maxTemperatureC?.let { String.format("%.1f", it) } ?: T("value.na"),
-                String.format("%.1f", averageTemperatureC),
-            )
-        } else {
-            T("session.temperature.title", maxTemperatureC?.let { String.format("%.1f", it) } ?: T("value.na"))
-        },
+        temperatureLabel = sessionTemperatureText(maxTemperatureC, averageTemperatureC, temperatureUnit),
         maxTemperatureC = maxTemperatureC,
         averageTemperatureC = averageTemperatureC,
         currentTemperatureC = currentTemperatureC,

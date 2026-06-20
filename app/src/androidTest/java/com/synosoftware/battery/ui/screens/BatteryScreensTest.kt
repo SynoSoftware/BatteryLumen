@@ -1,10 +1,18 @@
 package com.synosoftware.battery.ui.screens
 
-import androidx.compose.foundation.layout.PaddingValues
+import android.content.Context
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.LifecycleRegistry
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.test.platform.app.InstrumentationRegistry
 import com.synosoftware.battery.domain.BatteryDecision
 import com.synosoftware.battery.domain.BatterySnapshot
 import com.synosoftware.battery.domain.ChargingSource
@@ -13,9 +21,10 @@ import com.synosoftware.battery.domain.ConfidenceLevel
 import com.synosoftware.battery.domain.EvidenceGrade
 import com.synosoftware.battery.domain.StressLevel
 import com.synosoftware.battery.i18n.T
+import com.synosoftware.battery.i18n.resolveText
+import com.synosoftware.battery.ui.model.BatteryHealthEstimateUi
 import com.synosoftware.battery.ui.model.BatteryUiState
 import com.synosoftware.battery.ui.model.DailyChargingSummaryUi
-import com.synosoftware.battery.ui.model.BatteryHealthEstimateUi
 import com.synosoftware.battery.ui.model.HealthEvolutionUi
 import com.synosoftware.battery.ui.model.HealthTrendPointUi
 import com.synosoftware.battery.ui.model.HealthTrendState
@@ -35,18 +44,20 @@ class BatteryScreensTest {
             NowScreen(
                 state = sampleNowState(),
                 onTargetSelected = { selectedTarget = it },
-                contentPadding = PaddingValues(),
+                contentPadding = androidx.compose.foundation.layout.PaddingValues(),
             )
         }
 
-        composeRule.onNodeWithText("Battery stress").assertIsDisplayed()
-        composeRule.onNodeWithText("High stress").assertIsDisplayed()
-        composeRule.onNodeWithText("Health summary").assertIsDisplayed()
-        composeRule.onNodeWithText("Today").assertIsDisplayed()
-        composeRule.onNodeWithText("Decision details").assertIsDisplayed()
-        composeRule.onNodeWithText("Show details").performClick()
-        composeRule.onNodeWithText("Thermal stress").assertIsDisplayed()
-        composeRule.onNodeWithText("90%").performClick()
+        composeRule.onNodeWithText(text("now.stress.label")).assertIsDisplayed()
+        composeRule.onNodeWithText(text("stress.high")).assertIsDisplayed()
+        composeRule.onNodeWithText(text("health.summary.title")).assertIsDisplayed()
+        composeRule.onNodeWithText(text("health.approx.percent", 80)).assertIsDisplayed()
+        composeRule.onNodeWithText(text("health.capacity.reference", text("value.mah", 5000))).assertIsDisplayed()
+        composeRule.onNodeWithText(text("daily.summary.title")).assertIsDisplayed()
+        composeRule.onNodeWithText(text("now.details.title")).assertIsDisplayed()
+        composeRule.onNodeWithText(text("now.details.show")).performClick()
+        composeRule.onNodeWithText(text("decision.thermal.label")).assertIsDisplayed()
+        composeRule.onNodeWithText(text("value.percent", 90)).performClick()
 
         assertEquals(90, selectedTarget)
     }
@@ -57,13 +68,13 @@ class BatteryScreensTest {
             HealthScreen(
                 state = BatteryUiState(),
                 onSeedDemoData = {},
-                contentPadding = PaddingValues(),
+                contentPadding = androidx.compose.foundation.layout.PaddingValues(),
             )
         }
 
-        composeRule.onNodeWithText("Insufficient data").assertIsDisplayed()
-        composeRule.onNodeWithText("Battery health needs 5 useful charging sessions before it can be estimated.").assertIsDisplayed()
-        composeRule.onNodeWithText("0 of 5 useful sessions collected").assertIsDisplayed()
+        composeRule.onNodeWithText(text("health.insufficient.title")).assertIsDisplayed()
+        composeRule.onNodeWithText(text("health.insufficient.body", 5)).assertIsDisplayed()
+        composeRule.onNodeWithText(text("health.sessions.collected", 0, 5)).assertIsDisplayed()
     }
 
     @Test
@@ -71,9 +82,12 @@ class BatteryScreensTest {
         composeRule.setContent {
             HealthScreen(
                 state = BatteryUiState(
+                    designCapacityMah = 4000,
                     healthEstimate = BatteryHealthEstimateUi(
                         estimatedCapacityMah = 3358,
                         likelyRangeMah = 3220..3490,
+                        healthPercent = 84,
+                        healthRangePercent = 81..87,
                         confidence = ConfidenceLevel.MEDIUM,
                         usefulSessionCount = 7,
                         trend = HealthTrendState.STABLE,
@@ -93,15 +107,16 @@ class BatteryScreensTest {
                     ),
                 ),
                 onSeedDemoData = {},
-                contentPadding = PaddingValues(),
+                contentPadding = androidx.compose.foundation.layout.PaddingValues(),
             )
         }
 
-        composeRule.onNodeWithText("Battery Health").assertIsDisplayed()
-        composeRule.onNodeWithText("Estimated capacity").assertIsDisplayed()
-        composeRule.onNodeWithText("3,358 mAh").assertIsDisplayed()
-        composeRule.onNodeWithText("Based on 7 useful sessions").assertIsDisplayed()
-        composeRule.onNodeWithText("Battery health trend").assertIsDisplayed()
+        composeRule.onNodeWithText(text("health.current.title")).assertIsDisplayed()
+        composeRule.onNodeWithText(text("health.estimated.health")).assertIsDisplayed()
+        composeRule.onNodeWithText(text("health.approx.percent", 84)).assertIsDisplayed()
+        composeRule.onNodeWithText(text("health.capacity.reference", text("value.mah", 4000))).assertIsDisplayed()
+        composeRule.onNodeWithText(text("health.based.on.sessions", 7)).assertIsDisplayed()
+        composeRule.onNodeWithText(text("health.trend.title")).assertIsDisplayed()
     }
 
     @Test
@@ -109,18 +124,50 @@ class BatteryScreensTest {
         composeRule.setContent {
             HowItWorksScreen(
                 state = BatteryUiState(),
-                contentPadding = PaddingValues(),
+                contentPadding = androidx.compose.foundation.layout.PaddingValues(),
             )
         }
 
-        composeRule.onNodeWithText("Measured").assertIsDisplayed()
-        composeRule.onNodeWithText("Estimated").assertIsDisplayed()
-        composeRule.onNodeWithText("Capability matrix").assertIsDisplayed()
+        composeRule.onNodeWithText(text("evidence.measured")).assertIsDisplayed()
+        composeRule.onNodeWithText(text("evidence.estimated")).assertIsDisplayed()
+        composeRule.onNodeWithText(text("info.capability.title")).assertIsDisplayed()
+    }
+
+    @Test
+    fun notificationPermissionCardRefreshesOnResume() {
+        val lifecycleOwner = TestLifecycleOwner()
+        var permissionGranted = false
+
+        composeRule.setContent {
+            CompositionLocalProvider(LocalLifecycleOwner provides lifecycleOwner) {
+                NotificationPermissionCard(permissionChecker = { permissionGranted })
+            }
+        }
+
+        composeRule.onNodeWithText(text("notification.channel.charge.target.title")).assertIsDisplayed()
+
+        composeRule.runOnIdle {
+            permissionGranted = true
+            lifecycleOwner.resume()
+        }
+
+        composeRule.waitForIdle()
+        composeRule.onAllNodesWithText(text("notification.channel.charge.target.title")).assertCountEquals(0)
     }
 
     private fun sampleNowState(): BatteryUiState {
         return BatteryUiState(
             targetChargePercent = 85,
+            designCapacityMah = 5000,
+            healthEstimate = BatteryHealthEstimateUi(
+                estimatedCapacityMah = 4000,
+                likelyRangeMah = 3900..4100,
+                healthPercent = 80,
+                healthRangePercent = 78..82,
+                confidence = ConfidenceLevel.MEDIUM,
+                usefulSessionCount = 7,
+                trend = HealthTrendState.STABLE,
+            ),
             currentSnapshot = BatterySnapshot(
                 timestampMs = 1_000L,
                 levelPercent = 86,
@@ -150,5 +197,25 @@ class BatteryScreensTest {
                 timeToFullMinutes = 42,
             ),
         )
+    }
+
+    private fun text(key: String, vararg args: Any?): String {
+        return context.resolveText(T(key, *args))
+    }
+
+    private val context: Context
+        get() = InstrumentationRegistry.getInstrumentation().targetContext
+
+    private class TestLifecycleOwner : LifecycleOwner {
+        private val registry = LifecycleRegistry(this).apply {
+            currentState = Lifecycle.State.CREATED
+        }
+
+        override val lifecycle: Lifecycle
+            get() = registry
+
+        fun resume() {
+            registry.handleLifecycleEvent(Lifecycle.Event.ON_RESUME)
+        }
     }
 }

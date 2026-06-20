@@ -32,6 +32,28 @@ class ChargeSessionRepository(
     ): SessionProcessResult = database.withTransaction {
         val isChargingLike = snapshot.chargingState == ChargingState.CHARGING || snapshot.chargingState == ChargingState.FULL
         val existingActive = dao.getActiveSession()
+        val staleActive = existingActive?.takeIf { snapshot.timestampMs - it.lastSeenAtMs > STALE_ACTIVE_SESSION_MS }
+
+        if (staleActive != null) {
+            dao.update(closeStaleSession(staleActive))
+
+            if (!isChargingLike) {
+                return@withTransaction SessionProcessResult(
+                    activeSession = null,
+                    targetCrossed = false,
+                    targetPercent = null,
+                )
+            }
+
+            val fresh = baseSessionEntity(snapshot, targetPercent)
+            val newId = dao.insert(fresh)
+            val inserted = fresh.copy(id = newId)
+            return@withTransaction SessionProcessResult(
+                activeSession = inserted.toMetrics(),
+                targetCrossed = snapshot.levelPercent >= targetPercent,
+                targetPercent = if (snapshot.levelPercent >= targetPercent) targetPercent else null,
+            )
+        }
 
         if (isChargingLike) {
             if (existingActive == null) {
@@ -155,6 +177,13 @@ class ChargeSessionRepository(
             status = SessionStatus.COMPLETED.name,
         )
         return UpdateResult(entity = finalEntity, targetCrossed = false)
+    }
+
+    private fun closeStaleSession(existing: ChargeSessionEntity): ChargeSessionEntity {
+        return existing.copy(
+            endedAtMs = existing.lastSeenAtMs,
+            status = SessionStatus.INCOMPLETE.name,
+        )
     }
 
     private fun maxOfNullable(first: Float?, second: Float?): Float? {
@@ -288,5 +317,6 @@ class ChargeSessionRepository(
     private companion object {
         const val DAY_MS = 86_400_000L
         const val MINUTE_MS = 60_000L
+        const val STALE_ACTIVE_SESSION_MS = 30 * MINUTE_MS
     }
 }

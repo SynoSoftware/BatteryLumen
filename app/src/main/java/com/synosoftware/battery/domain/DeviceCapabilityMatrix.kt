@@ -6,7 +6,7 @@ object DeviceCapabilityMatrix {
     fun defaultCapabilities(): List<DeviceCapability> = listOf(
         DeviceCapability(
             key = "battery_level",
-            label = T("capability.battery.level"),
+            label = T("capability.battery.level.label"),
             source = T("capability.battery.level.source"),
             unit = T("capability.percent.unit"),
             availability = T("capability.battery.level.availability"),
@@ -16,7 +16,7 @@ object DeviceCapabilityMatrix {
         ),
         DeviceCapability(
             key = "battery_temperature",
-            label = T("capability.battery.temperature"),
+            label = T("capability.battery.temperature.label"),
             source = T("capability.battery.temperature.source"),
             unit = T("capability.celsius.unit"),
             availability = T("capability.battery.temperature.availability"),
@@ -26,7 +26,7 @@ object DeviceCapabilityMatrix {
         ),
         DeviceCapability(
             key = "plug_type",
-            label = T("capability.plug.type"),
+            label = T("capability.plug.type.label"),
             source = T("capability.plug.type.source"),
             unit = T("capability.enum.unit"),
             availability = T("capability.plug.type.availability"),
@@ -36,7 +36,7 @@ object DeviceCapabilityMatrix {
         ),
         DeviceCapability(
             key = "voltage",
-            label = T("capability.voltage"),
+            label = T("capability.voltage.label"),
             source = T("capability.voltage.source"),
             unit = T("capability.millivolt.unit"),
             availability = T("capability.voltage.availability"),
@@ -46,7 +46,7 @@ object DeviceCapabilityMatrix {
         ),
         DeviceCapability(
             key = "current_now",
-            label = T("capability.current.now"),
+            label = T("capability.current.now.label"),
             source = T("capability.current.now.source"),
             unit = T("capability.microamp.unit"),
             availability = T("capability.current.now.availability"),
@@ -56,7 +56,7 @@ object DeviceCapabilityMatrix {
         ),
         DeviceCapability(
             key = "charge_counter",
-            label = T("capability.charge.counter"),
+            label = T("capability.charge.counter.label"),
             source = T("capability.charge.counter.source"),
             unit = T("capability.microamp.hour.unit"),
             availability = T("capability.charge.counter.availability"),

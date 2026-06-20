@@ -5,6 +5,7 @@ import com.synosoftware.battery.domain.EvidenceGrade
 import com.synosoftware.battery.domain.SessionAssessment
 import com.synosoftware.battery.domain.SessionQuality
 import com.synosoftware.battery.domain.StressLevel
+import com.synosoftware.battery.data.preferences.TemperatureUnit
 import com.synosoftware.battery.i18n.T
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -39,19 +40,22 @@ class ChargeSessionMappersTest {
             quality = SessionQuality.USEFUL,
             confidence = ConfidenceLevel.HIGH,
             evidenceGrade = EvidenceGrade.EXPERIMENTAL,
-            reason = T("fresh.reason"),
+            reason = T("confidence.reason.high"),
             usefulForHealth = true,
             thermalStress = StressLevel.GOOD,
             chargeLevelStress = StressLevel.NORMAL,
             combinedStress = StressLevel.NORMAL,
         )
 
-        val ui = entity.toUi(assessment)
+        val ui = entity.toUi(assessment, TemperatureUnit.FAHRENHEIT)
 
         assertEquals("sessions.useful", ui.qualityLabel.key)
         assertEquals(EvidenceGrade.EXPERIMENTAL, ui.qualityEvidence)
         assertEquals(ConfidenceLevel.HIGH, ui.confidence)
-        assertEquals("fresh.reason", ui.confidenceReason.key)
+        assertEquals("confidence.reason.high", ui.confidenceReason.key)
+        assertEquals("session.temperature.with.average", ui.temperatureLabel.key)
+        assertEquals("value.temp.f", ui.temperatureLabel.args[0].let { (it as com.synosoftware.battery.i18n.TextRef).value.key })
+        assertEquals("value.temp.f", ui.temperatureLabel.args[1].let { (it as com.synosoftware.battery.i18n.TextRef).value.key })
         assertTrue(ui.usefulForHealth)
         assertEquals(StressLevel.GOOD, ui.thermalStress)
         assertEquals(StressLevel.NORMAL, ui.chargeLevelStress)

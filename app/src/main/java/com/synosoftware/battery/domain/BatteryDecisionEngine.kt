@@ -247,7 +247,7 @@ class BatteryDecisionEngine {
             chargeStress.severity >= StressLevel.HIGH_STRESS.severity && snapshot.chargingState == ChargingState.CHARGING ->
                 T("decision.reason.near.full")
             thermalStress.severity >= StressLevel.HIGH_STRESS.severity ->
-                T("decision.reason.hot")
+                T("decision.reason.hot.label")
             snapshot.chargingState == ChargingState.CHARGING ->
                 T("decision.reason.reasonable")
             else ->

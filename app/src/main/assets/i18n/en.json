@@ -28,12 +28,14 @@
   "capability": {
     "battery": {
       "level": {
+        "label": "Battery level",
         "availability": "Available on every device",
         "fallback": "Show battery percent only",
         "rule": "Use the broadcast snapshot as the current reading.",
         "source": "Android battery broadcast"
       },
       "temperature": {
+        "label": "Battery temperature",
         "availability": "Available on many devices",
         "fallback": "Hide temperature when missing",
         "rule": "Use the measured temperature when the device reports it.",
@@ -45,6 +47,7 @@
     },
     "charge": {
       "counter": {
+        "label": "Charge counter",
         "availability": "Available on some devices",
         "fallback": "Hide charge counter when missing",
         "rule": "Use the remaining charge counter when the device exposes it.",
@@ -53,6 +56,7 @@
     },
     "current": {
       "now": {
+        "label": "Current now",
         "availability": "Available on some devices",
         "fallback": "Hide current when missing",
         "rule": "Use the instantaneous current when the device exposes it.",
@@ -76,6 +80,7 @@
     },
     "plug": {
       "type": {
+        "label": "Plug type",
         "availability": "Available on most devices",
         "fallback": "Treat the source as unknown",
         "rule": "Use the reported plug type as a hint.",
@@ -83,6 +88,7 @@
       }
     },
     "voltage": {
+      "label": "Voltage",
       "availability": "Available on many devices",
       "fallback": "Hide voltage when missing",
       "rule": "Use the reported millivolts when available.",
@@ -157,6 +163,7 @@
         "label": "Charge-level stress"
       },
       "hot": {
+        "label": "Hot charging",
         "charging": "Charging while hot: %1$s°C"
       },
       "near": {
@@ -437,11 +444,6 @@
       "hint": "Charge while the app is open to build battery history."
     }
   },
-  "set": {
-    "alarm": {
-      "target": "Set alarm for %1$s"
-    }
-  },
   "settings": {
     "title": "Settings",
     "design": {
@@ -503,7 +505,7 @@
   },
   "target": {
     "guidance": {
-      "note": "Your alarm follows the selected stop point."
+      "note": "Alerts follow the selected stop point while the app is observing charging."
     },
     "label": "Target",
     "reached": {

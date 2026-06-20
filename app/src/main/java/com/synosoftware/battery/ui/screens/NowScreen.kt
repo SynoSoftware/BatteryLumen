@@ -15,19 +15,20 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Button
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text as AppText
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -36,6 +37,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.synosoftware.battery.R
 import com.synosoftware.battery.data.temperatureText
 import com.synosoftware.battery.domain.EvidenceGrade
@@ -53,7 +57,6 @@ import com.synosoftware.battery.i18n.stressText
 import com.synosoftware.battery.ui.components.EvidenceBadge
 import com.synosoftware.battery.ui.components.IconBadge
 import com.synosoftware.battery.ui.components.LabelValueRow
-import com.synosoftware.battery.ui.components.LucideIcon
 import com.synosoftware.battery.ui.components.MetricTile
 import com.synosoftware.battery.ui.components.PlainBadge
 import com.synosoftware.battery.ui.components.SectionHeader
@@ -66,6 +69,7 @@ fun NowScreen(
     onTargetSelected: (Int) -> Unit,
     contentPadding: PaddingValues,
 ) {
+    val context = LocalContext.current
     val snapshot = state.currentSnapshot
     val decision = state.decision
     val riskTone = when (decision?.stress) {
@@ -148,6 +152,7 @@ fun NowScreen(
         item {
             HealthSummaryCard(
                 estimate = state.healthEstimate,
+                designCapacityMah = state.designCapacityMah,
             )
         }
 
@@ -164,7 +169,9 @@ fun NowScreen(
         }
 
         item {
-            NotificationPermissionCard()
+            NotificationPermissionCard(
+                permissionChecker = { hasNotificationPermission(context) },
+            )
         }
 
         item { Spacer(Modifier.height(12.dp)) }
@@ -329,18 +336,6 @@ private fun TargetCard(
                 )
             }
 
-            Button(
-                onClick = { onTargetSelected(state.targetChargePercent) },
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                LucideIcon(
-                    resId = R.drawable.lucide_alarm_clock,
-                    contentDescription = null,
-                    modifier = Modifier.padding(end = 8.dp).size(18.dp),
-                )
-                AppText(T("set.alarm.target", T("value.percent", state.targetChargePercent)).asString())
-            }
-
             AppText(
                 text = T("target.guidance.note").asString(),
                 style = MaterialTheme.typography.bodySmall,
@@ -355,6 +350,7 @@ private fun TargetCard(
 @Composable
 private fun HealthSummaryCard(
     estimate: com.synosoftware.battery.ui.model.BatteryHealthEstimateUi,
+    designCapacityMah: Int?,
 ) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
@@ -373,7 +369,7 @@ private fun HealthSummaryCard(
                 fontWeight = FontWeight.SemiBold,
             )
             if (estimate.hasEstimate) {
-                val capacityMah = requireNotNull(estimate.estimatedCapacityMah)
+                val estimatedCapacityMah = requireNotNull(estimate.estimatedCapacityMah)
                 if (estimate.hasHealthPercent) {
                     val healthPercent = requireNotNull(estimate.healthPercent)
                     AppText(
@@ -391,14 +387,14 @@ private fun HealthSummaryCard(
                     AppText(
                         text = T(
                             "health.capacity.reference",
-                            T("value.mah", capacityMah).asString(),
+                            designCapacityMah?.takeIf { it > 0 }?.let { T("value.mah", it).asString() } ?: T("value.na"),
                         ).asString(),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 } else {
                     AppText(
-                        text = T("value.mah", capacityMah).asString(),
+                        text = T("value.mah", estimatedCapacityMah).asString(),
                         style = MaterialTheme.typography.headlineMedium,
                         fontWeight = FontWeight.SemiBold,
                     )
@@ -549,7 +545,7 @@ private fun DecisionDetailsCard(
                         compactEvidence = true,
                     )
                     LabelValueRow(
-                        T("decision.charge.label").asString(),
+                        T("decision.reason.charge.label").asString(),
                         stressText(decision.chargeLevelStress).asString(),
                         T("evidence.inferred").asString(),
                         evidenceGrade = EvidenceGrade.INFERRED,
@@ -617,9 +613,24 @@ private fun DecisionDetailsCard(
 }
 
 @Composable
-private fun NotificationPermissionCard() {
-    val context = LocalContext.current
-    var hasPermission by remember { mutableStateOf(hasNotificationPermission(context)) }
+internal fun NotificationPermissionCard(
+    permissionChecker: () -> Boolean,
+) {
+    val lifecycleOwner = LocalLifecycleOwner.current
+    val currentPermissionChecker by rememberUpdatedState(permissionChecker)
+    var hasPermission by remember { mutableStateOf(currentPermissionChecker()) }
+    DisposableEffect(lifecycleOwner) {
+        hasPermission = currentPermissionChecker()
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                hasPermission = currentPermissionChecker()
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
+    }
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission(),
     ) { granted ->
