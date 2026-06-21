@@ -1,47 +1,27 @@
 package com.synosoftware.battery.ui
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.NavigationBarItemDefaults
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text as AppText
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
+import androidx.compose.foundation.*
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.pager.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.*
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.material3.Text as AppText
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.synosoftware.battery.i18n.T
-import com.synosoftware.battery.i18n.resolveText
+import com.synosoftware.battery.BuildConfig
 import com.synosoftware.battery.R
+import com.synosoftware.battery.data.preferences.ThemeMode
 import com.synosoftware.battery.ui.components.IconBadge
 import com.synosoftware.battery.ui.components.LucideIcon
 import com.synosoftware.battery.ui.model.BatteryEvent
@@ -55,6 +35,7 @@ import com.synosoftware.battery.ui.theme.ChromeAlpha
 import com.synosoftware.battery.ui.theme.NavigationAlpha
 import com.synosoftware.battery.ui.theme.appBackdropColors
 import com.synosoftware.battery.ui.theme.appChromeColor
+import com.synosoftware.battery.i18n.T
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -62,7 +43,6 @@ import kotlinx.coroutines.launch
 fun BatteryAppRoot(
     viewModel: BatteryViewModel,
     darkTheme: Boolean,
-    onThemeToggle: () -> Unit,
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val navController = rememberNavController()
@@ -75,10 +55,7 @@ fun BatteryAppRoot(
     val currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route ?: mainRoute
     val isSettingsRoute = currentRoute == settingsRoute
     val currentTab = BatteryTab.entries[pagerState.currentPage]
-    val titleKey = when {
-        isSettingsRoute -> "settings.title"
-        else -> currentTab.titleKey
-    }
+    val titleRes = if (isSettingsRoute) R.string.settings_title else currentTab.titleRes
     val headerIconRes = when {
         isSettingsRoute -> R.drawable.lucide_settings
         else -> currentTab.iconRes
@@ -87,7 +64,9 @@ fun BatteryAppRoot(
     LaunchedEffect(Unit) {
         viewModel.events.collect { event ->
             when (event) {
-                is BatteryEvent.TargetReached -> snackbarHostState.showSnackbar(context.resolveText(T("target.reached.snackbar", event.targetPercent)))
+                is BatteryEvent.TargetReached -> snackbarHostState.showSnackbar(
+                    context.T(R.string.target_reached_snackbar, event.targetPercent),
+                )
             }
         }
     }
@@ -107,10 +86,13 @@ fun BatteryAppRoot(
             snackbarHost = { SnackbarHost(snackbarHostState) },
             topBar = {
                 AppTopBar(
-                    title = context.resolveText(T(titleKey)),
+                    titleRes = titleRes,
                     iconRes = headerIconRes,
                     darkTheme = darkTheme,
                     isSettingsRoute = isSettingsRoute,
+                    currentTab = currentTab,
+                    currentThemeMode = state.themeMode,
+                    currentTargetPercent = state.targetChargePercent,
                     onSettingsOpen = {
                         navController.navigate(settingsRoute) {
                             launchSingleTop = true
@@ -119,7 +101,17 @@ fun BatteryAppRoot(
                     onSettingsClose = {
                         navController.popBackStack()
                     },
-                    onThemeToggle = onThemeToggle,
+                    onNavigateToTab = { tab ->
+                        if (isSettingsRoute) {
+                            navController.popBackStack()
+                        }
+                        scope.launch {
+                            pagerState.animateScrollToPage(tab.ordinal)
+                        }
+                    },
+                    onThemeModeSelected = viewModel::setThemeMode,
+                    onTargetSelected = viewModel::setTargetChargePercent,
+                    onSeedDemoData = viewModel::seedDebugSessions,
                 )
             },
             bottomBar = {
@@ -183,15 +175,18 @@ private fun MainTabsPager(
                 onTargetSelected = onTargetSelected,
                 contentPadding = contentPadding,
             )
+
             BatteryTab.HEALTH -> HealthScreen(
                 state = state,
                 onSeedDemoData = onSeedDemoData,
                 contentPadding = contentPadding,
             )
+
             BatteryTab.LEDGER -> LedgerScreen(
                 state = state,
                 contentPadding = contentPadding,
             )
+
             BatteryTab.HOW_IT_WORKS -> HowItWorksScreen(
                 state = state,
                 contentPadding = contentPadding,
@@ -202,14 +197,23 @@ private fun MainTabsPager(
 
 @Composable
 private fun AppTopBar(
-    title: String,
+    titleRes: Int,
     iconRes: Int,
     darkTheme: Boolean,
     isSettingsRoute: Boolean,
+    currentTab: BatteryTab,
+    currentThemeMode: ThemeMode,
+    currentTargetPercent: Int,
     onSettingsOpen: () -> Unit,
     onSettingsClose: () -> Unit,
-    onThemeToggle: () -> Unit,
+    onNavigateToTab: (BatteryTab) -> Unit,
+    onThemeModeSelected: (ThemeMode) -> Unit,
+    onTargetSelected: (Int) -> Unit,
+    onSeedDemoData: () -> Unit,
 ) {
+    var menuExpanded by rememberSaveable { mutableStateOf(false) }
+    val context = LocalContext.current
+
     Surface(
         color = appChromeColor(darkTheme).copy(alpha = ChromeAlpha),
         contentColor = MaterialTheme.colorScheme.onSurface,
@@ -222,20 +226,20 @@ private fun AppTopBar(
                 .fillMaxWidth()
                 .statusBarsPadding()
                 .padding(horizontal = 16.dp, vertical = 14.dp),
-            horizontalArrangement = androidx.compose.foundation.layout.Arrangement.SpaceBetween,
+            horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 IconBadge(
                     resId = iconRes,
-                    contentDescription = title,
+                    contentDescription = T(titleRes),
                 )
                 Column(
                     modifier = Modifier.padding(start = 12.dp),
                 ) {
                     AppText(
-                        text = title,
-                        style = androidx.compose.material3.MaterialTheme.typography.titleLarge,
+                        text = T(titleRes),
+                        style = MaterialTheme.typography.titleLarge,
                         color = MaterialTheme.colorScheme.onSurface,
                     )
                 }
@@ -252,26 +256,99 @@ private fun AppTopBar(
                             modifier = Modifier.size(20.dp),
                         )
                     }
-                } else {
+                }
+                Box {
                     IconButton(
-                        onClick = onSettingsOpen,
+                        onClick = { menuExpanded = true },
                         modifier = Modifier.size(40.dp),
                     ) {
                         LucideIcon(
-                            resId = R.drawable.lucide_settings,
-                            contentDescription = null,
+                            resId = R.drawable.lucide_more_vertical,
+                            contentDescription = T(R.string.menu_more),
                             modifier = Modifier.size(20.dp),
                         )
                     }
-                    IconButton(
-                        onClick = onThemeToggle,
-                        modifier = Modifier.size(40.dp),
+                    DropdownMenu(
+                        expanded = menuExpanded,
+                        onDismissRequest = { menuExpanded = false },
                     ) {
-                        LucideIcon(
-                            resId = if (darkTheme) R.drawable.lucide_sun else R.drawable.lucide_moon,
-                            contentDescription = null,
-                            modifier = Modifier.size(20.dp),
+                        AppMenuItem(
+                            label = T(BatteryTab.NOW.navLabelRes),
+                            selected = currentTab == BatteryTab.NOW,
+                            onClick = {
+                                menuExpanded = false
+                                onNavigateToTab(BatteryTab.NOW)
+                            },
                         )
+                        AppMenuItem(
+                            label = T(BatteryTab.HEALTH.navLabelRes),
+                            selected = currentTab == BatteryTab.HEALTH,
+                            onClick = {
+                                menuExpanded = false
+                                onNavigateToTab(BatteryTab.HEALTH)
+                            },
+                        )
+                        AppMenuItem(
+                            label = T(BatteryTab.LEDGER.navLabelRes),
+                            selected = currentTab == BatteryTab.LEDGER,
+                            onClick = {
+                                menuExpanded = false
+                                onNavigateToTab(BatteryTab.LEDGER)
+                            },
+                        )
+                        AppMenuItem(
+                            label = T(BatteryTab.HOW_IT_WORKS.navLabelRes),
+                            selected = currentTab == BatteryTab.HOW_IT_WORKS,
+                            onClick = {
+                                menuExpanded = false
+                                onNavigateToTab(BatteryTab.HOW_IT_WORKS)
+                            },
+                        )
+                        AppMenuItem(
+                            label = T(R.string.settings_title),
+                            selected = isSettingsRoute,
+                            onClick = {
+                                menuExpanded = false
+                                if (!isSettingsRoute) {
+                                    onSettingsOpen()
+                                }
+                            },
+                        )
+                        HorizontalDivider()
+                        MenuSectionHeader(text = T(R.string.settings_target_title))
+                        listOf(80, 85, 90, 100).forEach { target ->
+                            AppMenuItem(
+                                label = T(R.string.value_percent, target),
+                                selected = currentTargetPercent == target,
+                                onClick = {
+                                    menuExpanded = false
+                                    onTargetSelected(target)
+                                },
+                            )
+                        }
+                        HorizontalDivider()
+                        MenuSectionHeader(text = T(R.string.settings_theme_title))
+                        ThemeMode.entries.forEach { mode ->
+                            AppMenuItem(
+                                label = T(themeLabel(mode)),
+                                selected = currentThemeMode == mode,
+                                onClick = {
+                                    menuExpanded = false
+                                    onThemeModeSelected(mode)
+                                },
+                            )
+                        }
+                        if (BuildConfig.DEBUG) {
+                            HorizontalDivider()
+                            AppMenuItem(
+                                label = T(R.string.health_debug_seed_action),
+                                selected = false,
+                                onClick = {
+                                    menuExpanded = false
+                                    onSeedDemoData()
+                                },
+                            )
+                        }
                     }
                 }
             }
@@ -284,8 +361,8 @@ private fun AppBottomBar(
     currentTab: BatteryTab,
     onNavigate: (BatteryTab) -> Unit,
 ) {
-        NavigationBar(
-        containerColor = androidx.compose.material3.MaterialTheme.colorScheme.surfaceContainerLow.copy(alpha = NavigationAlpha),
+    NavigationBar(
+        containerColor = MaterialTheme.colorScheme.surfaceContainerLow.copy(alpha = NavigationAlpha),
         tonalElevation = 0.dp,
     ) {
         BatteryTab.entries.forEach { tab ->
@@ -302,7 +379,7 @@ private fun AppBottomBar(
                 },
                 label = {
                     AppText(
-                        text = LocalContext.current.resolveText(T(tab.navLabelKey)),
+                        text = T(tab.navLabelRes),
                         style = MaterialTheme.typography.labelSmall,
                         maxLines = 1,
                         softWrap = false,
@@ -318,5 +395,52 @@ private fun AppBottomBar(
                 ),
             )
         }
+    }
+}
+
+@Composable
+private fun MenuSectionHeader(text: String) {
+    AppText(
+        text = text,
+        style = MaterialTheme.typography.labelMedium,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        fontWeight = FontWeight.SemiBold,
+        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+    )
+}
+
+@Composable
+private fun AppMenuItem(
+    label: String,
+    selected: Boolean,
+    onClick: () -> Unit,
+) {
+    DropdownMenuItem(
+        text = {
+            AppText(
+                text = label,
+                fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
+            )
+        },
+        leadingIcon = if (selected) {
+            {
+                LucideIcon(
+                    resId = R.drawable.lucide_check,
+                    contentDescription = null,
+                    modifier = Modifier.size(18.dp),
+                )
+            }
+        } else {
+            null
+        },
+        onClick = onClick,
+    )
+}
+
+private fun themeLabel(mode: ThemeMode): Int {
+    return when (mode) {
+        ThemeMode.SYSTEM -> R.string.settings_theme_system
+        ThemeMode.LIGHT -> R.string.settings_theme_light
+        ThemeMode.DARK -> R.string.settings_theme_dark
     }
 }

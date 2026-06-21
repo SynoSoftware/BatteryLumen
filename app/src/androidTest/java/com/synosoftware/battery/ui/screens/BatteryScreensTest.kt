@@ -1,18 +1,12 @@
 package com.synosoftware.battery.ui.screens
 
 import android.content.Context
-import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.ui.test.assertIsDisplayed
-import androidx.compose.ui.test.assertCountEquals
+import androidx.compose.runtime.*
+import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.v2.createComposeRule
-import androidx.compose.ui.test.onAllNodesWithText
-import androidx.compose.ui.test.onNodeWithText
-import androidx.compose.ui.test.performClick
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.LifecycleRegistry
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.test.platform.app.InstrumentationRegistry
+import com.synosoftware.battery.R
 import com.synosoftware.battery.domain.BatteryDecision
 import com.synosoftware.battery.domain.BatterySnapshot
 import com.synosoftware.battery.domain.ChargingSource
@@ -21,7 +15,7 @@ import com.synosoftware.battery.domain.ConfidenceLevel
 import com.synosoftware.battery.domain.EvidenceGrade
 import com.synosoftware.battery.domain.StressLevel
 import com.synosoftware.battery.i18n.T
-import com.synosoftware.battery.i18n.resolveText
+import com.synosoftware.battery.i18n.TR
 import com.synosoftware.battery.ui.model.BatteryHealthEstimateUi
 import com.synosoftware.battery.ui.model.BatteryUiState
 import com.synosoftware.battery.ui.model.DailyChargingSummaryUi
@@ -48,16 +42,16 @@ class BatteryScreensTest {
             )
         }
 
-        composeRule.onNodeWithText(text("now.stress.label")).assertIsDisplayed()
-        composeRule.onNodeWithText(text("stress.high")).assertIsDisplayed()
-        composeRule.onNodeWithText(text("health.summary.title")).assertIsDisplayed()
-        composeRule.onNodeWithText(text("health.approx.percent", 80)).assertIsDisplayed()
-        composeRule.onNodeWithText(text("health.capacity.reference", text("value.mah", 5000))).assertIsDisplayed()
-        composeRule.onNodeWithText(text("daily.summary.title")).assertIsDisplayed()
-        composeRule.onNodeWithText(text("now.details.title")).assertIsDisplayed()
-        composeRule.onNodeWithText(text("now.details.show")).performClick()
-        composeRule.onNodeWithText(text("decision.thermal.label")).assertIsDisplayed()
-        composeRule.onNodeWithText(text("value.percent", 90)).performClick()
+        composeRule.onNodeWithText(text(R.string.now_stress_label)).assertIsDisplayed()
+        composeRule.onNodeWithText(text(R.string.stress_high)).assertIsDisplayed()
+        composeRule.onNodeWithText(text(R.string.health_summary_title)).assertIsDisplayed()
+        composeRule.onNodeWithText(text(R.string.health_approx_percent, 80)).assertIsDisplayed()
+        composeRule.onNodeWithText(text(R.string.health_capacity_reference, text(R.string.value_mah, 5000))).assertIsDisplayed()
+        composeRule.onNodeWithText(text(R.string.daily_summary_title)).assertIsDisplayed()
+        composeRule.onNodeWithText(text(R.string.now_details_title)).assertIsDisplayed()
+        composeRule.onNodeWithText(text(R.string.now_details_show)).performClick()
+        composeRule.onNodeWithText(text(R.string.decision_thermal_label)).assertIsDisplayed()
+        composeRule.onNodeWithText(text(R.string.value_percent, 90)).performClick()
 
         assertEquals(90, selectedTarget)
     }
@@ -72,9 +66,9 @@ class BatteryScreensTest {
             )
         }
 
-        composeRule.onNodeWithText(text("health.insufficient.title")).assertIsDisplayed()
-        composeRule.onNodeWithText(text("health.insufficient.body", 5)).assertIsDisplayed()
-        composeRule.onNodeWithText(text("health.sessions.collected", 0, 5)).assertIsDisplayed()
+        composeRule.onNodeWithText(text(R.string.health_insufficient_title)).assertIsDisplayed()
+        composeRule.onNodeWithText(text(R.string.health_insufficient_body, 5)).assertIsDisplayed()
+        composeRule.onNodeWithText(text(R.string.health_sessions_collected, 0, 5)).assertIsDisplayed()
     }
 
     @Test
@@ -93,8 +87,8 @@ class BatteryScreensTest {
                         trend = HealthTrendState.STABLE,
                     ),
                     dailySummary = DailyChargingSummaryUi(
-                        headline = T("daily.summary.good"),
-                        detail = T("daily.summary.no.issue"),
+                        headline = TR(R.string.daily_summary_good),
+                        detail = TR(R.string.daily_summary_no_issue),
                         confidence = ConfidenceLevel.HIGH,
                         sessionCount = 2,
                     ),
@@ -111,12 +105,12 @@ class BatteryScreensTest {
             )
         }
 
-        composeRule.onNodeWithText(text("health.current.title")).assertIsDisplayed()
-        composeRule.onNodeWithText(text("health.estimated.health")).assertIsDisplayed()
-        composeRule.onNodeWithText(text("health.approx.percent", 84)).assertIsDisplayed()
-        composeRule.onNodeWithText(text("health.capacity.reference", text("value.mah", 4000))).assertIsDisplayed()
-        composeRule.onNodeWithText(text("health.based.on.sessions", 7)).assertIsDisplayed()
-        composeRule.onNodeWithText(text("health.trend.title")).assertIsDisplayed()
+        composeRule.onNodeWithText(text(R.string.health_current_title)).assertIsDisplayed()
+        composeRule.onNodeWithText(text(R.string.health_estimated_health)).assertIsDisplayed()
+        composeRule.onNodeWithText(text(R.string.health_approx_percent, 84)).assertIsDisplayed()
+        composeRule.onNodeWithText(text(R.string.health_capacity_reference, text(R.string.value_mah, 4000))).assertIsDisplayed()
+        composeRule.onNodeWithText(text(R.string.health_based_on_sessions, 7)).assertIsDisplayed()
+        composeRule.onNodeWithText(text(R.string.health_trend_title)).assertIsDisplayed()
     }
 
     @Test
@@ -128,9 +122,9 @@ class BatteryScreensTest {
             )
         }
 
-        composeRule.onNodeWithText(text("evidence.measured")).assertIsDisplayed()
-        composeRule.onNodeWithText(text("evidence.estimated")).assertIsDisplayed()
-        composeRule.onNodeWithText(text("info.capability.title")).assertIsDisplayed()
+        composeRule.onNodeWithText(text(R.string.evidence_measured)).assertIsDisplayed()
+        composeRule.onNodeWithText(text(R.string.evidence_estimated)).assertIsDisplayed()
+        composeRule.onNodeWithText(text(R.string.info_capability_title)).assertIsDisplayed()
     }
 
     @Test
@@ -144,7 +138,7 @@ class BatteryScreensTest {
             }
         }
 
-        composeRule.onNodeWithText(text("notification.channel.charge.target.title")).assertIsDisplayed()
+        composeRule.onNodeWithText(text(R.string.notification_channel_charge_target_title)).assertIsDisplayed()
 
         composeRule.runOnIdle {
             permissionGranted = true
@@ -152,7 +146,7 @@ class BatteryScreensTest {
         }
 
         composeRule.waitForIdle()
-        composeRule.onAllNodesWithText(text("notification.channel.charge.target.title")).assertCountEquals(0)
+        composeRule.onAllNodesWithText(text(R.string.notification_channel_charge_target_title)).assertCountEquals(0)
     }
 
     private fun sampleNowState(): BatteryUiState {
@@ -186,10 +180,10 @@ class BatteryScreensTest {
                 stress = StressLevel.HIGH_STRESS,
                 thermalStress = StressLevel.HIGH_STRESS,
                 chargeLevelStress = StressLevel.HIGH_STRESS,
-                reason = T("decision.reason.hot.charging", "42.0"),
-                action = T("decision.action.cool"),
+                reason = TR(R.string.decision_reason_hot_charging, "42.0"),
+                action = TR(R.string.decision_action_cool),
                 confidence = ConfidenceLevel.HIGH,
-                confidenceReason = T("confidence.reason.high"),
+                confidenceReason = TR(R.string.confidence_reason_high),
                 evidenceGrade = EvidenceGrade.INFERRED,
                 targetPercent = 85,
                 bestStopPercent = 85,
@@ -199,8 +193,8 @@ class BatteryScreensTest {
         )
     }
 
-    private fun text(key: String, vararg args: Any?): String {
-        return context.resolveText(T(key, *args))
+    private fun text(resId: Int, vararg args: Any): String {
+        return context.T(resId, *args)
     }
 
     private val context: Context

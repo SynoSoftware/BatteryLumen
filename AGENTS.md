@@ -245,7 +245,7 @@ If multiple solutions work, choose the one that feels most natural to read and m
 
 - No hard-coded user-facing strings.
 - Use Android `res/values*/strings.xml` as the single source of truth for app text.
-- Keep resource names semantic, short, readable, and grouped by concept, for example `daily_summary_status_good`, `decision_reason_hot_charging`, `settings_theme_system`.
+- Keep resource names semantic, short, readable, and grouped by concept, for example `daily_summary_good`, `decision_reason_hot_charging`, `settings_theme_system`.
 - Prefer `T(daily_summary_good)` for normal Compose string usage; `T(...)` should return a resolved `String` in composable scope.
 - Use `Context.T(...)` for Android APIs outside Compose, such as notifications, services, or system labels.
 - Use `@string/...` in XML when XML is the call site.

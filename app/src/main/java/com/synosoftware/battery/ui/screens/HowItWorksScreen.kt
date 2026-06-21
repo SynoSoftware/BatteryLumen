@@ -1,29 +1,16 @@
 package com.synosoftware.battery.ui.screens
 
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.*
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text as AppText
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.material3.Text as AppText
 import com.synosoftware.battery.R
 import com.synosoftware.battery.domain.EvidenceGrade
 import com.synosoftware.battery.domain.DeviceCapability
@@ -50,31 +37,31 @@ fun HowItWorksScreen(
     ) {
         item {
             SectionHeader(
-                title = T("info.title").asString(),
-                subtitle = T("info.subtitle").asString(),
+                title = T(R.string.info_title),
+                subtitle = T(R.string.info_subtitle),
             )
         }
 
         item {
             RegistryCard(
                 iconRes = R.drawable.lucide_info,
-                title = T("info.grades.title").asString(),
+                title = T(R.string.info_grades_title),
             ) {
                 GradeRow(
                     grade = EvidenceGrade.MEASURED,
-                    body = T("info.grades.measured.body").asString(),
+                    body = T(R.string.info_grades_measured_body),
                 )
                 GradeRow(
                     grade = EvidenceGrade.ESTIMATED,
-                    body = T("info.grades.estimated.body").asString(),
+                    body = T(R.string.info_grades_estimated_body),
                 )
                 GradeRow(
                     grade = EvidenceGrade.INFERRED,
-                    body = T("info.grades.inferred.body").asString(),
+                    body = T(R.string.info_grades_inferred_body),
                 )
                 GradeRow(
                     grade = EvidenceGrade.EXPERIMENTAL,
-                    body = T("info.grades.experimental.body").asString(),
+                    body = T(R.string.info_grades_experimental_body),
                 )
             }
         }
@@ -82,21 +69,21 @@ fun HowItWorksScreen(
         item {
             RegistryCard(
                 iconRes = R.drawable.lucide_history,
-                title = T("info.models.title").asString(),
+                title = T(R.string.info_models_title),
             ) {
                 RuleRow(
-                    title = T("info.models.thermal.title").asString(),
-                    body = T("info.models.thermal.body").asString(),
+                    title = T(R.string.info_models_thermal_title),
+                    body = T(R.string.info_models_thermal_body),
                     grade = EvidenceGrade.INFERRED,
                 )
                 RuleRow(
-                    title = T("info.models.charge.title").asString(),
-                    body = T("info.models.charge.body").asString(),
+                    title = T(R.string.info_models_charge_title),
+                    body = T(R.string.info_models_charge_body),
                     grade = EvidenceGrade.ESTIMATED,
                 )
                 RuleRow(
-                    title = T("info.models.session.title").asString(),
-                    body = T("info.models.session.body").asString(),
+                    title = T(R.string.info_models_session_title),
+                    body = T(R.string.info_models_session_body),
                     grade = EvidenceGrade.INFERRED,
                 )
             }
@@ -113,13 +100,13 @@ fun HowItWorksScreen(
         item {
             if (state.experimentalMetricsEnabled) {
                 NoteCard(
-                    title = T("info.experimental.title").asString(),
-                    body = T("info.experimental.desc").asString(),
+                    title = T(R.string.info_experimental_title),
+                    body = T(R.string.info_experimental_desc),
                 )
             } else {
                 NoteCard(
-                    title = T("info.experimental.title").asString(),
-                    body = T("info.experimental.disabled").asString(),
+                    title = T(R.string.info_experimental_title),
+                    body = T(R.string.info_experimental_disabled),
                 )
             }
         }
@@ -136,10 +123,10 @@ private fun CapabilityCard(
 ) {
     RegistryCard(
         iconRes = R.drawable.lucide_battery_full,
-        title = T("info.capability.title").asString(),
+        title = T(R.string.info_capability_title),
     ) {
         AppText(
-            text = T("info.capability.subtitle").asString(),
+            text = T(R.string.info_capability_subtitle),
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         Spacer(Modifier.height(4.dp))
@@ -148,7 +135,7 @@ private fun CapabilityCard(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             AppText(
-                text = T("info.capability.summary", capabilities.size).asString(),
+                text = T(R.string.info_capability_summary, capabilities.size),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -158,9 +145,9 @@ private fun CapabilityCard(
                 label = {
                     AppText(
                         text = if (expanded) {
-                            T("info.capability.hide").asString()
+                            T(R.string.info_capability_hide)
                         } else {
-                            T("info.capability.show").asString()
+                            T(R.string.info_capability_show)
                         },
                     )
                 },
@@ -260,7 +247,7 @@ private fun CapabilityRow(capability: DeviceCapability) {
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         AppText(
-            text = T("fallback.label", capability.fallback.asString()).asString(),
+            text = T(R.string.fallback_label, capability.fallback.asString()),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )

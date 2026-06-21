@@ -1,30 +1,17 @@
 package com.synosoftware.battery.ui.screens
 
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.*
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material3.Button
-import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text as AppText
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.remember
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.material3.Text as AppText
 import com.synosoftware.battery.BuildConfig
 import com.synosoftware.battery.R
 import com.synosoftware.battery.domain.EvidenceGrade
@@ -44,13 +31,12 @@ import com.synosoftware.battery.i18n.healthApproxPercentText
 import com.synosoftware.battery.i18n.healthCapacityRangeText
 import com.synosoftware.battery.i18n.healthPercentRangeText
 import com.synosoftware.battery.i18n.healthTrendText
-import com.synosoftware.battery.i18n.resolveText
 import com.synosoftware.battery.ui.components.EvidenceBadge
 import com.synosoftware.battery.ui.components.IconBadge
 import com.synosoftware.battery.ui.components.PlainBadge
-import com.synosoftware.battery.ui.model.MIN_USEFUL_SESSION_COUNT
-import com.synosoftware.battery.ui.model.BatteryUiState
 import com.synosoftware.battery.ui.model.BatteryHealthEstimateUi
+import com.synosoftware.battery.ui.model.BatteryUiState
+import com.synosoftware.battery.ui.model.MIN_USEFUL_SESSION_COUNT
 import com.synosoftware.battery.ui.model.HealthTrendPointUi
 import kotlin.math.roundToInt
 
@@ -123,9 +109,9 @@ private fun HealthStatusHeroCard(
                 Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     AppText(
                         text = if (estimate.hasEstimate) {
-                            T("health.current.title").asString()
+                            T(R.string.health_current_title)
                         } else {
-                            T("health.insufficient.title").asString()
+                            T(R.string.health_insufficient_title)
                         },
                         style = MaterialTheme.typography.headlineSmall,
                         fontWeight = FontWeight.SemiBold,
@@ -133,15 +119,15 @@ private fun HealthStatusHeroCard(
                     if (estimate.hasEstimate) {
                         AppText(
                             text = if (estimate.hasHealthPercent) {
-                                T("health.estimated.health").asString()
+                                T(R.string.health_estimated_health)
                             } else {
-                                T("health.estimated.capacity").asString()
+                                T(R.string.health_estimated_capacity)
                             },
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     } else {
                         AppText(
-                            text = T("health.insufficient.body", MIN_USEFUL_SESSION_COUNT).asString(),
+                            text = T(R.string.health_insufficient_body, MIN_USEFUL_SESSION_COUNT),
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
@@ -167,15 +153,15 @@ private fun HealthStatusHeroCard(
                         }
                         AppText(
                             text = T(
-                                "health.capacity.reference",
-                                designCapacityMah?.takeIf { it > 0 }?.let { T("value.mah", it).asString() } ?: T("value.na"),
-                            ).asString(),
+                                R.string.health_capacity_reference,
+                                designCapacityMah?.takeIf { it > 0 }?.let { T(R.string.value_mah, it) } ?: T(R.string.value_na),
+                            ),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     } else {
                         AppText(
-                            text = T("value.mah", capacityMah).asString(),
+                            text = T(R.string.value_mah, capacityMah),
                             style = MaterialTheme.typography.displaySmall,
                             fontWeight = FontWeight.SemiBold,
                         )
@@ -196,7 +182,7 @@ private fun HealthStatusHeroCard(
                     }
 
                     AppText(
-                        text = T("health.based.on.sessions", estimate.usefulSessionCount).asString(),
+                        text = T(R.string.health_based_on_sessions, estimate.usefulSessionCount),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -207,12 +193,12 @@ private fun HealthStatusHeroCard(
                     modifier = Modifier.fillMaxWidth(),
                 )
                 AppText(
-                    text = T("health.sessions.collected", estimate.usefulSessionCount, MIN_USEFUL_SESSION_COUNT).asString(),
+                    text = T(R.string.health_sessions_collected, estimate.usefulSessionCount, MIN_USEFUL_SESSION_COUNT),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 AppText(
-                    text = T("health.collecting.data").asString(),
+                    text = T(R.string.health_collecting_data),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -246,7 +232,7 @@ private fun HealthTrendChartCard(
         lineLayer,
         startAxis = VerticalAxis.rememberStart(
             valueFormatter = CartesianValueFormatter { _, y, _ ->
-                context.resolveText(T("value.mah", y.roundToInt()))
+                context.T(R.string.value_mah, y.roundToInt())
             },
         ),
         bottomAxis = HorizontalAxis.rememberBottom(
@@ -282,12 +268,12 @@ private fun HealthTrendChartCard(
             ) {
                 Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                     AppText(
-                        text = T("health.trend.title").asString(),
+                        text = T(R.string.health_trend_title),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.SemiBold,
                     )
                     AppText(
-                        text = T("health.trend.subtitle").asString(),
+                        text = T(R.string.health_trend_subtitle),
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
@@ -297,7 +283,7 @@ private fun HealthTrendChartCard(
                 ) {
                     PlainBadge(text = confidenceText(estimate.confidence).asString())
                     AppText(
-                        text = T("health.trend.confidence", estimate.usefulSessionCount).asString(),
+                        text = T(R.string.health_trend_confidence, estimate.usefulSessionCount),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -313,7 +299,7 @@ private fun HealthTrendChartCard(
             )
 
             AppText(
-                text = T("health.trend.note").asString(),
+                text = T(R.string.health_trend_note),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -338,17 +324,17 @@ private fun DebugSeedDataCard(
         ) {
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 AppText(
-                    text = T("health.debug.seed.title").asString(),
+                    text = T(R.string.health_debug_seed_title),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold,
                 )
                 AppText(
-                    text = T("health.debug.seed.body").asString(),
+                    text = T(R.string.health_debug_seed_body),
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
             Button(onClick = onSeedDemoData) {
-                AppText(T("health.debug.seed.action").asString())
+                AppText(T(R.string.health_debug_seed_action))
             }
         }
     }

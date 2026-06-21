@@ -1,5 +1,6 @@
 package com.synosoftware.battery.data.session
 
+import com.synosoftware.battery.R
 import com.synosoftware.battery.data.formatDuration
 import com.synosoftware.battery.data.formatTimeRange
 import com.synosoftware.battery.data.preferences.TemperatureUnit
@@ -9,7 +10,7 @@ import com.synosoftware.battery.domain.ChargingSource
 import com.synosoftware.battery.domain.SessionAssessment
 import com.synosoftware.battery.domain.SessionQuality
 import com.synosoftware.battery.domain.SessionStatus
-import com.synosoftware.battery.i18n.T
+import com.synosoftware.battery.i18n.TR
 import com.synosoftware.battery.i18n.sessionSourceText
 import com.synosoftware.battery.ui.model.BatterySessionUi
 
@@ -50,19 +51,19 @@ fun ChargeSessionEntity.toUi(
     val source = runCatching { ChargingSource.valueOf(chargingSource) }.getOrDefault(ChargingSource.UNKNOWN)
     return BatterySessionUi(
         id = id,
-        headline = T("session.headline.delta", T("value.delta.percent", (currentLevelPercent - startLevelPercent).coerceAtLeast(0))),
-        timeRange = T("session.time.range", formatTimeRange(start, endedAtMs)),
-        deltaLabel = T("session.delta.label", startLevelPercent, currentLevelPercent),
+        headline = TR(R.string.session_headline_delta, TR(R.string.value_delta_percent, (currentLevelPercent - startLevelPercent).coerceAtLeast(0))),
+        timeRange = TR(R.string.session_time_range, formatTimeRange(start, endedAtMs)),
+        deltaLabel = TR(R.string.session_delta_label, startLevelPercent, currentLevelPercent),
         temperatureLabel = sessionTemperatureText(maxTemperatureC, averageTemperatureC, temperatureUnit),
         maxTemperatureC = maxTemperatureC,
         averageTemperatureC = averageTemperatureC,
         currentTemperatureC = currentTemperatureC,
         sourceLabel = sessionSourceText(source),
         qualityLabel = when {
-            assessment.quality == SessionQuality.USEFUL -> T("sessions.useful")
-            status == SessionStatus.ACTIVE -> T("sessions.active")
-            assessment.quality == SessionQuality.INCOMPLETE -> T("sessions.incomplete")
-            else -> T("sessions.weak")
+            assessment.quality == SessionQuality.USEFUL -> TR(R.string.sessions_useful)
+            status == SessionStatus.ACTIVE -> TR(R.string.sessions_active)
+            status == SessionStatus.INCOMPLETE -> TR(R.string.sessions_incomplete)
+            else -> TR(R.string.sessions_weak)
         },
         qualityEvidence = assessment.evidenceGrade,
         confidence = assessment.confidence,
@@ -72,7 +73,7 @@ fun ChargeSessionEntity.toUi(
         thermalStress = assessment.thermalStress,
         chargeLevelStress = assessment.chargeLevelStress,
         combinedStress = assessment.combinedStress,
-        timeAbove85Label = T("session.time.above.85", formatDuration(timeAbove85Sec * 1000L)),
-        timeAbove90Label = T("session.time.above.90", formatDuration(timeAbove90Sec * 1000L)),
+        timeAbove85Label = TR(R.string.session_time_above_85, formatDuration(timeAbove85Sec * 1000L)),
+        timeAbove90Label = TR(R.string.session_time_above_90, formatDuration(timeAbove90Sec * 1000L)),
     )
 }

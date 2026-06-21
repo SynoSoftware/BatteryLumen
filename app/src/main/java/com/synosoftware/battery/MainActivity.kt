@@ -28,17 +28,11 @@ class MainActivity : ComponentActivity() {
                 ThemeMode.LIGHT -> false
                 ThemeMode.DARK -> true
             }
-            val nextThemeMode = when (themeMode) {
-                ThemeMode.SYSTEM -> if (systemDark) ThemeMode.LIGHT else ThemeMode.DARK
-                ThemeMode.LIGHT -> ThemeMode.DARK
-                ThemeMode.DARK -> ThemeMode.LIGHT
-            }
 
             BatteryTheme(darkTheme = darkTheme) {
                 BatteryAppRoot(
                     viewModel = viewModel,
                     darkTheme = darkTheme,
-                    onThemeToggle = { viewModel.setThemeMode(nextThemeMode) },
                 )
             }
         }

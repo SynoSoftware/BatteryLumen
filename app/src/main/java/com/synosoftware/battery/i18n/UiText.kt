@@ -1,37 +1,41 @@
 package com.synosoftware.battery.i18n
 
+import androidx.annotation.StringRes
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class UiText(
-    val key: String,
-    val args: List<UiArg> = emptyList(),
-)
+sealed interface UiText {
+    @Serializable
+    data class Res(
+        @StringRes val resId: Int,
+        val args: List<UiTextArg> = emptyList(),
+    ) : UiText
+}
 
 @Serializable
-sealed interface UiArg
+sealed interface UiTextArg
+
+@Serializable
+data class StringArg(
+    val value: String,
+) : UiTextArg
 
 @Serializable
 data class TextArg(
-    val value: String,
-) : UiArg
-
-@Serializable
-data class TextRef(
     val value: UiText,
-) : UiArg
+) : UiTextArg
 
-fun T(
-    key: String,
+fun TR(
+    @StringRes resId: Int,
     vararg args: Any?,
 ): UiText {
-    return UiText(
-        key = key,
+    return UiText.Res(
+        resId = resId,
         args = args.map { value ->
             when (value) {
-                null -> TextArg("")
-                is UiText -> TextRef(value)
-                else -> TextArg(value.toString())
+                null -> StringArg("")
+                is UiText -> TextArg(value)
+                else -> StringArg(value.toString())
             }
         },
     )

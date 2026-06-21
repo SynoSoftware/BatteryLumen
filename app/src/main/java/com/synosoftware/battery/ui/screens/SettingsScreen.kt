@@ -1,33 +1,16 @@
 package com.synosoftware.battery.ui.screens
 
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.*
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Switch
-import androidx.compose.material3.Text as AppText
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.material3.Text as AppText
 import com.synosoftware.battery.R
 import com.synosoftware.battery.data.preferences.TemperatureUnit
 import com.synosoftware.battery.data.preferences.ThemeMode
@@ -65,12 +48,12 @@ fun SettingsScreen(
         item {
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 AppText(
-                    text = T("settings.title").asString(),
+                    text = T(R.string.settings_title),
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.SemiBold,
                 )
                 AppText(
-                    text = T("settings.subtitle").asString(),
+                    text = T(R.string.settings_subtitle),
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
@@ -79,13 +62,13 @@ fun SettingsScreen(
         item {
             SettingsCard(
                 iconRes = R.drawable.lucide_battery_full,
-                title = T("settings.target.title").asString(),
-                subtitle = T("settings.target.description").asString(),
+                title = T(R.string.settings_target_title),
+                subtitle = T(R.string.settings_target_description),
             ) {
                 ChoiceRow(
                     choices = listOf(80, 85, 90, 100),
                     selected = state.targetChargePercent,
-                    labelForChoice = { target -> T("value.percent", target).asString() },
+                    labelForChoice = { target -> T(R.string.value_percent, target) },
                     onSelected = onTargetSelected,
                 )
             }
@@ -94,8 +77,8 @@ fun SettingsScreen(
         item {
             SettingsCard(
                 iconRes = R.drawable.lucide_heart,
-                title = T("settings.design.title").asString(),
-                subtitle = T("settings.design.description").asString(),
+                title = T(R.string.settings_design_title),
+                subtitle = T(R.string.settings_design_description),
             ) {
                 OutlinedTextField(
                     value = designCapacityText,
@@ -106,11 +89,11 @@ fun SettingsScreen(
                     },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
-                    label = { AppText(T("settings.design.label").asString()) },
-                    placeholder = { AppText(T("settings.design.placeholder").asString()) },
+                    label = { AppText(T(R.string.settings_design_label)) },
+                    placeholder = { AppText(T(R.string.settings_design_placeholder)) },
                     supportingText = {
                         AppText(
-                            text = T("settings.design.supporting").asString(),
+                            text = T(R.string.settings_design_supporting),
                             style = MaterialTheme.typography.bodySmall,
                         )
                     },
@@ -121,16 +104,16 @@ fun SettingsScreen(
         item {
             SettingsCard(
                 iconRes = R.drawable.lucide_thermometer,
-                title = T("settings.temperature.title").asString(),
-                subtitle = T("settings.temperature.description").asString(),
+                title = T(R.string.settings_temperature_title),
+                subtitle = T(R.string.settings_temperature_description),
             ) {
                 ChoiceRow(
                     choices = TemperatureUnit.entries,
                     selected = state.temperatureUnit,
                     labelForChoice = { unit ->
                         when (unit) {
-                            TemperatureUnit.CELSIUS -> T("settings.temperature.celsius").asString()
-                            TemperatureUnit.FAHRENHEIT -> T("settings.temperature.fahrenheit").asString()
+                            TemperatureUnit.CELSIUS -> T(R.string.settings_temperature_celsius)
+                            TemperatureUnit.FAHRENHEIT -> T(R.string.settings_temperature_fahrenheit)
                         }
                     },
                     onSelected = onTemperatureUnitSelected,
@@ -138,9 +121,9 @@ fun SettingsScreen(
                 if (state.currentSnapshot != null) {
                     AppText(
                         text = T(
-                            "settings.temperature.preview",
+                            R.string.settings_temperature_preview,
                             temperatureText(state.currentSnapshot.temperatureC, state.temperatureUnit),
-                        ).asString(),
+                        ),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -151,17 +134,17 @@ fun SettingsScreen(
         item {
             SettingsCard(
                 iconRes = R.drawable.lucide_settings,
-                title = T("settings.theme.title").asString(),
-                subtitle = T("settings.theme.description").asString(),
+                title = T(R.string.settings_theme_title),
+                subtitle = T(R.string.settings_theme_description),
             ) {
                 ChoiceRow(
                     choices = listOf(ThemeMode.SYSTEM, ThemeMode.LIGHT, ThemeMode.DARK),
                     selected = state.themeMode,
                     labelForChoice = { mode ->
                         when (mode) {
-                            ThemeMode.SYSTEM -> T("settings.theme.system").asString()
-                            ThemeMode.LIGHT -> T("settings.theme.light").asString()
-                            ThemeMode.DARK -> T("settings.theme.dark").asString()
+                            ThemeMode.SYSTEM -> T(R.string.settings_theme_system)
+                            ThemeMode.LIGHT -> T(R.string.settings_theme_light)
+                            ThemeMode.DARK -> T(R.string.settings_theme_dark)
                         }
                     },
                     onSelected = onThemeModeSelected,
@@ -172,11 +155,11 @@ fun SettingsScreen(
         item {
             SettingsCard(
                 iconRes = R.drawable.lucide_zap,
-                title = T("settings.experimental.title").asString(),
-                subtitle = T("settings.experimental.description").asString(),
+                title = T(R.string.settings_experimental_title),
+                subtitle = T(R.string.settings_experimental_description),
             ) {
                 ToggleRow(
-                    label = T("settings.experimental.toggle").asString(),
+                    label = T(R.string.settings_experimental_toggle),
                     value = state.experimentalMetricsEnabled,
                     onValueChanged = onExperimentalMetricsChanged,
                 )
@@ -268,7 +251,7 @@ private fun ToggleRow(
                     fontWeight = FontWeight.SemiBold,
                 )
                 AppText(
-                    text = if (value) T("settings.toggle.on").asString() else T("settings.toggle.off").asString(),
+                    text = if (value) T(R.string.settings_toggle_on) else T(R.string.settings_toggle_off),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )

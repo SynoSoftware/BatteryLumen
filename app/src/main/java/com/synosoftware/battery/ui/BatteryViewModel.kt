@@ -2,6 +2,7 @@ package com.synosoftware.battery.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.synosoftware.battery.R
 import com.synosoftware.battery.data.battery.BatteryMonitor
 import com.synosoftware.battery.data.formatDuration
 import com.synosoftware.battery.data.notification.ChargingNotificationManager
@@ -31,7 +32,7 @@ import com.synosoftware.battery.ui.model.HealthTrendPointUi
 import com.synosoftware.battery.ui.model.BatteryUiState
 import com.synosoftware.battery.ui.model.MIN_USEFUL_SESSION_COUNT
 import com.synosoftware.battery.ui.toUi
-import com.synosoftware.battery.i18n.T
+import com.synosoftware.battery.i18n.TR
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
@@ -190,8 +191,8 @@ class BatteryViewModel(
         val todaySessions = sessions.filter { it.entity.lastSeenAtMs >= todayStartMs }
         if (todaySessions.isEmpty()) {
             return DailyChargingSummaryUi(
-                headline = T("daily.summary.collecting"),
-                detail = T("daily.summary.waiting"),
+                headline = TR(R.string.daily_summary_collecting),
+                detail = TR(R.string.daily_summary_waiting),
                 confidence = com.synosoftware.battery.domain.ConfidenceLevel.LOW,
                 evidenceGrade = EvidenceGrade.INFERRED,
                 sessionCount = 0,
@@ -207,15 +208,15 @@ class BatteryViewModel(
         val hot = hottestTemperature != null && hottestTemperature >= 43f
 
         val headline = when {
-            hot || totalAbove90Sec >= 30 * 60L -> T("daily.summary.risky")
-            totalAbove85Sec >= 45 * 60L -> T("daily.summary.normal")
-            else -> T("daily.summary.good")
+            hot || totalAbove90Sec >= 30 * 60L -> TR(R.string.daily_summary_risky)
+            totalAbove85Sec >= 45 * 60L -> TR(R.string.daily_summary_normal)
+            else -> TR(R.string.daily_summary_good)
         }
         val detail = when {
-            hot -> T("daily.summary.issue.hot")
-            totalAbove90Sec >= 15 * 60L -> T("daily.summary.above.90.issue", formatDuration(totalAbove90Sec * 1000L))
-            totalAbove85Sec >= 30 * 60L -> T("daily.summary.above.85.issue", formatDuration(totalAbove85Sec * 1000L))
-            else -> T("daily.summary.no.issue")
+            hot -> TR(R.string.daily_summary_issue_hot)
+            totalAbove90Sec >= 15 * 60L -> TR(R.string.daily_summary_above_90_issue, formatDuration(totalAbove90Sec * 1000L))
+            totalAbove85Sec >= 30 * 60L -> TR(R.string.daily_summary_above_85_issue, formatDuration(totalAbove85Sec * 1000L))
+            else -> TR(R.string.daily_summary_no_issue)
         }
         val confidence = when {
             todaySessions.size >= MIN_USEFUL_SESSION_COUNT -> com.synosoftware.battery.domain.ConfidenceLevel.HIGH

@@ -1,5 +1,6 @@
 package com.synosoftware.battery.ui.model
 
+import androidx.annotation.StringRes
 import com.synosoftware.battery.R
 import com.synosoftware.battery.data.preferences.TemperatureUnit
 import com.synosoftware.battery.data.preferences.ThemeMode
@@ -9,21 +10,21 @@ import com.synosoftware.battery.domain.ConfidenceLevel
 import com.synosoftware.battery.domain.DeviceCapability
 import com.synosoftware.battery.domain.EvidenceGrade
 import com.synosoftware.battery.domain.StressLevel
-import com.synosoftware.battery.i18n.T
+import com.synosoftware.battery.i18n.TR
 import com.synosoftware.battery.i18n.UiText
 
 const val MIN_USEFUL_SESSION_COUNT = 5
 
 enum class BatteryTab(
     val route: String,
-    val titleKey: String,
-    val navLabelKey: String,
+    @StringRes val titleRes: Int,
+    @StringRes val navLabelRes: Int,
     val iconRes: Int,
 ) {
-    NOW("now", "navigation.now", "navigation.now", R.drawable.lucide_battery_charging),
-    HEALTH("health", "health.title", "navigation.health", R.drawable.lucide_heart),
-    LEDGER("sessions", "sessions.title", "navigation.sessions", R.drawable.lucide_history),
-    HOW_IT_WORKS("info", "info.title", "navigation.info", R.drawable.lucide_info),
+    NOW("now", R.string.navigation_now, R.string.navigation_now, R.drawable.lucide_battery_charging),
+    HEALTH("health", R.string.health_title, R.string.navigation_health, R.drawable.lucide_heart),
+    LEDGER("sessions", R.string.sessions_title, R.string.navigation_sessions, R.drawable.lucide_history),
+    HOW_IT_WORKS("info", R.string.info_title, R.string.navigation_info, R.drawable.lucide_info),
 }
 
 enum class HealthTrendState {
@@ -85,8 +86,8 @@ data class BatteryHealthEstimateUi(
 }
 
 data class DailyChargingSummaryUi(
-    val headline: UiText = T("daily.summary.collecting"),
-    val detail: UiText = T("daily.summary.waiting"),
+    val headline: UiText = TR(R.string.daily_summary_collecting),
+    val detail: UiText = TR(R.string.daily_summary_waiting),
     val confidence: ConfidenceLevel = ConfidenceLevel.LOW,
     val evidenceGrade: EvidenceGrade = EvidenceGrade.INFERRED,
     val sessionCount: Int = 0,

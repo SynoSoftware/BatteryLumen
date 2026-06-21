@@ -1,41 +1,32 @@
 package com.synosoftware.battery.ui.screens
 
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text as AppText
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
+import android.content.Context
+import androidx.compose.foundation.*
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.material3.Text as AppText
 import com.synosoftware.battery.R
 import com.synosoftware.battery.data.sessionTemperatureText
+import com.synosoftware.battery.data.preferences.TemperatureUnit
 import com.synosoftware.battery.domain.EvidenceGrade
 import com.synosoftware.battery.i18n.T
 import com.synosoftware.battery.i18n.asString
 import com.synosoftware.battery.i18n.confidenceText
+import com.synosoftware.battery.i18n.resolveText
 import com.synosoftware.battery.ui.components.EvidenceBadge
 import com.synosoftware.battery.ui.components.IconBadge
 import com.synosoftware.battery.ui.components.LabelValueRow
-import com.synosoftware.battery.ui.components.SectionHeader
 import com.synosoftware.battery.ui.components.PlainBadge
+import com.synosoftware.battery.ui.components.SectionHeader
+import com.synosoftware.battery.ui.model.BatterySessionUi
 import com.synosoftware.battery.ui.model.BatteryUiState
 
 @Composable
@@ -46,18 +37,11 @@ fun LedgerScreen(
     var searchQuery by rememberSaveable { mutableStateOf("") }
     val totalSessions = state.sessions.size
     val query = searchQuery.trim()
+    val context = LocalContext.current
     val filteredSessions = if (query.isEmpty()) {
         state.sessions
     } else {
-        state.sessions.filter { session ->
-            listOf(
-                session.timeRange.asString(),
-                session.temperatureLabel.asString(),
-                session.sourceLabel.asString(),
-                session.qualityLabel.asString(),
-                session.confidenceReason.asString(),
-            ).joinToString(" ").contains(query, ignoreCase = true)
-        }
+        state.sessions.filter { session -> session.matchesQuery(context, query) }
     }
     val sessionsToShow = if (query.isEmpty()) filteredSessions.take(12) else filteredSessions
 
@@ -70,8 +54,8 @@ fun LedgerScreen(
     ) {
         item {
             SectionHeader(
-                title = T("sessions.title").asString(),
-                subtitle = T("sessions.subtitle").asString(),
+                title = T(R.string.sessions_title),
+                subtitle = T(R.string.sessions_subtitle),
             )
         }
 
@@ -81,15 +65,15 @@ fun LedgerScreen(
                 onValueChange = { searchQuery = it },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
-                label = { AppText(T("sessions.search.label").asString()) },
-                placeholder = { AppText(T("sessions.search.hint").asString()) },
+                label = { AppText(T(R.string.sessions_search_label)) },
+                placeholder = { AppText(T(R.string.sessions_search_hint)) },
             )
         }
 
         if (query.isEmpty() && totalSessions > sessionsToShow.size) {
             item {
                 AppText(
-                    text = T("sessions.recent.note", sessionsToShow.size, totalSessions).asString(),
+                    text = T(R.string.sessions_recent_note, sessionsToShow.size, totalSessions),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -117,6 +101,14 @@ fun LedgerScreen(
     }
 }
 
+private fun BatterySessionUi.matchesQuery(context: Context, query: String): Boolean {
+    return context.resolveText(timeRange).contains(query, ignoreCase = true) ||
+        context.resolveText(temperatureLabel).contains(query, ignoreCase = true) ||
+        context.resolveText(sourceLabel).contains(query, ignoreCase = true) ||
+        context.resolveText(qualityLabel).contains(query, ignoreCase = true) ||
+        context.resolveText(confidenceReason).contains(query, ignoreCase = true)
+}
+
 @Composable
 private fun EmptyLedgerCard() {
     Surface(
@@ -135,12 +127,12 @@ private fun EmptyLedgerCard() {
                 contentDescription = null,
             )
             AppText(
-                text = T("sessions.empty.title").asString(),
+                text = T(R.string.sessions_empty_title),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold,
             )
             AppText(
-                text = T("sessions.empty.hint").asString(),
+                text = T(R.string.sessions_empty_hint),
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
@@ -165,12 +157,12 @@ private fun EmptySearchCard() {
                 contentDescription = null,
             )
             AppText(
-                text = T("sessions.search.empty.title").asString(),
+                text = T(R.string.sessions_search_empty_title),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold,
             )
             AppText(
-                text = T("sessions.search.empty.hint").asString(),
+                text = T(R.string.sessions_search_empty_hint),
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
@@ -179,8 +171,8 @@ private fun EmptySearchCard() {
 
 @Composable
 private fun SessionCard(
-    session: com.synosoftware.battery.ui.model.BatterySessionUi,
-    temperatureUnit: com.synosoftware.battery.data.preferences.TemperatureUnit,
+    session: BatterySessionUi,
+    temperatureUnit: TemperatureUnit,
 ) {
     val accent = when {
         session.usefulForHealth -> MaterialTheme.colorScheme.primary
@@ -188,9 +180,9 @@ private fun SessionCard(
         else -> MaterialTheme.colorScheme.outline
     }
     val note = when {
-        session.usefulForHealth -> T("sessions.useful").asString()
-        session.active -> T("sessions.active").asString()
-        else -> T("stored.only.label").asString()
+        session.usefulForHealth -> T(R.string.sessions_useful)
+        session.active -> T(R.string.sessions_active)
+        else -> T(R.string.stored_only_label)
     }
     Surface(
         modifier = Modifier.fillMaxWidth(),
@@ -236,30 +228,30 @@ private fun SessionCard(
 
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 LabelValueRow(
-                    T("temperature.label").asString(),
+                    T(R.string.temperature_label),
                     sessionTemperatureText(session.maxTemperatureC, session.averageTemperatureC, temperatureUnit).asString(),
                     confidenceText(session.confidence).asString(),
                     compactEvidence = true,
                 )
                 LabelValueRow(
-                    T("source.label").asString(),
+                    T(R.string.source_label),
                     session.sourceLabel.asString(),
                     note,
                     compactEvidence = true,
                 )
                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
                     LabelValueRow(
-                        T("above.85.label").asString(),
+                        T(R.string.above_85_label),
                         session.timeAbove85Label.asString(),
-                        T("evidence.measured").asString(),
+                        T(R.string.evidence_measured),
                         evidenceGrade = EvidenceGrade.MEASURED,
                         compactEvidence = true,
                         modifier = Modifier.weight(1f),
                     )
                     LabelValueRow(
-                        T("above.90.label").asString(),
+                        T(R.string.above_90_label),
                         session.timeAbove90Label.asString(),
-                        T("evidence.measured").asString(),
+                        T(R.string.evidence_measured),
                         evidenceGrade = EvidenceGrade.MEASURED,
                         compactEvidence = true,
                         modifier = Modifier.weight(1f),

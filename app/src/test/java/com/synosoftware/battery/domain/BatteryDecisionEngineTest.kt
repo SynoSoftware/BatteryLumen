@@ -1,5 +1,7 @@
 package com.synosoftware.battery.domain
 
+import com.synosoftware.battery.R
+import com.synosoftware.battery.i18n.TR
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
@@ -19,7 +21,7 @@ class BatteryDecisionEngineTest {
         val decision = engine.analyze(snapshot, null, 85)
 
         assertEquals(StressLevel.HIGH_STRESS, decision.stress)
-        assertEquals("decision.action.cool", decision.action.key)
+        assertEquals(TR(R.string.decision_action_cool), decision.action)
     }
 
     @Test
@@ -33,7 +35,7 @@ class BatteryDecisionEngineTest {
         val decision = engine.analyze(snapshot, null, 85)
 
         assertEquals(StressLevel.SEVERE_STRESS, decision.stress)
-        assertEquals("decision.action.unplug.now", decision.action.key)
+        assertEquals(TR(R.string.decision_action_unplug_now), decision.action)
     }
 
     @Test
@@ -47,7 +49,7 @@ class BatteryDecisionEngineTest {
         val decision = engine.analyze(snapshot, null, 85)
 
         assertEquals(StressLevel.HIGH_STRESS, decision.stress)
-        assertEquals("decision.action.unplug.if.not.needed", decision.action.key)
+        assertEquals(TR(R.string.decision_action_unplug_if_not_needed), decision.action)
     }
 
     @Test
@@ -61,7 +63,7 @@ class BatteryDecisionEngineTest {
         val decision = engine.analyze(snapshot, null, 85)
 
         assertTrue(decision.stress == StressLevel.GOOD || decision.stress == StressLevel.NORMAL)
-        assertEquals("decision.action.continue", decision.action.key)
+        assertEquals(TR(R.string.decision_action_continue), decision.action)
     }
 
     @Test

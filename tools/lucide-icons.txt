@@ -7,6 +7,8 @@ heart
 history
 info
 moon
+more-vertical
+check
 settings
 sun
 thermometer

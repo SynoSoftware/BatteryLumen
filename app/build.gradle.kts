@@ -83,7 +83,7 @@ dependencies {
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.vico.compose.m3)
     implementation(libs.kotlinx.coroutines.android)
-    implementation(libs.kotlinx.serialization.json)
+    implementation(libs.kotlinx.serialization.core)
 
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
@@ -121,10 +121,6 @@ abstract class EnforcePoliciesTask : DefaultTask() {
     @get:PathSensitive(PathSensitivity.RELATIVE)
     abstract val stringsFile: RegularFileProperty
 
-    @get:InputFile
-    @get:PathSensitive(PathSensitivity.RELATIVE)
-    abstract val catalogFile: RegularFileProperty
-
     @get:InputFiles
     @get:PathSensitive(PathSensitivity.RELATIVE)
     abstract val sourceFiles: ConfigurableFileCollection
@@ -146,14 +142,7 @@ abstract class EnforcePoliciesTask : DefaultTask() {
         }
 
         val strings = stringsFile.get().asFile
-        check(strings.exists()) { "Missing strings.xml for app_name" }
-        val stringNames = Regex("<string\\s+name=\"([^\"]+)\"").findAll(strings.readText()).map { it.groupValues[1] }.toList()
-        check(stringNames == listOf("app_name")) {
-            "strings.xml may only contain app_name: ${stringNames.joinToString()}"
-        }
-
-        val catalog = catalogFile.get().asFile
-        check(catalog.exists()) { "Missing localization catalog: src/main/assets/i18n/en.json" }
+        check(strings.exists()) { "Missing strings.xml localization catalog" }
 
         val sources = sourceFiles.files.sortedBy { it.path }
         val forbidden = sources.filter { file ->
@@ -174,7 +163,7 @@ abstract class EnforcePoliciesTask : DefaultTask() {
 
 tasks.register<EnforcePoliciesTask>("enforcePolicies") {
     group = "verification"
-    description = "Fails if legacy text APIs, raster assets, or non-Lucide icon sources are added."
+    description = "Fails if raster assets, bitmap drawables, or non-Lucide icon sources are added."
     projectRoot.set(layout.projectDirectory)
     rasterAssets.from(fileTree("src/main/res") {
         include("**/*.png", "**/*.jpg", "**/*.jpeg", "**/*.webp", "**/*.gif", "**/*.bmp")
@@ -183,7 +172,6 @@ tasks.register<EnforcePoliciesTask>("enforcePolicies") {
         include("**/*.xml")
     })
     stringsFile.set(layout.projectDirectory.file("src/main/res/values/strings.xml"))
-    catalogFile.set(layout.projectDirectory.file("src/main/assets/i18n/en.json"))
     sourceFiles.from(fileTree("src/main/java") {
         include("**/*.kt")
     })

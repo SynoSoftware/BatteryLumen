@@ -1,9 +1,12 @@
 package com.synosoftware.battery.domain
 
-import kotlin.math.ceil
-import com.synosoftware.battery.i18n.T
+import com.synosoftware.battery.R
+import com.synosoftware.battery.i18n.TR
+import com.synosoftware.battery.i18n.UiText
 import com.synosoftware.battery.i18n.confidenceReasonText
 import com.synosoftware.battery.i18n.sessionAssessmentText
+import java.util.Locale
+import kotlin.math.ceil
 
 class BatteryDecisionEngine {
     fun analyze(
@@ -18,7 +21,7 @@ class BatteryDecisionEngine {
         val confidence = confidence(snapshot, session, sessionAssessment)
         val reason = buildReason(snapshot, thermalStress, chargeStress, session, targetPercent)
         val action = buildAction(snapshot, session, combinedStress, targetPercent)
-        val confidenceReason = buildConfidenceReason(confidence)
+        val confidenceReason = confidenceReasonText(confidence)
         val timeToTarget = estimateMinutes(snapshot, session, targetPercent)
         val timeToFull = estimateMinutes(snapshot, session, 100)
 
@@ -48,11 +51,7 @@ class BatteryDecisionEngine {
             SessionQuality.WEAK -> ConfidenceLevel.MEDIUM
             SessionQuality.INCOMPLETE -> ConfidenceLevel.LOW
         }
-        val reason = when (quality) {
-            SessionQuality.USEFUL -> sessionAssessmentText(SessionQuality.USEFUL)
-            SessionQuality.WEAK -> sessionAssessmentText(SessionQuality.WEAK)
-            SessionQuality.INCOMPLETE -> sessionAssessmentText(SessionQuality.INCOMPLETE)
-        }
+        val reason = sessionAssessmentText(quality)
         return SessionAssessment(
             quality = quality,
             confidence = confidence,
@@ -219,35 +218,35 @@ class BatteryDecisionEngine {
         chargeStress: StressLevel,
         session: ChargeSessionMetrics?,
         targetPercent: Int,
-    ): com.synosoftware.battery.i18n.UiText {
+    ): UiText {
         val temperature = snapshot.temperatureC ?: session?.maxTemperatureC ?: session?.averageTemperatureC
         return when {
             isChargingLike(snapshot) && temperature != null && temperature >= 45f ->
-                T("decision.reason.hot.charging", temperature.roundOne())
+                TR(R.string.decision_reason_hot_charging, temperature.roundOne())
 
             isChargingLike(snapshot) && temperature != null && temperature >= 43f && snapshot.levelPercent >= 90 ->
-                T("decision.reason.hot.charging", temperature.roundOne())
+                TR(R.string.decision_reason_hot_charging, temperature.roundOne())
 
             isChargingLike(snapshot) && temperature != null && temperature >= 40f && snapshot.levelPercent >= 85 ->
-                T("decision.reason.hot.charging", temperature.roundOne())
+                TR(R.string.decision_reason_hot_charging, temperature.roundOne())
 
             session != null && session.timeAbove95Sec >= 60 * 60 ->
-                T("decision.reason.near.full")
+                TR(R.string.decision_reason_near_full)
 
             chargeStress.severity >= StressLevel.HIGH_STRESS.severity && isChargingLike(snapshot) ->
-                T("decision.reason.near.full")
+                TR(R.string.decision_reason_near_full)
 
             isChargingLike(snapshot) && snapshot.levelPercent >= targetPercent ->
-                T("decision.reason.at.target")
+                TR(R.string.decision_reason_at_target)
 
             thermalStress.severity >= StressLevel.HIGH_STRESS.severity ->
-                T("decision.reason.hot.label")
+                TR(R.string.decision_reason_hot_label)
 
             isChargingLike(snapshot) ->
-                T("decision.reason.reasonable")
+                TR(R.string.decision_reason_reasonable)
 
             else ->
-                T("decision.reason.not.charging")
+                TR(R.string.decision_reason_not_charging)
         }
     }
 
@@ -256,39 +255,29 @@ class BatteryDecisionEngine {
         session: ChargeSessionMetrics?,
         combinedStress: StressLevel,
         targetPercent: Int,
-    ): com.synosoftware.battery.i18n.UiText {
+    ): UiText {
         val temperature = snapshot.temperatureC ?: session?.maxTemperatureC ?: session?.averageTemperatureC
         return when {
             !isChargingLike(snapshot) ->
-                T("decision.action.not.charging")
+                TR(R.string.decision_action_not_charging)
 
             combinedStress == StressLevel.SEVERE_STRESS ->
-                T("decision.action.unplug.now")
+                TR(R.string.decision_action_unplug_now)
 
             temperature != null && temperature >= 45f ->
-                T("decision.action.unplug.now")
+                TR(R.string.decision_action_unplug_now)
 
             temperature != null && temperature >= 40f ->
-                T("decision.action.cool")
+                TR(R.string.decision_action_cool)
 
             snapshot.levelPercent >= targetPercent && targetPercent < 100 ->
-                T("decision.action.unplug.if.not.needed")
+                TR(R.string.decision_action_unplug_if_not_needed)
 
             combinedStress.severity >= StressLevel.HIGH_STRESS.severity ->
-                T("decision.action.avoid.full")
+                TR(R.string.decision_action_avoid_full)
 
             else ->
-                T("decision.action.continue")
-        }
-    }
-
-    private fun buildConfidenceReason(
-        confidence: ConfidenceLevel,
-    ): com.synosoftware.battery.i18n.UiText {
-        return when (confidence) {
-            ConfidenceLevel.HIGH -> confidenceReasonText(ConfidenceLevel.HIGH)
-            ConfidenceLevel.MEDIUM -> confidenceReasonText(ConfidenceLevel.MEDIUM)
-            ConfidenceLevel.LOW -> confidenceReasonText(ConfidenceLevel.LOW)
+                TR(R.string.decision_action_continue)
         }
     }
 
@@ -336,5 +325,6 @@ class BatteryDecisionEngine {
         }
     }
 
-    private fun Float.roundOne(): String = String.format("%.1f", this)
+    private fun Float.roundOne(): String = String.format(Locale.ROOT, "%.1f", this)
+
 }
