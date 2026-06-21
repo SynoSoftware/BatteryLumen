@@ -9,6 +9,7 @@ import com.synosoftware.battery.data.session.BatteryDatabase
 import com.synosoftware.battery.data.session.MIGRATION_1_2
 import com.synosoftware.battery.data.session.MIGRATION_2_3
 import com.synosoftware.battery.data.session.MIGRATION_3_4
+import com.synosoftware.battery.data.session.MIGRATION_4_5
 import com.synosoftware.battery.data.session.ChargeSessionRepository
 import com.synosoftware.battery.domain.BatteryDecisionEngine
 import com.synosoftware.battery.ui.BatteryViewModelFactory
@@ -22,7 +23,7 @@ class AppContainer(context: Context) {
             BatteryDatabase::class.java,
             "battery_lumen.db",
         )
-            .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
+            .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
             .build()
     }
 

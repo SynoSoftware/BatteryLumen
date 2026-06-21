@@ -81,10 +81,16 @@
     <!-- daily -->
     <string name="daily_summary_above_85_issue">Passou %1$s acima de 85%% hoje</string>
     <string name="daily_summary_above_90_issue">Passou %1$s acima de 90%% hoje</string>
+    <string name="daily_summary_advice_above_85">Reduza o tempo conectado após atingir sua meta.</string>
+    <string name="daily_summary_advice_above_90">Use uma meta de 80-85%% quando a carga completa não for necessária.</string>
+    <string name="daily_summary_advice_hot">Deixe o telefone esfriar enquanto carrega. Evite sol, jogos, capas grossas e carregamento sem fio quando estiver quente.</string>
+    <string name="daily_summary_advice_hot_above_85">Evite carregar enquanto quente, especialmente perto da carga completa.</string>
+    <string name="daily_summary_advice_none">Nenhuma mudança importante necessária.</string>
     <string name="daily_summary_based_on">Com base em %1$s sessões hoje</string>
     <string name="daily_summary_collecting">Coletando dados</string>
     <string name="daily_summary_good">Bom</string>
     <string name="daily_summary_issue_hot">Carregamento quente hoje</string>
+    <string name="daily_summary_issue_hot_above_85">A bateria ficou quente e acima de 85%% hoje</string>
     <string name="daily_summary_no_issue">Nenhum problema importante</string>
     <string name="daily_summary_normal">Normal</string>
     <string name="daily_summary_risky">Arriscado</string>
@@ -96,16 +102,24 @@
     <string name="decision_action_continue">Continue carregando</string>
     <string name="decision_action_cool">Deixe o dispositivo esfriar ou desconecte</string>
     <string name="decision_action_not_charging">Comece a carregar para ver orientações</string>
+    <string name="decision_action_slow_charge_cold">Deixe a bateria esquentar antes de carregar rápido</string>
     <string name="decision_action_unplug_if_not_needed">Desconecte se não precisar de carga completa</string>
     <string name="decision_action_unplug_now">Desconecte agora</string>
     <string name="decision_details_hint">Abra os detalhes para ver as evidências.</string>
-    <string name="decision_reason_at_target">Na meta durante o carregamento</string>
+    <string name="decision_reason_charge_dominant">O nível de carga é o principal fator agora</string>
     <string name="decision_reason_charge_label">Estresse pelo nível de carga</string>
+    <string name="decision_reason_cold_fast_charge">Carregamento rápido com frio: %1$s°C</string>
+    <string name="decision_reason_fast_charge_heat">O carregamento rápido está gerando calor: %1$s°C</string>
+    <string name="decision_reason_fast_charge_near_full">Carregamento rápido perto da carga completa</string>
+    <string name="decision_reason_hot_above_85_long">A bateria passou um tempo relevante quente e acima de 85%%</string>
     <string name="decision_reason_hot_charging">Carregando enquanto quente: %1$s°C</string>
-    <string name="decision_reason_hot_label">Carregamento quente</string>
     <string name="decision_reason_near_full">Quase cheia durante o carregamento</string>
     <string name="decision_reason_not_charging">Não está carregando</string>
     <string name="decision_reason_reasonable">O carregamento parece razoável</string>
+    <string name="decision_reason_temperature_dominant">A temperatura é o principal fator agora</string>
+    <string name="decision_reason_temperature_unavailable">Temperatura indisponível; o risco é baseado no nível de carga</string>
+    <string name="decision_reason_very_hot_near_full_long">A bateria esteve muito quente perto da carga completa por vários minutos</string>
+    <string name="decision_reason_warm_near_full">Morna e quase cheia durante o carregamento: %1$s°C</string>
     <string name="decision_thermal_label">Estresse térmico</string>
 
     <!-- evidence -->
@@ -237,7 +251,7 @@
     <string name="session_temperature_with_average">Máx %1$s°C, média %2$s°C</string>
     <string name="session_time_above_85">%1$s acima de 85%%</string>
     <string name="session_time_above_90">%1$s acima de 90%%</string>
-    <string name="session_time_range">%1$s a %2$s</string>
+    <string name="session_time_range">%1$s</string>
 
     <!-- sessions -->
     <string name="sessions_active">Carregando</string>
@@ -312,6 +326,7 @@
     <string name="temperature_label">Temperatura</string>
 
     <!-- time -->
+    <string name="time_estimate_confidence_label">Confiança da estimativa de tempo</string>
     <string name="time_to_target_label">Tempo para a Meta</string>
 
     <!-- useful -->

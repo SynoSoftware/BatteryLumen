@@ -111,6 +111,8 @@ data class ChargeSessionMetrics(
     val timeAbove45Sec: Long = 0L,
     val timeAbove80Sec: Long = 0L,
     val timeAbove95Sec: Long = 0L,
+    val timeHotAndAbove85Sec: Long = 0L,
+    val timeVeryHotAndAbove90Sec: Long = 0L,
 )
 
 val ChargeSessionMetrics.durationMs: Long
@@ -147,5 +149,7 @@ data class BatteryDecision(
     val targetPercent: Int,
     val bestStopPercent: Int,
     val timeToTargetMinutes: Int?,
+    val timeToTargetConfidence: ConfidenceLevel,
     val timeToFullMinutes: Int?,
+    val timeToFullConfidence: ConfidenceLevel,
 )

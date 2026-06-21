@@ -159,6 +159,49 @@ class ChargeSessionRepositoryTest {
             assertEquals(60L, row.timeAbove85Sec)
             assertEquals(0L, row.timeAbove90Sec)
             assertEquals(0L, row.timeAbove95Sec)
+            // 39C/84% then 41C/86% then 44C/91%: the hot+above-85 condition (>=40C and >=85%)
+            // only becomes true once the *previous* sample was already 41C/86%, i.e. the last hop.
+            assertEquals(60L, row.timeHotAndAbove85Sec)
+            assertEquals(0L, row.timeVeryHotAndAbove90Sec)
+        } finally {
+            database.close()
+        }
+    }
+
+    @Test
+    fun activeSessionAccumulatesVeryHotNearFullExposure() = runBlocking {
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val database = Room.inMemoryDatabaseBuilder(context, BatteryDatabase::class.java)
+            .allowMainThreadQueries()
+            .build()
+        try {
+            val repository = ChargeSessionRepository(database, database.chargeSessionDao())
+            val now = 4_000_000L
+            val active = seedActiveSession(
+                startedAtMs = now - 5 * 60 * 1000L,
+                lastSeenAtMs = now,
+                currentLevelPercent = 91,
+                timeAbove85Sec = 0L,
+                timeAbove90Sec = 0L,
+                currentTemperatureC = 44f,
+                maxTemperatureC = 44f,
+            )
+            database.chargeSessionDao().insert(active)
+
+            repository.recordSnapshot(
+                snapshot = snapshot(
+                    timestampMs = now + 60_000L,
+                    levelPercent = 92,
+                    temperatureC = 44f,
+                    chargingState = ChargingState.CHARGING,
+                ),
+                targetPercent = 85,
+            )
+
+            val sessions = database.chargeSessionDao().observeSessions().first()
+            val row = sessions.single()
+            assertEquals(60L, row.timeHotAndAbove85Sec)
+            assertEquals(60L, row.timeVeryHotAndAbove90Sec)
         } finally {
             database.close()
         }

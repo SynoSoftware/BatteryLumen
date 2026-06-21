@@ -5,7 +5,7 @@ import androidx.room.RoomDatabase
 
 @Database(
     entities = [ChargeSessionEntity::class],
-    version = 4,
+    version = 5,
     exportSchema = true,
 )
 abstract class BatteryDatabase : RoomDatabase() {

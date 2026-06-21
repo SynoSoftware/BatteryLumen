@@ -191,7 +191,9 @@ class BatteryScreensTest {
                 targetPercent = 85,
                 bestStopPercent = 85,
                 timeToTargetMinutes = 12,
+                timeToTargetConfidence = ConfidenceLevel.HIGH,
                 timeToFullMinutes = 42,
+                timeToFullConfidence = ConfidenceLevel.HIGH,
             ),
         )
     }

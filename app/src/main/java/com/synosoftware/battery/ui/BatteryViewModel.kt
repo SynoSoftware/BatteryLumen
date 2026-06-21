@@ -18,10 +18,12 @@ import com.synosoftware.battery.data.session.toUi
 import com.synosoftware.battery.domain.CapacityPoint
 import com.synosoftware.battery.domain.DataQuality
 import com.synosoftware.battery.domain.buildCapacityPoints
+import com.synosoftware.battery.domain.buildChargeRateBuckets
 import com.synosoftware.battery.domain.estimateCapacity
 import com.synosoftware.battery.domain.BatteryDecisionEngine
 import com.synosoftware.battery.domain.BatterySnapshot
 import com.synosoftware.battery.domain.ChargeSessionMetrics
+import com.synosoftware.battery.domain.ConfidenceLevel
 import com.synosoftware.battery.domain.DeviceCapabilityMatrix
 import com.synosoftware.battery.domain.EvidenceGrade
 import com.synosoftware.battery.domain.SessionStatus
@@ -88,14 +90,25 @@ class BatteryViewModel(
         }
         val activeView = sessionViews.firstOrNull { it.metrics.status == SessionStatus.ACTIVE }
         val activeSession = activeView?.ui
-        val capacityPoints = buildCapacityPoints(sessionViews.map { it.metrics })
+        val allMetrics = sessionViews.map { it.metrics }
+        val capacityPoints = buildCapacityPoints(allMetrics)
+        val capacityEstimate = estimateCapacity(capacityPoints, preferences.designCapacityMah)
+        val estimatedCapacityForRisk = capacityEstimate.estimatedCapacityMah?.toDouble()
+            ?: preferences.designCapacityMah?.toDouble()
+        val historicalBuckets = buildChargeRateBuckets(allMetrics)
         val decision = snapshot?.let { current ->
             val activeMetrics = activeView?.metrics
-            decisionEngine.analyze(current, activeMetrics, preferences.targetChargePercent)
+            decisionEngine.analyze(
+                snapshot = current,
+                session = activeMetrics,
+                targetPercent = preferences.targetChargePercent,
+                estimatedCapacityMah = estimatedCapacityForRisk,
+                historicalBuckets = historicalBuckets,
+            )
         }
         val healthEvolution = buildHealthEvolution(capacityPoints)
-        val healthEstimate = estimateCapacity(capacityPoints).toUi(preferences.designCapacityMah)
-        val dailySummary = buildDailySummary(sessionViews, snapshot)
+        val healthEstimate = capacityEstimate.toUi(preferences.designCapacityMah)
+        val dailySummary = buildDailySummary(sessionViews)
         BatteryUiState(
             targetChargePercent = preferences.targetChargePercent,
             designCapacityMah = preferences.designCapacityMah,
@@ -193,7 +206,6 @@ class BatteryViewModel(
 
     private fun buildDailySummary(
         sessions: List<SessionView>,
-        snapshot: BatterySnapshot?,
     ): DailyChargingSummaryUi {
         val todayStartMs = startOfDayMs()
         val todaySessions = sessions.filter { it.entity.lastSeenAtMs >= todayStartMs }
@@ -201,39 +213,49 @@ class BatteryViewModel(
             return DailyChargingSummaryUi(
                 headline = TR(R.string.daily_summary_collecting),
                 detail = TR(R.string.daily_summary_waiting),
-                confidence = com.synosoftware.battery.domain.ConfidenceLevel.LOW,
+                confidence = ConfidenceLevel.LOW,
                 evidenceGrade = EvidenceGrade.INFERRED,
                 sessionCount = 0,
             )
         }
 
-        val totalAbove85Sec = todaySessions.sumOf { it.metrics.timeAbove85Sec }
+        // Mirrors the spec's summarizeDay(): hot+near-full time together is the strongest
+        // signal, then raw hot-while-charging time, then plain time-near-full as fallbacks.
+        val totalHotAbove85Sec = todaySessions.sumOf { it.metrics.timeHotAndAbove85Sec }
+        val totalAbove40Sec = todaySessions.sumOf { it.metrics.timeAbove40Sec }
         val totalAbove90Sec = todaySessions.sumOf { it.metrics.timeAbove90Sec }
-        val hottestTemperature = buildList {
-            snapshot?.temperatureC?.let { add(it) }
-            todaySessions.mapNotNull { it.metrics.maxTemperatureC }.forEach { add(it) }
-        }.maxOrNull()
-        val hot = hottestTemperature != null && hottestTemperature >= 43f
+        val totalAbove85Sec = todaySessions.sumOf { it.metrics.timeAbove85Sec }
 
         val headline = when {
-            hot || totalAbove90Sec >= 30 * 60L -> TR(R.string.daily_summary_risky)
-            totalAbove85Sec >= 45 * 60L -> TR(R.string.daily_summary_normal)
+            totalHotAbove85Sec >= 20 * 60L -> TR(R.string.daily_summary_risky)
+            totalAbove40Sec >= 30 * 60L -> TR(R.string.daily_summary_risky)
+            totalAbove90Sec >= 120 * 60L -> TR(R.string.daily_summary_normal)
+            totalAbove85Sec >= 240 * 60L -> TR(R.string.daily_summary_normal)
             else -> TR(R.string.daily_summary_good)
         }
         val detail = when {
-            hot -> TR(R.string.daily_summary_issue_hot)
-            totalAbove90Sec >= 15 * 60L -> TR(R.string.daily_summary_above_90_issue, formatDuration(totalAbove90Sec * 1000L))
-            totalAbove85Sec >= 30 * 60L -> TR(R.string.daily_summary_above_85_issue, formatDuration(totalAbove85Sec * 1000L))
+            totalHotAbove85Sec >= 20 * 60L -> TR(R.string.daily_summary_issue_hot_above_85)
+            totalAbove40Sec >= 30 * 60L -> TR(R.string.daily_summary_issue_hot)
+            totalAbove90Sec >= 120 * 60L -> TR(R.string.daily_summary_above_90_issue, formatDuration(totalAbove90Sec * 1000L))
+            totalAbove85Sec >= 240 * 60L -> TR(R.string.daily_summary_above_85_issue, formatDuration(totalAbove85Sec * 1000L))
             else -> TR(R.string.daily_summary_no_issue)
         }
+        val advice = when {
+            totalHotAbove85Sec >= 20 * 60L -> TR(R.string.daily_summary_advice_hot_above_85)
+            totalAbove40Sec >= 30 * 60L -> TR(R.string.daily_summary_advice_hot)
+            totalAbove90Sec >= 120 * 60L -> TR(R.string.daily_summary_advice_above_90)
+            totalAbove85Sec >= 240 * 60L -> TR(R.string.daily_summary_advice_above_85)
+            else -> TR(R.string.daily_summary_advice_none)
+        }
         val confidence = when {
-            todaySessions.size >= MIN_USEFUL_SESSION_COUNT -> com.synosoftware.battery.domain.ConfidenceLevel.HIGH
-            todaySessions.size >= 2 -> com.synosoftware.battery.domain.ConfidenceLevel.MEDIUM
-            else -> com.synosoftware.battery.domain.ConfidenceLevel.LOW
+            todaySessions.size >= MIN_USEFUL_SESSION_COUNT -> ConfidenceLevel.HIGH
+            todaySessions.size >= 2 -> ConfidenceLevel.MEDIUM
+            else -> ConfidenceLevel.LOW
         }
 
         return DailyChargingSummaryUi(
             headline = headline,
+            advice = advice,
             detail = detail,
             confidence = confidence,
             evidenceGrade = EvidenceGrade.INFERRED,

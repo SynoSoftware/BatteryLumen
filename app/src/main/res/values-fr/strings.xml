@@ -81,10 +81,16 @@
     <!-- daily -->
     <string name="daily_summary_above_85_issue">%1$s passé au-dessus de 85%% aujourd\'hui</string>
     <string name="daily_summary_above_90_issue">%1$s passé au-dessus de 90%% aujourd\'hui</string>
+    <string name="daily_summary_advice_above_85">Réduisez le temps branché après avoir atteint votre objectif.</string>
+    <string name="daily_summary_advice_above_90">Utilisez un objectif de 80-85%% lorsque la charge complète n\'est pas nécessaire.</string>
+    <string name="daily_summary_advice_hot">Laissez le téléphone refroidir pendant la charge. Évitez le soleil, les jeux, les coques épaisses et la charge sans fil quand il est chaud.</string>
+    <string name="daily_summary_advice_hot_above_85">Évitez de charger à chaud, surtout près de la pleine charge.</string>
+    <string name="daily_summary_advice_none">Aucun changement majeur nécessaire.</string>
     <string name="daily_summary_based_on">Basé sur %1$s sessions aujourd\'hui</string>
     <string name="daily_summary_collecting">Collecte des données</string>
     <string name="daily_summary_good">Bon</string>
     <string name="daily_summary_issue_hot">Charge chaude aujourd\'hui</string>
+    <string name="daily_summary_issue_hot_above_85">La batterie a été chaude et au-dessus de 85%% aujourd\'hui</string>
     <string name="daily_summary_no_issue">Aucun problème majeur</string>
     <string name="daily_summary_normal">Normal</string>
     <string name="daily_summary_risky">Risqué</string>
@@ -96,16 +102,24 @@
     <string name="decision_action_continue">Continuez à charger</string>
     <string name="decision_action_cool">Laissez l\'appareil refroidir ou débranchez-le</string>
     <string name="decision_action_not_charging">Commencez à charger pour voir les conseils</string>
+    <string name="decision_action_slow_charge_cold">Laissez la batterie se réchauffer avant une charge rapide</string>
     <string name="decision_action_unplug_if_not_needed">Débranchez si une charge complète n\'est pas nécessaire</string>
     <string name="decision_action_unplug_now">Débranchez maintenant</string>
     <string name="decision_details_hint">Ouvrez les détails pour examiner les preuves.</string>
-    <string name="decision_reason_at_target">Objectif atteint pendant la charge</string>
+    <string name="decision_reason_charge_dominant">Le niveau de charge est le facteur principal actuellement</string>
     <string name="decision_reason_charge_label">Stress lié au niveau de charge</string>
+    <string name="decision_reason_cold_fast_charge">Charge rapide à froid : %1$s°C</string>
+    <string name="decision_reason_fast_charge_heat">La charge rapide ajoute de la chaleur : %1$s°C</string>
+    <string name="decision_reason_fast_charge_near_full">Charge rapide près de la pleine charge</string>
+    <string name="decision_reason_hot_above_85_long">La batterie a passé un temps notable chaude et au-dessus de 85%%</string>
     <string name="decision_reason_hot_charging">Charge à chaud : %1$s°C</string>
-    <string name="decision_reason_hot_label">Charge chaude</string>
     <string name="decision_reason_near_full">Presque pleine pendant la charge</string>
     <string name="decision_reason_not_charging">Pas en charge</string>
     <string name="decision_reason_reasonable">La charge semble raisonnable</string>
+    <string name="decision_reason_temperature_dominant">La température est le facteur principal actuellement</string>
+    <string name="decision_reason_temperature_unavailable">Température indisponible ; le risque se base sur le niveau de charge</string>
+    <string name="decision_reason_very_hot_near_full_long">La batterie a été très chaude près de la pleine charge pendant plusieurs minutes</string>
+    <string name="decision_reason_warm_near_full">Tiède et presque pleine pendant la charge : %1$s°C</string>
     <string name="decision_thermal_label">Stress thermique</string>
 
     <!-- evidence -->
@@ -237,7 +251,7 @@
     <string name="session_temperature_with_average">Max %1$s°C, moy. %2$s°C</string>
     <string name="session_time_above_85">%1$s au-dessus de 85%%</string>
     <string name="session_time_above_90">%1$s au-dessus de 90%%</string>
-    <string name="session_time_range">%1$s à %2$s</string>
+    <string name="session_time_range">%1$s</string>
 
     <!-- sessions -->
     <string name="sessions_active">En charge</string>

@@ -81,10 +81,16 @@
     <!-- daily -->
     <string name="daily_summary_above_85_issue">Spent %1$s above 85%% today</string>
     <string name="daily_summary_above_90_issue">Spent %1$s above 90%% today</string>
+    <string name="daily_summary_advice_above_85">Reduce time spent plugged in after reaching your target.</string>
+    <string name="daily_summary_advice_above_90">Use an 80-85%% target when full charge is not needed.</string>
+    <string name="daily_summary_advice_hot">Cool the phone while charging. Avoid sun, gaming, thick cases, and wireless charging when warm.</string>
+    <string name="daily_summary_advice_hot_above_85">Avoid charging while hot, especially near full.</string>
+    <string name="daily_summary_advice_none">No major change needed.</string>
     <string name="daily_summary_based_on">Based on %1$s sessions today</string>
     <string name="daily_summary_collecting">Collecting data</string>
     <string name="daily_summary_good">Good</string>
     <string name="daily_summary_issue_hot">Hot charging today</string>
+    <string name="daily_summary_issue_hot_above_85">Battery spent time hot while above 85%% today</string>
     <string name="daily_summary_no_issue">No major issue</string>
     <string name="daily_summary_normal">Normal</string>
     <string name="daily_summary_risky">Risky</string>
@@ -96,16 +102,24 @@
     <string name="decision_action_continue">Continue charging</string>
     <string name="decision_action_cool">Cool the device or unplug</string>
     <string name="decision_action_not_charging">Start charging to see guidance</string>
+    <string name="decision_action_slow_charge_cold">Let the battery warm up before fast charging</string>
     <string name="decision_action_unplug_if_not_needed">Unplug if you do not need a full charge</string>
     <string name="decision_action_unplug_now">Unplug now</string>
     <string name="decision_details_hint">Open the details to inspect the evidence.</string>
-    <string name="decision_reason_at_target">At target while charging</string>
+    <string name="decision_reason_charge_dominant">Charge level is the main factor right now</string>
     <string name="decision_reason_charge_label">Charge-level stress</string>
+    <string name="decision_reason_cold_fast_charge">Fast charging while cold: %1$s°C</string>
+    <string name="decision_reason_fast_charge_heat">Fast charging is adding heat: %1$s°C</string>
+    <string name="decision_reason_fast_charge_near_full">Fast charging near full charge</string>
+    <string name="decision_reason_hot_above_85_long">Battery has spent meaningful time hot while above 85%%</string>
     <string name="decision_reason_hot_charging">Charging while hot: %1$s°C</string>
-    <string name="decision_reason_hot_label">Hot charging</string>
     <string name="decision_reason_near_full">Near full while charging</string>
     <string name="decision_reason_not_charging">Not charging</string>
     <string name="decision_reason_reasonable">Charging looks reasonable</string>
+    <string name="decision_reason_temperature_dominant">Temperature is the main factor right now</string>
+    <string name="decision_reason_temperature_unavailable">Temperature is unavailable; risk is based on charge level</string>
+    <string name="decision_reason_very_hot_near_full_long">Battery has been very hot near full for several minutes</string>
+    <string name="decision_reason_warm_near_full">Warm and near full while charging: %1$s°C</string>
     <string name="decision_thermal_label">Thermal stress</string>
 
     <!-- evidence -->
@@ -237,7 +251,7 @@
     <string name="session_temperature_with_average">Max %1$s°C, avg %2$s°C</string>
     <string name="session_time_above_85">%1$s above 85%%</string>
     <string name="session_time_above_90">%1$s above 90%%</string>
-    <string name="session_time_range">%1$s to %2$s</string>
+    <string name="session_time_range">%1$s</string>
 
     <!-- sessions -->
     <string name="sessions_active">Charging</string>
@@ -312,6 +326,7 @@
     <string name="temperature_label">Temperature</string>
 
     <!-- time -->
+    <string name="time_estimate_confidence_label">Time estimate confidence</string>
     <string name="time_to_target_label">Time to Target</string>
 
     <!-- useful -->

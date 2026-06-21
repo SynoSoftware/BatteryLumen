@@ -56,11 +56,16 @@ fun buildCapacityPoints(sessions: List<ChargeSessionMetrics>): List<CapacityPoin
         .toList()
 }
 
-fun estimateCapacity(points: List<CapacityPoint>): CapacityEstimate {
-    val useful = points
+fun estimateCapacity(points: List<CapacityPoint>, designCapacityMah: Int? = null): CapacityEstimate {
+    var useful = points
         .filter { it.quality == DataQuality.USEFUL }
         .map { it.estimatedFullCapacityMah }
         .filter { it.isFinite() && it > 0.0 }
+
+    if (designCapacityMah != null && designCapacityMah > 0) {
+        val plausibleRange = (designCapacityMah * 0.4)..(designCapacityMah * 1.2)
+        useful = useful.filter { it in plausibleRange }
+    }
 
     if (useful.size < MIN_USEFUL_CAPACITY_SESSION_COUNT) {
         return CapacityEstimate(
@@ -152,4 +157,4 @@ private fun isDeclining(capacities: List<Double>): Boolean {
 }
 
 private val PLAUSIBLE_CAPACITY_MAH = 1_000.0..20_000.0
-const val MIN_USEFUL_CAPACITY_SESSION_COUNT = 5
+const val MIN_USEFUL_CAPACITY_SESSION_COUNT = 3

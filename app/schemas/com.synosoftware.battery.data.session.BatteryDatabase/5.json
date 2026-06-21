@@ -1,0 +1,185 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 5,
+    "identityHash": "d76a02402fa474aec92c395095dc4b07",
+    "entities": [
+      {
+        "tableName": "charge_sessions",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `startedAtMs` INTEGER NOT NULL, `lastSeenAtMs` INTEGER NOT NULL, `endedAtMs` INTEGER, `startLevelPercent` INTEGER NOT NULL, `currentLevelPercent` INTEGER NOT NULL, `startChargeCounterUah` INTEGER, `currentChargeCounterUah` INTEGER, `startTemperatureC` REAL, `currentTemperatureC` REAL, `maxTemperatureC` REAL, `averageTemperatureC` REAL, `chargingSource` TEXT NOT NULL, `chargingState` TEXT NOT NULL, `status` TEXT NOT NULL, `sampleCount` INTEGER NOT NULL, `timeAbove85Sec` INTEGER NOT NULL, `timeAbove90Sec` INTEGER NOT NULL, `lastNotifiedTargetPercent` INTEGER, `gainPercent` INTEGER NOT NULL, `timeAbove35Sec` INTEGER NOT NULL, `timeAbove40Sec` INTEGER NOT NULL, `timeAbove43Sec` INTEGER NOT NULL, `timeAbove45Sec` INTEGER NOT NULL, `timeAbove80Sec` INTEGER NOT NULL, `timeAbove95Sec` INTEGER NOT NULL, `timeHotAndAbove85Sec` INTEGER NOT NULL, `timeVeryHotAndAbove90Sec` INTEGER NOT NULL)",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "startedAtMs",
+            "columnName": "startedAtMs",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "lastSeenAtMs",
+            "columnName": "lastSeenAtMs",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "endedAtMs",
+            "columnName": "endedAtMs",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "startLevelPercent",
+            "columnName": "startLevelPercent",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "currentLevelPercent",
+            "columnName": "currentLevelPercent",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "startChargeCounterUah",
+            "columnName": "startChargeCounterUah",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "currentChargeCounterUah",
+            "columnName": "currentChargeCounterUah",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "startTemperatureC",
+            "columnName": "startTemperatureC",
+            "affinity": "REAL"
+          },
+          {
+            "fieldPath": "currentTemperatureC",
+            "columnName": "currentTemperatureC",
+            "affinity": "REAL"
+          },
+          {
+            "fieldPath": "maxTemperatureC",
+            "columnName": "maxTemperatureC",
+            "affinity": "REAL"
+          },
+          {
+            "fieldPath": "averageTemperatureC",
+            "columnName": "averageTemperatureC",
+            "affinity": "REAL"
+          },
+          {
+            "fieldPath": "chargingSource",
+            "columnName": "chargingSource",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "chargingState",
+            "columnName": "chargingState",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "status",
+            "columnName": "status",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sampleCount",
+            "columnName": "sampleCount",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "timeAbove85Sec",
+            "columnName": "timeAbove85Sec",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "timeAbove90Sec",
+            "columnName": "timeAbove90Sec",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "lastNotifiedTargetPercent",
+            "columnName": "lastNotifiedTargetPercent",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "gainPercent",
+            "columnName": "gainPercent",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "timeAbove35Sec",
+            "columnName": "timeAbove35Sec",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "timeAbove40Sec",
+            "columnName": "timeAbove40Sec",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "timeAbove43Sec",
+            "columnName": "timeAbove43Sec",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "timeAbove45Sec",
+            "columnName": "timeAbove45Sec",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "timeAbove80Sec",
+            "columnName": "timeAbove80Sec",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "timeAbove95Sec",
+            "columnName": "timeAbove95Sec",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "timeHotAndAbove85Sec",
+            "columnName": "timeHotAndAbove85Sec",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "timeVeryHotAndAbove90Sec",
+            "columnName": "timeVeryHotAndAbove90Sec",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        }
+      }
+    ],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'd76a02402fa474aec92c395095dc4b07')"
+    ]
+  }
+}

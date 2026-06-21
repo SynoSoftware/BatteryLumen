@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.compose.LocalActivityResultRegistryOwner
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
@@ -27,6 +28,7 @@ import com.synosoftware.battery.R
 import com.synosoftware.battery.data.temperatureText
 import com.synosoftware.battery.domain.BatteryDecision
 import com.synosoftware.battery.domain.EvidenceGrade
+import com.synosoftware.battery.domain.MIN_USEFUL_CAPACITY_SESSION_COUNT
 import com.synosoftware.battery.domain.StressLevel
 import com.synosoftware.battery.i18n.T
 import com.synosoftware.battery.i18n.asString
@@ -47,7 +49,6 @@ import com.synosoftware.battery.ui.components.SectionHeader
 import com.synosoftware.battery.ui.model.BatteryHealthEstimateUi
 import com.synosoftware.battery.ui.model.BatteryUiState
 import com.synosoftware.battery.ui.model.DailyChargingSummaryUi
-import com.synosoftware.battery.ui.model.MIN_USEFUL_SESSION_COUNT
 
 @Composable
 fun NowScreen(
@@ -317,6 +318,15 @@ private fun TargetCard(
                         T(R.string.evidence_estimated),
                         evidenceGrade = EvidenceGrade.ESTIMATED,
                     )
+                    if (decision.timeToTargetMinutes != null) {
+                        LabelValueRow(
+                            T(R.string.time_estimate_confidence_label),
+                            confidenceText(decision.timeToTargetConfidence).asString(),
+                            T(R.string.evidence_estimated),
+                            evidenceGrade = EvidenceGrade.ESTIMATED,
+                            compactEvidence = true,
+                        )
+                    }
                 }
             } else {
                 AppText(
@@ -407,12 +417,12 @@ private fun HealthSummaryCard(
                 )
             } else {
                 AppText(
-                    text = T(R.string.health_insufficient_body, MIN_USEFUL_SESSION_COUNT),
+                    text = T(R.string.health_insufficient_body, MIN_USEFUL_CAPACITY_SESSION_COUNT),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 AppText(
-                    text = T(R.string.health_sessions_collected, estimate.usefulSessionCount, MIN_USEFUL_SESSION_COUNT),
+                    text = T(R.string.health_sessions_collected, estimate.usefulSessionCount, MIN_USEFUL_CAPACITY_SESSION_COUNT),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -456,6 +466,13 @@ private fun DailySummaryCard(
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
+            summary.advice?.let { advice ->
+                AppText(
+                    text = advice.asString(),
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Medium,
+                )
+            }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 PlainBadge(text = confidenceText(summary.confidence).asString())
                 EvidenceBadge(grade = summary.evidenceGrade)
@@ -605,6 +622,7 @@ private fun DecisionDetailsCard(
 internal fun NotificationPermissionCard(
     permissionChecker: () -> Boolean,
 ) {
+    LocalActivityResultRegistryOwner.current ?: return
     val lifecycleOwner = LocalLifecycleOwner.current
     val currentPermissionChecker by rememberUpdatedState(permissionChecker)
     var hasPermission by remember { mutableStateOf(currentPermissionChecker()) }

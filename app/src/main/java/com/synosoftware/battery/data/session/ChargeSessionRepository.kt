@@ -130,6 +130,8 @@ class ChargeSessionRepository(
             timeAbove45Sec = 0L,
             timeAbove80Sec = 0L,
             timeAbove95Sec = 0L,
+            timeHotAndAbove85Sec = 0L,
+            timeVeryHotAndAbove90Sec = 0L,
         )
     }
 
@@ -168,6 +170,8 @@ class ChargeSessionRepository(
             timeAbove85Sec = exposure.timeAbove85Sec,
             timeAbove90Sec = exposure.timeAbove90Sec,
             timeAbove95Sec = exposure.timeAbove95Sec,
+            timeHotAndAbove85Sec = exposure.timeHotAndAbove85Sec,
+            timeVeryHotAndAbove90Sec = exposure.timeVeryHotAndAbove90Sec,
             lastNotifiedTargetPercent = if (crossedTarget) targetPercent else existing.lastNotifiedTargetPercent,
             gainPercent = newGain,
         )
@@ -282,6 +286,8 @@ class ChargeSessionRepository(
             timeAbove85Sec = timeAbove85Sec,
             timeAbove90Sec = timeAbove90Sec,
             timeAbove95Sec = if (endLevel >= 95) ((durationMinutes - 45).coerceAtLeast(0) * 60L) else 0L,
+            timeHotAndAbove85Sec = if (highTemp >= 40f && endLevel >= 85) ((durationMinutes - 25).coerceAtLeast(0) * 60L) else 0L,
+            timeVeryHotAndAbove90Sec = if (highTemp >= 43f && endLevel >= 90) ((durationMinutes - 40).coerceAtLeast(0) * 60L) else 0L,
             lastNotifiedTargetPercent = null,
             gainPercent = (endLevel - startLevel).coerceAtLeast(0),
         )
@@ -324,6 +330,8 @@ class ChargeSessionRepository(
             timeAbove85Sec = 0L,
             timeAbove90Sec = 0L,
             timeAbove95Sec = 0L,
+            timeHotAndAbove85Sec = 0L,
+            timeVeryHotAndAbove90Sec = 0L,
             lastNotifiedTargetPercent = null,
             gainPercent = (currentLevel - startLevel).coerceAtLeast(0),
         )
@@ -338,6 +346,8 @@ class ChargeSessionRepository(
         val timeAbove85Sec: Long,
         val timeAbove90Sec: Long,
         val timeAbove95Sec: Long,
+        val timeHotAndAbove85Sec: Long,
+        val timeVeryHotAndAbove90Sec: Long,
     )
 
     private fun accumulateExposure(
@@ -354,11 +364,16 @@ class ChargeSessionRepository(
                 timeAbove85Sec = existing.timeAbove85Sec,
                 timeAbove90Sec = existing.timeAbove90Sec,
                 timeAbove95Sec = existing.timeAbove95Sec,
+                timeHotAndAbove85Sec = existing.timeHotAndAbove85Sec,
+                timeVeryHotAndAbove90Sec = existing.timeVeryHotAndAbove90Sec,
             )
         }
 
         val previousTemperature = existing.currentTemperatureC ?: existing.averageTemperatureC ?: existing.maxTemperatureC
         val previousLevel = existing.currentLevelPercent
+        // Sessions only exist while charging-like, so no separate isCharging gate is needed here.
+        val hotAndAbove85 = previousTemperature != null && previousTemperature >= 40f && previousLevel >= 85
+        val veryHotAndAbove90 = previousTemperature != null && previousTemperature >= 43f && previousLevel >= 90
 
         return ExposureTotals(
             timeAbove35Sec = existing.timeAbove35Sec + if (previousTemperature != null && previousTemperature >= 35f) deltaSec else 0L,
@@ -369,6 +384,8 @@ class ChargeSessionRepository(
             timeAbove85Sec = existing.timeAbove85Sec + if (previousLevel >= 85) deltaSec else 0L,
             timeAbove90Sec = existing.timeAbove90Sec + if (previousLevel >= 90) deltaSec else 0L,
             timeAbove95Sec = existing.timeAbove95Sec + if (previousLevel >= 95) deltaSec else 0L,
+            timeHotAndAbove85Sec = existing.timeHotAndAbove85Sec + if (hotAndAbove85) deltaSec else 0L,
+            timeVeryHotAndAbove90Sec = existing.timeVeryHotAndAbove90Sec + if (veryHotAndAbove90) deltaSec else 0L,
         )
     }
 

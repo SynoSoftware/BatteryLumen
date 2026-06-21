@@ -135,6 +135,130 @@ class BatteryDecisionEngineTest {
     }
 
     @Test
+    fun hotChargingAtLowSocStaysHighStressNotSevere() {
+        // Regression test: 44C alone (without high SOC) must not be escalated all the way
+        // to SEVERE - the spec only allows that when temp>=43 AND soc>=90 happen together.
+        val snapshot = snapshot(
+            levelPercent = 20,
+            temperatureC = 44f,
+            chargingState = ChargingState.CHARGING,
+        )
+
+        val decision = engine.analyze(snapshot, null, 85)
+
+        assertEquals(StressLevel.HIGH_STRESS, decision.stress)
+        assertEquals(TR(R.string.decision_action_cool), decision.action)
+    }
+
+    @Test
+    fun veryHotNearFullIsSevereOnlyWithHighSoc() {
+        val snapshot = snapshot(
+            levelPercent = 92,
+            temperatureC = 44f,
+            chargingState = ChargingState.CHARGING,
+        )
+
+        val decision = engine.analyze(snapshot, null, 85)
+
+        assertEquals(StressLevel.SEVERE_STRESS, decision.stress)
+        assertEquals(TR(R.string.decision_action_unplug_now), decision.action)
+    }
+
+    @Test
+    fun sustainedHotAboveEightyFiveLedgerEscalatesToHighStress() {
+        val snapshot = snapshot(
+            levelPercent = 50,
+            temperatureC = 25f,
+            chargingState = ChargingState.CHARGING,
+        )
+        val session = sessionMetrics(
+            startedAtMs = 1_000L,
+            lastSeenAtMs = 700_000L,
+            startLevelPercent = 50,
+            currentLevelPercent = 50,
+            maxTemperatureC = 30f,
+            averageTemperatureC = 28f,
+            sampleCount = 6,
+            chargingSource = ChargingSource.AC,
+            chargingState = ChargingState.CHARGING,
+            status = SessionStatus.ACTIVE,
+            timeHotAndAbove85Sec = 700L,
+        )
+
+        val decision = engine.analyze(snapshot, session, 85)
+
+        assertEquals(StressLevel.HIGH_STRESS, decision.stress)
+        assertEquals(TR(R.string.decision_reason_hot_above_85_long), decision.reason)
+    }
+
+    @Test
+    fun sustainedVeryHotNearFullLedgerEscalatesToSevere() {
+        val snapshot = snapshot(
+            levelPercent = 50,
+            temperatureC = 25f,
+            chargingState = ChargingState.CHARGING,
+        )
+        val session = sessionMetrics(
+            startedAtMs = 1_000L,
+            lastSeenAtMs = 300_000L,
+            startLevelPercent = 50,
+            currentLevelPercent = 50,
+            maxTemperatureC = 30f,
+            averageTemperatureC = 28f,
+            sampleCount = 6,
+            chargingSource = ChargingSource.AC,
+            chargingState = ChargingState.CHARGING,
+            status = SessionStatus.ACTIVE,
+            timeVeryHotAndAbove90Sec = 200L,
+        )
+
+        val decision = engine.analyze(snapshot, session, 85)
+
+        assertEquals(StressLevel.SEVERE_STRESS, decision.stress)
+        assertEquals(TR(R.string.decision_reason_very_hot_near_full_long), decision.reason)
+    }
+
+    @Test
+    fun coldFastChargingIsHighStressWithWarmUpAction() {
+        val snapshot = snapshot(
+            levelPercent = 50,
+            temperatureC = 5f,
+            chargingState = ChargingState.CHARGING,
+            currentUa = -3_000_000,
+            chargeCounterUah = 2_000_000,
+        )
+
+        val decision = engine.analyze(snapshot, null, 85, estimatedCapacityMah = 3_000.0)
+
+        assertEquals(StressLevel.HIGH_STRESS, decision.stress)
+        assertEquals(TR(R.string.decision_reason_cold_fast_charge, "5.0"), decision.reason)
+        assertEquals(TR(R.string.decision_action_slow_charge_cold), decision.action)
+    }
+
+    @Test
+    fun timeToTargetFallsBackToHistoricalBucketsWhenNoActiveSession() {
+        val snapshot = snapshot(
+            levelPercent = 80,
+            temperatureC = 32f,
+            chargingState = ChargingState.CHARGING,
+        )
+        val buckets = listOf(
+            ChargeRateBucket(
+                band = SocBand(80, 85),
+                plugType = ChargingSource.AC,
+                tempBand = TempBand.NORMAL,
+                medianPctPerMinute = 0.5,
+                sampleCount = 5,
+            ),
+        )
+
+        val decision = engine.analyze(snapshot, null, 85, historicalBuckets = buckets)
+
+        assertEquals(10, decision.timeToTargetMinutes)
+        assertEquals(ConfidenceLevel.MEDIUM, decision.timeToTargetConfidence)
+    }
+
+    @Test
     fun incompleteSessionIsMarkedIncomplete() {
         val session = sessionMetrics(
             startedAtMs = 1_000L,
@@ -159,6 +283,8 @@ class BatteryDecisionEngineTest {
         levelPercent: Int,
         temperatureC: Float?,
         chargingState: ChargingState,
+        currentUa: Int? = null,
+        chargeCounterUah: Int? = null,
     ): BatterySnapshot {
         return BatterySnapshot(
             timestampMs = 1_000L,
@@ -166,9 +292,9 @@ class BatteryDecisionEngineTest {
             scale = 100,
             temperatureC = temperatureC,
             voltageMv = null,
-            currentUa = null,
-            averageCurrentUa = null,
-            chargeCounterUah = null,
+            currentUa = currentUa,
+            averageCurrentUa = currentUa,
+            chargeCounterUah = chargeCounterUah,
             chargingSource = ChargingSource.AC,
             chargingState = chargingState,
             healthLabel = "good",
@@ -195,6 +321,8 @@ class BatteryDecisionEngineTest {
         timeAbove45Sec: Long = 0L,
         timeAbove80Sec: Long = 0L,
         timeAbove95Sec: Long = 0L,
+        timeHotAndAbove85Sec: Long = 0L,
+        timeVeryHotAndAbove90Sec: Long = 0L,
     ): ChargeSessionMetrics {
         return ChargeSessionMetrics(
             startedAtMs = startedAtMs,
@@ -220,6 +348,8 @@ class BatteryDecisionEngineTest {
             timeAbove45Sec = timeAbove45Sec,
             timeAbove80Sec = timeAbove80Sec,
             timeAbove95Sec = timeAbove95Sec,
+            timeHotAndAbove85Sec = timeHotAndAbove85Sec,
+            timeVeryHotAndAbove90Sec = timeVeryHotAndAbove90Sec,
         )
     }
 }

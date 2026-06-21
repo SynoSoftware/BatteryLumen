@@ -6,27 +6,110 @@ import com.synosoftware.battery.i18n.UiText
 import com.synosoftware.battery.i18n.confidenceReasonText
 import com.synosoftware.battery.i18n.sessionAssessmentText
 import java.util.Locale
+import kotlin.math.abs
 import kotlin.math.ceil
+
+private enum class ReasonKind {
+    HOT_CHARGING_SEVERE,
+    VERY_HOT_NEAR_FULL,
+    HOT_ABOVE_85,
+    WARM_NEAR_FULL,
+    NEAR_FULL_LONG,
+    HOT_ABOVE_85_LONG,
+    VERY_HOT_NEAR_FULL_LONG,
+    COLD_FAST_CHARGE,
+    FAST_CHARGE_HEAT,
+    FAST_CHARGE_NEAR_FULL,
+}
+
+private data class CurrentRiskAssessment(
+    val severity: StressLevel,
+    val reason: ReasonKind?,
+)
+
+private data class TimeEstimate(
+    val minutes: Int?,
+    val confidence: ConfidenceLevel,
+)
 
 class BatteryDecisionEngine {
     fun analyze(
         snapshot: BatterySnapshot,
         session: ChargeSessionMetrics?,
         targetPercent: Int,
+        estimatedCapacityMah: Double? = null,
+        historicalBuckets: List<ChargeRateBucket> = emptyList(),
     ): BatteryDecision {
         val sessionAssessment = session?.let { assessSession(it) }
-        val thermalStress = thermalStress(snapshot, session)
-        val chargeStress = chargeLevelStress(snapshot, session)
-        val combinedStress = maxBySeverity(thermalStress, chargeStress)
+        val temperature = resolveTemperature(snapshot, session)
+        val charging = isChargingLike(snapshot)
+
+        val baseThermal = thermalSeverity(temperature)
+        val baseCharge = chargeSeverity(snapshot.levelPercent, charging)
+        val thermalStress = if (session != null) maxBySeverity(baseThermal, sessionThermalStress(session)) else baseThermal
+        val chargeStress = if (session != null) maxBySeverity(baseCharge, sessionChargeLevelStress(session)) else baseCharge
+
+        var combined = maxBySeverity(thermalStress, chargeStress)
+        val reasons = mutableListOf<ReasonKind>()
+
+        if (charging && temperature != null) {
+            when {
+                temperature >= 45f -> {
+                    combined = StressLevel.SEVERE_STRESS
+                    reasons += ReasonKind.HOT_CHARGING_SEVERE
+                }
+                temperature >= 43f && snapshot.levelPercent >= 90 -> {
+                    combined = StressLevel.SEVERE_STRESS
+                    reasons += ReasonKind.VERY_HOT_NEAR_FULL
+                }
+                temperature >= 40f && snapshot.levelPercent >= 85 -> {
+                    combined = maxBySeverity(combined, StressLevel.HIGH_STRESS)
+                    reasons += ReasonKind.HOT_ABOVE_85
+                }
+                temperature >= 35f && snapshot.levelPercent >= 90 -> {
+                    combined = maxBySeverity(combined, StressLevel.HIGH_STRESS)
+                    reasons += ReasonKind.WARM_NEAR_FULL
+                }
+            }
+        }
+
+        if (session != null) {
+            if (session.timeAbove95Sec >= 60 * 60) {
+                combined = maxBySeverity(combined, StressLevel.HIGH_STRESS)
+                reasons += ReasonKind.NEAR_FULL_LONG
+            }
+            if (session.timeHotAndAbove85Sec >= 10 * 60) {
+                combined = maxBySeverity(combined, StressLevel.HIGH_STRESS)
+                reasons += ReasonKind.HOT_ABOVE_85_LONG
+            }
+            if (session.timeVeryHotAndAbove90Sec >= 3 * 60) {
+                combined = StressLevel.SEVERE_STRESS
+                reasons += ReasonKind.VERY_HOT_NEAR_FULL_LONG
+            }
+        }
+
+        val currentUa = snapshot.currentUa
+        var currentReason: ReasonKind? = null
+        if (charging && currentUa != null && estimatedCapacityMah != null && isCurrentReliable(snapshot)) {
+            val currentAssessment = currentRisk(currentUa, estimatedCapacityMah, temperature, snapshot.levelPercent)
+            combined = maxBySeverity(combined, currentAssessment.severity)
+            currentAssessment.reason?.let {
+                currentReason = it
+                reasons += it
+            }
+        }
+
         val confidence = confidence(snapshot, session, sessionAssessment)
-        val reason = buildReason(snapshot, thermalStress, chargeStress, session, targetPercent)
-        val action = buildAction(snapshot, session, combinedStress, targetPercent)
+        val mainReason = reasons.firstOrNull()
+        val reason = mainReason?.let { reasonText(it, temperature) }
+            ?: defaultReason(charging, temperature, thermalStress, chargeStress)
+        val action = buildAction(snapshot, combined, temperature, targetPercent, currentReason)
         val confidenceReason = confidenceReasonText(confidence)
-        val timeToTarget = estimateMinutes(snapshot, session, targetPercent)
-        val timeToFull = estimateMinutes(snapshot, session, 100)
+        val timeToTarget = estimateMinutes(snapshot, session, targetPercent, historicalBuckets)
+        val timeToFull = estimateMinutes(snapshot, session, 100, historicalBuckets)
 
         return BatteryDecision(
-            stress = combinedStress,
+            stress = combined,
             thermalStress = thermalStress,
             chargeLevelStress = chargeStress,
             reason = reason,
@@ -36,8 +119,10 @@ class BatteryDecisionEngine {
             evidenceGrade = EvidenceGrade.INFERRED,
             targetPercent = targetPercent,
             bestStopPercent = targetPercent,
-            timeToTargetMinutes = timeToTarget,
-            timeToFullMinutes = timeToFull,
+            timeToTargetMinutes = timeToTarget.minutes,
+            timeToTargetConfidence = timeToTarget.confidence,
+            timeToFullMinutes = timeToFull.minutes,
+            timeToFullConfidence = timeToFull.confidence,
         )
     }
 
@@ -62,37 +147,6 @@ class BatteryDecisionEngine {
             chargeLevelStress = chargeStress,
             combinedStress = combinedStress,
         )
-    }
-
-    private fun thermalStress(
-        snapshot: BatterySnapshot,
-        session: ChargeSessionMetrics?,
-    ): StressLevel {
-        val temp = snapshot.temperatureC ?: session?.maxTemperatureC ?: session?.averageTemperatureC
-        var stress = thermalSeverity(temp)
-
-        if (session != null) {
-            stress = maxBySeverity(stress, sessionThermalStress(session))
-        }
-
-        if (isChargingLike(snapshot) && temp != null && temp >= 43f) {
-            stress = stress.escalate()
-        }
-
-        return stress
-    }
-
-    private fun chargeLevelStress(
-        snapshot: BatterySnapshot,
-        session: ChargeSessionMetrics?,
-    ): StressLevel {
-        var stress = chargeSeverity(snapshot.levelPercent, isChargingLike(snapshot))
-
-        if (session != null) {
-            stress = maxBySeverity(stress, sessionChargeLevelStress(session))
-        }
-
-        return stress
     }
 
     private fun thermalSeverity(tempC: Float?): StressLevel {
@@ -212,69 +266,100 @@ class BatteryDecisionEngine {
         }
     }
 
-    private fun buildReason(
-        snapshot: BatterySnapshot,
+    /**
+     * Secondary risk factor from charge current: high current combined with a cold battery,
+     * a cold battery near full, or sustained heat near full are when fast charging actually
+     * matters (lithium-plating / heat risk), not the current alone.
+     */
+    private fun currentRisk(
+        currentUa: Int,
+        estimatedCapacityMah: Double,
+        tempC: Float?,
+        socPct: Int,
+    ): CurrentRiskAssessment {
+        val capacityAh = estimatedCapacityMah / 1000.0
+        if (capacityAh <= 0.0) return CurrentRiskAssessment(StressLevel.GOOD, null)
+        val amps = abs(currentUa) / 1_000_000.0
+        val cRate = amps / capacityAh
+
+        return when {
+            tempC != null && tempC < 10f && cRate >= 0.5 ->
+                CurrentRiskAssessment(StressLevel.HIGH_STRESS, ReasonKind.COLD_FAST_CHARGE)
+            tempC != null && tempC < 15f && socPct >= 80 && cRate >= 0.5 ->
+                CurrentRiskAssessment(StressLevel.HIGH_STRESS, ReasonKind.COLD_FAST_CHARGE)
+            cRate >= 1.5 && tempC != null && tempC >= 35f ->
+                CurrentRiskAssessment(StressLevel.HIGH_STRESS, ReasonKind.FAST_CHARGE_HEAT)
+            cRate >= 1.0 && socPct >= 85 ->
+                CurrentRiskAssessment(StressLevel.NORMAL, ReasonKind.FAST_CHARGE_NEAR_FULL)
+            else ->
+                CurrentRiskAssessment(StressLevel.GOOD, null)
+        }
+    }
+
+    private fun reasonText(kind: ReasonKind, temperature: Float?): UiText {
+        val temp = temperature?.roundOne() ?: ""
+        return when (kind) {
+            ReasonKind.HOT_CHARGING_SEVERE -> TR(R.string.decision_reason_hot_charging, temp)
+            ReasonKind.VERY_HOT_NEAR_FULL -> TR(R.string.decision_reason_hot_charging, temp)
+            ReasonKind.HOT_ABOVE_85 -> TR(R.string.decision_reason_hot_charging, temp)
+            ReasonKind.WARM_NEAR_FULL -> TR(R.string.decision_reason_warm_near_full, temp)
+            ReasonKind.NEAR_FULL_LONG -> TR(R.string.decision_reason_near_full)
+            ReasonKind.HOT_ABOVE_85_LONG -> TR(R.string.decision_reason_hot_above_85_long)
+            ReasonKind.VERY_HOT_NEAR_FULL_LONG -> TR(R.string.decision_reason_very_hot_near_full_long)
+            ReasonKind.COLD_FAST_CHARGE -> TR(R.string.decision_reason_cold_fast_charge, temp)
+            ReasonKind.FAST_CHARGE_HEAT -> TR(R.string.decision_reason_fast_charge_heat, temp)
+            ReasonKind.FAST_CHARGE_NEAR_FULL -> TR(R.string.decision_reason_fast_charge_near_full)
+        }
+    }
+
+    private fun defaultReason(
+        charging: Boolean,
+        temperature: Float?,
         thermalStress: StressLevel,
         chargeStress: StressLevel,
-        session: ChargeSessionMetrics?,
-        targetPercent: Int,
     ): UiText {
-        val temperature = snapshot.temperatureC ?: session?.maxTemperatureC ?: session?.averageTemperatureC
         return when {
-            isChargingLike(snapshot) && temperature != null && temperature >= 45f ->
-                TR(R.string.decision_reason_hot_charging, temperature.roundOne())
-
-            isChargingLike(snapshot) && temperature != null && temperature >= 43f && snapshot.levelPercent >= 90 ->
-                TR(R.string.decision_reason_hot_charging, temperature.roundOne())
-
-            isChargingLike(snapshot) && temperature != null && temperature >= 40f && snapshot.levelPercent >= 85 ->
-                TR(R.string.decision_reason_hot_charging, temperature.roundOne())
-
-            session != null && session.timeAbove95Sec >= 60 * 60 ->
-                TR(R.string.decision_reason_near_full)
-
-            chargeStress.severity >= StressLevel.HIGH_STRESS.severity && isChargingLike(snapshot) ->
-                TR(R.string.decision_reason_near_full)
-
-            isChargingLike(snapshot) && snapshot.levelPercent >= targetPercent ->
-                TR(R.string.decision_reason_at_target)
-
-            thermalStress.severity >= StressLevel.HIGH_STRESS.severity ->
-                TR(R.string.decision_reason_hot_label)
-
-            isChargingLike(snapshot) ->
-                TR(R.string.decision_reason_reasonable)
-
-            else ->
-                TR(R.string.decision_reason_not_charging)
+            !charging -> TR(R.string.decision_reason_not_charging)
+            temperature == null -> TR(R.string.decision_reason_temperature_unavailable)
+            thermalStress.severity > chargeStress.severity -> TR(R.string.decision_reason_temperature_dominant)
+            chargeStress.severity > thermalStress.severity -> TR(R.string.decision_reason_charge_dominant)
+            else -> TR(R.string.decision_reason_reasonable)
         }
     }
 
     private fun buildAction(
         snapshot: BatterySnapshot,
-        session: ChargeSessionMetrics?,
         combinedStress: StressLevel,
+        temperature: Float?,
         targetPercent: Int,
+        currentReason: ReasonKind?,
     ): UiText {
-        val temperature = snapshot.temperatureC ?: session?.maxTemperatureC ?: session?.averageTemperatureC
-        return when {
-            !isChargingLike(snapshot) ->
-                TR(R.string.decision_action_not_charging)
+        if (!isChargingLike(snapshot)) {
+            return TR(R.string.decision_action_not_charging)
+        }
 
-            combinedStress == StressLevel.SEVERE_STRESS ->
+        return when (combinedStress) {
+            StressLevel.SEVERE_STRESS ->
                 TR(R.string.decision_action_unplug_now)
 
-            temperature != null && temperature >= 45f ->
-                TR(R.string.decision_action_unplug_now)
+            StressLevel.HIGH_STRESS ->
+                when {
+                    currentReason == ReasonKind.COLD_FAST_CHARGE ->
+                        TR(R.string.decision_action_slow_charge_cold)
+                    temperature != null && temperature >= 40f ->
+                        TR(R.string.decision_action_cool)
+                    snapshot.levelPercent >= targetPercent ->
+                        TR(R.string.decision_action_unplug_if_not_needed)
+                    else ->
+                        TR(R.string.decision_action_avoid_full)
+                }
 
-            temperature != null && temperature >= 40f ->
-                TR(R.string.decision_action_cool)
-
-            snapshot.levelPercent >= targetPercent && targetPercent < 100 ->
-                TR(R.string.decision_action_unplug_if_not_needed)
-
-            combinedStress.severity >= StressLevel.HIGH_STRESS.severity ->
-                TR(R.string.decision_action_avoid_full)
+            StressLevel.NORMAL ->
+                if (snapshot.levelPercent >= targetPercent) {
+                    TR(R.string.decision_action_unplug_if_not_needed)
+                } else {
+                    TR(R.string.decision_action_continue)
+                }
 
             else ->
                 TR(R.string.decision_action_continue)
@@ -285,26 +370,50 @@ class BatteryDecisionEngine {
         snapshot: BatterySnapshot,
         session: ChargeSessionMetrics?,
         targetPercent: Int,
-    ): Int? {
+        historicalBuckets: List<ChargeRateBucket>,
+    ): TimeEstimate {
         if (!isChargingLike(snapshot)) {
-            return null
+            return TimeEstimate(null, ConfidenceLevel.LOW)
         }
         if (snapshot.levelPercent >= targetPercent) {
-            return 0
+            return TimeEstimate(0, ConfidenceLevel.HIGH)
         }
 
-        val sessionData = session ?: return null
-        val gain = sessionData.gainPercent
-        val durationMinutes = sessionData.durationMinutes
-        if (gain < 5 || durationMinutes < 5.0) {
-            return null
+        val sessionRate = session?.let {
+            val gain = it.gainPercent
+            val durationMinutes = it.durationMinutes
+            if (gain < 5 || durationMinutes < 5.0) return@let null
+            (gain / durationMinutes).takeIf { rate -> rate > 0.01 }
         }
-        val rate = gain / durationMinutes
-        if (rate <= 0.01) {
-            return null
+
+        val plugType = snapshot.chargingSource
+        val tempBand = tempBandFor(snapshot.temperatureC ?: session?.maxTemperatureC ?: session?.averageTemperatureC)
+
+        var minutes = 0.0
+        var usedHistorical = false
+
+        for (soc in snapshot.levelPercent until targetPercent) {
+            val historicalRate = historicalBuckets
+                .filter {
+                    soc >= it.band.fromInclusive &&
+                        soc < it.band.toExclusive &&
+                        it.plugType == plugType &&
+                        it.tempBand == tempBand
+                }
+                .maxByOrNull { it.sampleCount }
+                ?.medianPctPerMinute
+
+            val rate = sessionRate ?: historicalRate ?: return TimeEstimate(null, ConfidenceLevel.LOW)
+            if (sessionRate == null) usedHistorical = true
+            minutes += 1.0 / rate
         }
-        val remaining = targetPercent - snapshot.levelPercent
-        return ceil(remaining / rate).toInt().coerceAtLeast(1)
+
+        val confidence = if (usedHistorical) ConfidenceLevel.MEDIUM else ConfidenceLevel.HIGH
+        return TimeEstimate(ceil(minutes).toInt().coerceAtLeast(1), confidence)
+    }
+
+    private fun resolveTemperature(snapshot: BatterySnapshot, session: ChargeSessionMetrics?): Float? {
+        return snapshot.temperatureC ?: session?.maxTemperatureC ?: session?.averageTemperatureC
     }
 
     private fun isChargingLike(snapshot: BatterySnapshot): Boolean {
@@ -315,16 +424,5 @@ class BatteryDecisionEngine {
         return if (first.severity >= second.severity) first else second
     }
 
-    private fun StressLevel.escalate(): StressLevel {
-        return when (this) {
-            StressLevel.EXCELLENT -> StressLevel.GOOD
-            StressLevel.GOOD -> StressLevel.NORMAL
-            StressLevel.NORMAL -> StressLevel.HIGH_STRESS
-            StressLevel.HIGH_STRESS -> StressLevel.SEVERE_STRESS
-            StressLevel.SEVERE_STRESS -> StressLevel.SEVERE_STRESS
-        }
-    }
-
     private fun Float.roundOne(): String = String.format(Locale.ROOT, "%.1f", this)
-
 }

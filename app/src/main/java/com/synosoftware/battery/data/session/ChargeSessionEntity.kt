@@ -32,4 +32,6 @@ data class ChargeSessionEntity(
     val timeAbove45Sec: Long = 0L,
     val timeAbove80Sec: Long = 0L,
     val timeAbove95Sec: Long = 0L,
+    val timeHotAndAbove85Sec: Long = 0L,
+    val timeVeryHotAndAbove90Sec: Long = 0L,
 )

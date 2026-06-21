@@ -89,6 +89,7 @@ data class BatteryHealthEstimateUi(
 data class DailyChargingSummaryUi(
     val headline: UiText = TR(R.string.daily_summary_collecting),
     val detail: UiText = TR(R.string.daily_summary_waiting),
+    val advice: UiText? = null,
     val confidence: ConfidenceLevel = ConfidenceLevel.LOW,
     val evidenceGrade: EvidenceGrade = EvidenceGrade.INFERRED,
     val sessionCount: Int = 0,

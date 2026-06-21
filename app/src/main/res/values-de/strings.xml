@@ -81,10 +81,16 @@
     <!-- daily -->
     <string name="daily_summary_above_85_issue">Heute %1$s über 85%% verbracht</string>
     <string name="daily_summary_above_90_issue">Heute %1$s über 90%% verbracht</string>
+    <string name="daily_summary_advice_above_85">Verbringe nach Erreichen des Ziels weniger Zeit am Stecker.</string>
+    <string name="daily_summary_advice_above_90">Nutze ein Ziel von 80-85%%, wenn keine volle Ladung benötigt wird.</string>
+    <string name="daily_summary_advice_hot">Lass das Telefon beim Laden abkühlen. Vermeide Sonne, Spiele, dicke Hüllen und kabelloses Laden bei Wärme.</string>
+    <string name="daily_summary_advice_hot_above_85">Vermeide Laden bei Hitze, besonders nahe der vollen Ladung.</string>
+    <string name="daily_summary_advice_none">Keine größere Änderung nötig.</string>
     <string name="daily_summary_based_on">Basierend auf %1$s Ladevorgängen heute</string>
     <string name="daily_summary_collecting">Daten werden gesammelt</string>
     <string name="daily_summary_good">Gut</string>
     <string name="daily_summary_issue_hot">Heute heißes Laden</string>
+    <string name="daily_summary_issue_hot_above_85">Akku war heute heiß und über 85%% geladen</string>
     <string name="daily_summary_no_issue">Kein größeres Problem</string>
     <string name="daily_summary_normal">Normal</string>
     <string name="daily_summary_risky">Riskant</string>
@@ -96,16 +102,24 @@
     <string name="decision_action_continue">Weiterladen</string>
     <string name="decision_action_cool">Gerät abkühlen lassen oder Stecker ziehen</string>
     <string name="decision_action_not_charging">Mit dem Laden beginnen, um Hinweise zu sehen</string>
+    <string name="decision_action_slow_charge_cold">Lasse den Akku sich erwärmen, bevor du schnell lädst</string>
     <string name="decision_action_unplug_if_not_needed">Stecker ziehen, wenn keine volle Ladung benötigt wird</string>
     <string name="decision_action_unplug_now">Jetzt Stecker ziehen</string>
     <string name="decision_details_hint">Öffne die Details, um die Belege zu prüfen.</string>
-    <string name="decision_reason_at_target">Ziel erreicht während des Ladens</string>
+    <string name="decision_reason_charge_dominant">Der Ladestand ist aktuell der Hauptfaktor</string>
     <string name="decision_reason_charge_label">Belastung durch Ladestand</string>
+    <string name="decision_reason_cold_fast_charge">Schnellladen bei Kälte: %1$s°C</string>
+    <string name="decision_reason_fast_charge_heat">Schnellladen erzeugt zusätzliche Hitze: %1$s°C</string>
+    <string name="decision_reason_fast_charge_near_full">Schnellladen nahe der vollen Ladung</string>
+    <string name="decision_reason_hot_above_85_long">Der Akku war länger heiß und über 85%% geladen</string>
     <string name="decision_reason_hot_charging">Laden bei Hitze: %1$s°C</string>
-    <string name="decision_reason_hot_label">Heißes Laden</string>
     <string name="decision_reason_near_full">Fast voll während des Ladens</string>
     <string name="decision_reason_not_charging">Lädt nicht</string>
     <string name="decision_reason_reasonable">Ladevorgang sieht unbedenklich aus</string>
+    <string name="decision_reason_temperature_dominant">Die Temperatur ist aktuell der Hauptfaktor</string>
+    <string name="decision_reason_temperature_unavailable">Temperatur nicht verfügbar; das Risiko basiert auf dem Ladestand</string>
+    <string name="decision_reason_very_hot_near_full_long">Der Akku war mehrere Minuten sehr heiß nahe der vollen Ladung</string>
+    <string name="decision_reason_warm_near_full">Warm und fast voll während des Ladens: %1$s°C</string>
     <string name="decision_thermal_label">Thermische Belastung</string>
 
     <!-- evidence -->
@@ -237,7 +251,7 @@
     <string name="session_temperature_with_average">Max %1$s°C, Ø %2$s°C</string>
     <string name="session_time_above_85">%1$s über 85%%</string>
     <string name="session_time_above_90">%1$s über 90%%</string>
-    <string name="session_time_range">%1$s bis %2$s</string>
+    <string name="session_time_range">%1$s</string>
 
     <!-- sessions -->
     <string name="sessions_active">Wird geladen</string>
@@ -312,6 +326,7 @@
     <string name="temperature_label">Temperatur</string>
 
     <!-- time -->
+    <string name="time_estimate_confidence_label">Vertrauen der Zeitschätzung</string>
     <string name="time_to_target_label">Zeit bis zum Ziel</string>
 
     <!-- useful -->

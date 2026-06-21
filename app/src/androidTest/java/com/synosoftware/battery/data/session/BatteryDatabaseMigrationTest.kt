@@ -9,6 +9,7 @@ import org.junit.Assert.assertNull
 import org.junit.Test
 import androidx.test.platform.app.InstrumentationRegistry
 import com.synosoftware.battery.data.session.MIGRATION_3_4
+import com.synosoftware.battery.data.session.MIGRATION_4_5
 
 class BatteryDatabaseMigrationTest {
     @Test
@@ -101,6 +102,27 @@ class BatteryDatabaseMigrationTest {
             assertEquals(0L, session.timeAbove45Sec)
             assertEquals(0L, session.timeAbove80Sec)
             assertEquals(0L, session.timeAbove95Sec)
+        } finally {
+            database.close()
+        }
+    }
+
+    @Test
+    fun migrateV4ToV5AddsCombinedExposureColumns() = runBlocking {
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val name = "migration-v4-to-v5"
+        context.deleteDatabase(name)
+        createLegacyDatabaseV4(context, name)
+
+        val database = Room.databaseBuilder(context, BatteryDatabase::class.java, name)
+            .allowMainThreadQueries()
+            .addMigrations(MIGRATION_4_5)
+            .build()
+        try {
+            val session = database.chargeSessionDao().observeSessions().first().single()
+            assertEquals(1L, session.id)
+            assertEquals(0L, session.timeHotAndAbove85Sec)
+            assertEquals(0L, session.timeVeryHotAndAbove90Sec)
         } finally {
             database.close()
         }
@@ -359,6 +381,94 @@ class BatteryDatabaseMigrationTest {
                 """.trimIndent(),
             )
             database.version = 3
+        } finally {
+            database.close()
+        }
+    }
+
+    private fun createLegacyDatabaseV4(context: Context, name: String) {
+        val database = context.openOrCreateDatabase(name, Context.MODE_PRIVATE, null)
+        try {
+            database.execSQL(
+                """
+                CREATE TABLE IF NOT EXISTS `charge_sessions` (
+                    `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                    `startedAtMs` INTEGER NOT NULL,
+                    `lastSeenAtMs` INTEGER NOT NULL,
+                    `endedAtMs` INTEGER,
+                    `startLevelPercent` INTEGER NOT NULL,
+                    `currentLevelPercent` INTEGER NOT NULL,
+                    `startChargeCounterUah` INTEGER,
+                    `currentChargeCounterUah` INTEGER,
+                    `startTemperatureC` REAL,
+                    `currentTemperatureC` REAL,
+                    `maxTemperatureC` REAL,
+                    `averageTemperatureC` REAL,
+                    `chargingSource` TEXT NOT NULL,
+                    `chargingState` TEXT NOT NULL,
+                    `status` TEXT NOT NULL,
+                    `sampleCount` INTEGER NOT NULL,
+                    `timeAbove85Sec` INTEGER NOT NULL,
+                    `timeAbove90Sec` INTEGER NOT NULL,
+                    `lastNotifiedTargetPercent` INTEGER,
+                    `gainPercent` INTEGER NOT NULL,
+                    `timeAbove35Sec` INTEGER NOT NULL DEFAULT 0,
+                    `timeAbove40Sec` INTEGER NOT NULL DEFAULT 0,
+                    `timeAbove43Sec` INTEGER NOT NULL DEFAULT 0,
+                    `timeAbove45Sec` INTEGER NOT NULL DEFAULT 0,
+                    `timeAbove80Sec` INTEGER NOT NULL DEFAULT 0,
+                    `timeAbove95Sec` INTEGER NOT NULL DEFAULT 0
+                )
+                """.trimIndent(),
+            )
+            database.execSQL(
+                """
+                INSERT INTO `charge_sessions` (
+                    `id`,
+                    `startedAtMs`,
+                    `lastSeenAtMs`,
+                    `endedAtMs`,
+                    `startLevelPercent`,
+                    `currentLevelPercent`,
+                    `startChargeCounterUah`,
+                    `currentChargeCounterUah`,
+                    `startTemperatureC`,
+                    `currentTemperatureC`,
+                    `maxTemperatureC`,
+                    `averageTemperatureC`,
+                    `chargingSource`,
+                    `chargingState`,
+                    `status`,
+                    `sampleCount`,
+                    `timeAbove85Sec`,
+                    `timeAbove90Sec`,
+                    `lastNotifiedTargetPercent`,
+                    `gainPercent`
+                ) VALUES (
+                    1,
+                    9000,
+                    10000,
+                    10000,
+                    50,
+                    88,
+                    1600000,
+                    2500000,
+                    32.0,
+                    34.0,
+                    35.0,
+                    33.5,
+                    'USB',
+                    'DISCHARGING',
+                    'COMPLETED',
+                    6,
+                    480,
+                    90,
+                    85,
+                    38
+                )
+                """.trimIndent(),
+            )
+            database.version = 4
         } finally {
             database.close()
         }

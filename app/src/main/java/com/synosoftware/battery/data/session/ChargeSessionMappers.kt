@@ -39,6 +39,8 @@ fun ChargeSessionEntity.toMetrics(): ChargeSessionMetrics {
         timeAbove45Sec = timeAbove45Sec,
         timeAbove80Sec = timeAbove80Sec,
         timeAbove95Sec = timeAbove95Sec,
+        timeHotAndAbove85Sec = timeHotAndAbove85Sec,
+        timeVeryHotAndAbove90Sec = timeVeryHotAndAbove90Sec,
     )
 }
 
