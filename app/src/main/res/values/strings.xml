@@ -171,6 +171,12 @@
     <string name="info_subtitle">What the app reads and how it labels it.</string>
     <string name="info_title">Info</string>
 
+    <!-- language -->
+    <string name="language_name_en">English</string>
+    <string name="language_name_pt">Português</string>
+    <string name="language_name_de">Deutsch</string>
+    <string name="language_name_fr">Français</string>
+
     <!-- level -->
     <string name="level_label">Level</string>
 
@@ -257,6 +263,9 @@
     <string name="settings_experimental_description">Optional metrics for research or debugging.</string>
     <string name="settings_experimental_title">Experimental metrics</string>
     <string name="settings_experimental_toggle">Enable experimental metrics</string>
+    <string name="settings_language_title">Language</string>
+    <string name="settings_quick_picker_description">Changes apply immediately</string>
+    <string name="settings_quick_settings_label">Quick settings</string>
     <string name="settings_subtitle">Choose how Battery Lumen appears.</string>
     <string name="settings_target_description">Choose the charge level that should trigger an alert.</string>
     <string name="settings_target_title">Charge target</string>

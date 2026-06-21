@@ -9,6 +9,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.*
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -21,6 +22,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.synosoftware.battery.BuildConfig
 import com.synosoftware.battery.R
+import com.synosoftware.battery.data.preferences.AppLanguage
 import com.synosoftware.battery.data.preferences.ThemeMode
 import com.synosoftware.battery.ui.components.IconBadge
 import com.synosoftware.battery.ui.components.LucideIcon
@@ -36,6 +38,7 @@ import com.synosoftware.battery.ui.theme.NavigationAlpha
 import com.synosoftware.battery.ui.theme.appBackdropColors
 import com.synosoftware.battery.ui.theme.appChromeColor
 import com.synosoftware.battery.i18n.T
+import com.synosoftware.battery.i18n.withLanguage
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -45,116 +48,164 @@ fun BatteryAppRoot(
     darkTheme: Boolean,
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
-    val navController = rememberNavController()
-    val pagerState = rememberPagerState(pageCount = { BatteryTab.entries.size })
-    val scope = rememberCoroutineScope()
-    val snackbarHostState = remember { SnackbarHostState() }
-    val context = LocalContext.current
-    val mainRoute = "main"
-    val settingsRoute = "settings"
-    val currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route ?: mainRoute
-    val isSettingsRoute = currentRoute == settingsRoute
-    val currentTab = BatteryTab.entries[pagerState.currentPage]
-    val titleRes = if (isSettingsRoute) R.string.settings_title else currentTab.titleRes
-    val headerIconRes = when {
-        isSettingsRoute -> R.drawable.lucide_settings
-        else -> currentTab.iconRes
-    }
+    val baseContext = LocalContext.current
+    val localizedContext = remember(baseContext, state.language) { baseContext.withLanguage(state.language) }
 
-    LaunchedEffect(Unit) {
-        viewModel.events.collect { event ->
-            when (event) {
-                is BatteryEvent.TargetReached -> snackbarHostState.showSnackbar(
-                    context.T(R.string.target_reached_snackbar, event.targetPercent),
-                )
+    CompositionLocalProvider(
+        LocalContext provides localizedContext,
+        LocalConfiguration provides localizedContext.resources.configuration,
+    ) {
+        val navController = rememberNavController()
+        val pagerState = rememberPagerState(pageCount = { BatteryTab.entries.size })
+        val scope = rememberCoroutineScope()
+        val snackbarHostState = remember { SnackbarHostState() }
+        val context = LocalContext.current
+        val mainRoute = "main"
+        val settingsRoute = "settings"
+        val currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route ?: mainRoute
+        val isSettingsRoute = currentRoute == settingsRoute
+        val currentTab = BatteryTab.entries[pagerState.currentPage]
+        val titleRes = if (isSettingsRoute) R.string.settings_title else currentTab.titleRes
+        val headerIconRes = when {
+            isSettingsRoute -> R.drawable.lucide_settings
+            else -> currentTab.iconRes
+        }
+        var activeQuickSetting by rememberSaveable { mutableStateOf<QuickSetting?>(null) }
+
+        LaunchedEffect(Unit) {
+            viewModel.events.collect { event ->
+                when (event) {
+                    is BatteryEvent.TargetReached -> snackbarHostState.showSnackbar(
+                        context.T(R.string.target_reached_snackbar, event.targetPercent),
+                    )
+                }
             }
         }
-    }
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(
-                Brush.verticalGradient(
-                    appBackdropColors(darkTheme),
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(
+                    Brush.verticalGradient(
+                        appBackdropColors(darkTheme),
+                    ),
                 ),
-            ),
-    ) {
-        Scaffold(
-            modifier = Modifier.fillMaxSize(),
-            containerColor = Color.Transparent,
-            snackbarHost = { SnackbarHost(snackbarHostState) },
-            topBar = {
-                AppTopBar(
-                    titleRes = titleRes,
-                    iconRes = headerIconRes,
-                    darkTheme = darkTheme,
-                    isSettingsRoute = isSettingsRoute,
-                    currentTab = currentTab,
-                    currentThemeMode = state.themeMode,
-                    currentTargetPercent = state.targetChargePercent,
-                    onSettingsOpen = {
-                        navController.navigate(settingsRoute) {
-                            launchSingleTop = true
-                        }
-                    },
-                    onSettingsClose = {
-                        navController.popBackStack()
-                    },
-                    onNavigateToTab = { tab ->
-                        if (isSettingsRoute) {
-                            navController.popBackStack()
-                        }
-                        scope.launch {
-                            pagerState.animateScrollToPage(tab.ordinal)
-                        }
-                    },
-                    onThemeModeSelected = viewModel::setThemeMode,
-                    onTargetSelected = viewModel::setTargetChargePercent,
-                    onSeedDemoData = viewModel::seedDebugSessions,
-                )
-            },
-            bottomBar = {
-                if (!isSettingsRoute) {
-                    AppBottomBar(
-                        currentTab = currentTab,
-                        onNavigate = { tab ->
-                            scope.launch {
-                                pagerState.animateScrollToPage(tab.ordinal)
+        ) {
+            Scaffold(
+                modifier = Modifier.fillMaxSize(),
+                containerColor = Color.Transparent,
+                snackbarHost = { SnackbarHost(snackbarHostState) },
+                topBar = {
+                    AppTopBar(
+                        titleRes = titleRes,
+                        iconRes = headerIconRes,
+                        darkTheme = darkTheme,
+                        isSettingsRoute = isSettingsRoute,
+                        currentThemeMode = state.themeMode,
+                        currentTargetPercent = state.targetChargePercent,
+                        currentLanguage = state.language,
+                        onSettingsOpen = {
+                            navController.navigate(settingsRoute) {
+                                launchSingleTop = true
                             }
                         },
-                    )
-                }
-            },
-        ) { padding ->
-            NavHost(
-                navController = navController,
-                startDestination = mainRoute,
-            ) {
-                composable(mainRoute) {
-                    MainTabsPager(
-                        state = state,
-                        pagerState = pagerState,
-                        contentPadding = padding,
-                        onTargetSelected = viewModel::setTargetChargePercent,
+                        onSettingsClose = {
+                            navController.popBackStack()
+                        },
                         onSeedDemoData = viewModel::seedDebugSessions,
+                        onOpenQuickSetting = { setting -> activeQuickSetting = setting },
                     )
-                }
-                composable(settingsRoute) {
-                    SettingsScreen(
-                        state = state,
-                        onTargetSelected = viewModel::setTargetChargePercent,
-                        onDesignCapacitySelected = viewModel::setDesignCapacityMah,
-                        onTemperatureUnitSelected = viewModel::setTemperatureUnit,
-                        onExperimentalMetricsChanged = viewModel::setExperimentalMetricsEnabled,
-                        onThemeModeSelected = viewModel::setThemeMode,
-                        contentPadding = padding,
-                    )
+                },
+                bottomBar = {
+                    if (!isSettingsRoute) {
+                        AppBottomBar(
+                            currentTab = currentTab,
+                            onNavigate = { tab ->
+                                scope.launch {
+                                    pagerState.animateScrollToPage(tab.ordinal)
+                                }
+                            },
+                        )
+                    }
+                },
+            ) { padding ->
+                NavHost(
+                    navController = navController,
+                    startDestination = mainRoute,
+                ) {
+                    composable(mainRoute) {
+                        MainTabsPager(
+                            state = state,
+                            pagerState = pagerState,
+                            contentPadding = padding,
+                            onTargetSelected = viewModel::setTargetChargePercent,
+                            onSeedDemoData = viewModel::seedDebugSessions,
+                        )
+                    }
+                    composable(settingsRoute) {
+                        SettingsScreen(
+                            state = state,
+                            onTargetSelected = viewModel::setTargetChargePercent,
+                            onDesignCapacitySelected = viewModel::setDesignCapacityMah,
+                            onTemperatureUnitSelected = viewModel::setTemperatureUnit,
+                            onExperimentalMetricsChanged = viewModel::setExperimentalMetricsEnabled,
+                            onThemeModeSelected = viewModel::setThemeMode,
+                            contentPadding = padding,
+                        )
+                    }
                 }
             }
+        }
+
+        when (activeQuickSetting) {
+            QuickSetting.LANGUAGE -> QuickSettingSheet(
+                title = T(R.string.settings_language_title),
+                options = AppLanguage.entries,
+                optionLabel = { T(languageNameRes(it)) },
+                isSelected = { it == state.language },
+                onSelect = { language ->
+                    viewModel.setLanguage(language)
+                    activeQuickSetting = null
+                },
+                onDismiss = { activeQuickSetting = null },
+            )
+
+            QuickSetting.THEME -> QuickSettingSheet(
+                title = T(R.string.settings_theme_title),
+                options = ThemeMode.entries,
+                optionLabel = { T(themeLabel(it)) },
+                isSelected = { it == state.themeMode },
+                onSelect = { mode ->
+                    viewModel.setThemeMode(mode)
+                    activeQuickSetting = null
+                },
+                onDismiss = { activeQuickSetting = null },
+            )
+
+            QuickSetting.TARGET -> QuickSettingSheet(
+                title = T(R.string.settings_target_title),
+                options = QUICK_TARGET_OPTIONS,
+                optionLabel = { T(R.string.value_percent, it) },
+                isSelected = { it == state.targetChargePercent },
+                onSelect = { target ->
+                    viewModel.setTargetChargePercent(target)
+                    activeQuickSetting = null
+                },
+                onDismiss = { activeQuickSetting = null },
+            )
+
+            null -> Unit
         }
     }
 }
+
+private enum class QuickSetting {
+    LANGUAGE,
+    THEME,
+    TARGET,
+}
+
+private val QUICK_TARGET_OPTIONS = listOf(80, 85, 90, 100)
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -201,15 +252,13 @@ private fun AppTopBar(
     iconRes: Int,
     darkTheme: Boolean,
     isSettingsRoute: Boolean,
-    currentTab: BatteryTab,
     currentThemeMode: ThemeMode,
     currentTargetPercent: Int,
+    currentLanguage: AppLanguage,
     onSettingsOpen: () -> Unit,
     onSettingsClose: () -> Unit,
-    onNavigateToTab: (BatteryTab) -> Unit,
-    onThemeModeSelected: (ThemeMode) -> Unit,
-    onTargetSelected: (Int) -> Unit,
     onSeedDemoData: () -> Unit,
+    onOpenQuickSetting: (QuickSetting) -> Unit,
 ) {
     var menuExpanded by rememberSaveable { mutableStateOf(false) }
     val context = LocalContext.current
@@ -271,42 +320,10 @@ private fun AppTopBar(
                     DropdownMenu(
                         expanded = menuExpanded,
                         onDismissRequest = { menuExpanded = false },
+                        modifier = Modifier.widthIn(min = 240.dp),
                     ) {
                         AppMenuItem(
-                            label = T(BatteryTab.NOW.navLabelRes),
-                            selected = currentTab == BatteryTab.NOW,
-                            onClick = {
-                                menuExpanded = false
-                                onNavigateToTab(BatteryTab.NOW)
-                            },
-                        )
-                        AppMenuItem(
-                            label = T(BatteryTab.HEALTH.navLabelRes),
-                            selected = currentTab == BatteryTab.HEALTH,
-                            onClick = {
-                                menuExpanded = false
-                                onNavigateToTab(BatteryTab.HEALTH)
-                            },
-                        )
-                        AppMenuItem(
-                            label = T(BatteryTab.LEDGER.navLabelRes),
-                            selected = currentTab == BatteryTab.LEDGER,
-                            onClick = {
-                                menuExpanded = false
-                                onNavigateToTab(BatteryTab.LEDGER)
-                            },
-                        )
-                        AppMenuItem(
-                            label = T(BatteryTab.HOW_IT_WORKS.navLabelRes),
-                            selected = currentTab == BatteryTab.HOW_IT_WORKS,
-                            onClick = {
-                                menuExpanded = false
-                                onNavigateToTab(BatteryTab.HOW_IT_WORKS)
-                            },
-                        )
-                        AppMenuItem(
                             label = T(R.string.settings_title),
-                            selected = isSettingsRoute,
                             onClick = {
                                 menuExpanded = false
                                 if (!isSettingsRoute) {
@@ -315,34 +332,35 @@ private fun AppTopBar(
                             },
                         )
                         HorizontalDivider()
-                        MenuSectionHeader(text = T(R.string.settings_target_title))
-                        listOf(80, 85, 90, 100).forEach { target ->
-                            AppMenuItem(
-                                label = T(R.string.value_percent, target),
-                                selected = currentTargetPercent == target,
-                                onClick = {
-                                    menuExpanded = false
-                                    onTargetSelected(target)
-                                },
-                            )
-                        }
-                        HorizontalDivider()
-                        MenuSectionHeader(text = T(R.string.settings_theme_title))
-                        ThemeMode.entries.forEach { mode ->
-                            AppMenuItem(
-                                label = T(themeLabel(mode)),
-                                selected = currentThemeMode == mode,
-                                onClick = {
-                                    menuExpanded = false
-                                    onThemeModeSelected(mode)
-                                },
-                            )
-                        }
+                        MenuSectionHeader(text = T(R.string.settings_quick_settings_label))
+                        AppMenuValueItem(
+                            label = T(R.string.settings_language_title),
+                            value = T(languageNameRes(currentLanguage)),
+                            onClick = {
+                                menuExpanded = false
+                                onOpenQuickSetting(QuickSetting.LANGUAGE)
+                            },
+                        )
+                        AppMenuValueItem(
+                            label = T(R.string.settings_theme_title),
+                            value = T(themeLabel(currentThemeMode)),
+                            onClick = {
+                                menuExpanded = false
+                                onOpenQuickSetting(QuickSetting.THEME)
+                            },
+                        )
+                        AppMenuValueItem(
+                            label = T(R.string.settings_target_title),
+                            value = T(R.string.value_percent, currentTargetPercent),
+                            onClick = {
+                                menuExpanded = false
+                                onOpenQuickSetting(QuickSetting.TARGET)
+                            },
+                        )
                         if (BuildConfig.DEBUG) {
                             HorizontalDivider()
                             AppMenuItem(
                                 label = T(R.string.health_debug_seed_action),
-                                selected = false,
                                 onClick = {
                                     menuExpanded = false
                                     onSeedDemoData()
@@ -412,29 +430,115 @@ private fun MenuSectionHeader(text: String) {
 @Composable
 private fun AppMenuItem(
     label: String,
-    selected: Boolean,
+    onClick: () -> Unit,
+) {
+    DropdownMenuItem(
+        text = { AppText(text = label) },
+        onClick = onClick,
+    )
+}
+
+@Composable
+private fun AppMenuValueItem(
+    label: String,
+    value: String,
     onClick: () -> Unit,
 ) {
     DropdownMenuItem(
         text = {
-            AppText(
-                text = label,
-                fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
-            )
-        },
-        leadingIcon = if (selected) {
-            {
-                LucideIcon(
-                    resId = R.drawable.lucide_check,
-                    contentDescription = null,
-                    modifier = Modifier.size(18.dp),
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                AppText(text = label)
+                AppText(
+                    text = value,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.padding(start = 16.dp),
                 )
             }
-        } else {
-            null
         },
         onClick = onClick,
     )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun <T> QuickSettingSheet(
+    title: String,
+    options: List<T>,
+    optionLabel: @Composable (T) -> String,
+    isSelected: (T) -> Boolean,
+    onSelect: (T) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    ModalBottomSheet(onDismissRequest = onDismiss) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp)
+                .padding(bottom = 24.dp),
+        ) {
+            AppText(
+                text = title,
+                style = MaterialTheme.typography.titleMedium,
+            )
+            AppText(
+                text = T(R.string.settings_quick_picker_description),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(top = 4.dp, bottom = 12.dp),
+            )
+            options.forEach { option ->
+                QuickSettingOptionRow(
+                    label = optionLabel(option),
+                    selected = isSelected(option),
+                    onClick = { onSelect(option) },
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun QuickSettingOptionRow(
+    label: String,
+    selected: Boolean,
+    onClick: () -> Unit,
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(vertical = 14.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        AppText(
+            text = label,
+            fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
+        )
+        if (selected) {
+            LucideIcon(
+                resId = R.drawable.lucide_check,
+                contentDescription = null,
+                modifier = Modifier.size(18.dp),
+            )
+        }
+    }
+}
+
+private fun languageNameRes(language: AppLanguage): Int {
+    return when (language) {
+        AppLanguage.ENGLISH -> R.string.language_name_en
+        AppLanguage.PORTUGUESE -> R.string.language_name_pt
+        AppLanguage.GERMAN -> R.string.language_name_de
+        AppLanguage.FRENCH -> R.string.language_name_fr
+    }
 }
 
 private fun themeLabel(mode: ThemeMode): Int {

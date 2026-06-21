@@ -2,6 +2,7 @@ package com.synosoftware.battery.ui.model
 
 import androidx.annotation.StringRes
 import com.synosoftware.battery.R
+import com.synosoftware.battery.data.preferences.AppLanguage
 import com.synosoftware.battery.data.preferences.TemperatureUnit
 import com.synosoftware.battery.data.preferences.ThemeMode
 import com.synosoftware.battery.domain.BatteryDecision
@@ -102,6 +103,7 @@ data class BatteryUiState(
     val experimentalMetricsEnabled: Boolean = false,
     val temperatureUnit: TemperatureUnit = TemperatureUnit.CELSIUS,
     val themeMode: ThemeMode = ThemeMode.SYSTEM,
+    val language: AppLanguage = AppLanguage.ENGLISH,
     val currentSnapshot: BatterySnapshot? = null,
     val decision: BatteryDecision? = null,
     val activeSession: BatterySessionUi? = null,

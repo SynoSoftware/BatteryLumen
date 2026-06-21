@@ -6,6 +6,7 @@ import com.synosoftware.battery.R
 import com.synosoftware.battery.data.battery.BatteryMonitor
 import com.synosoftware.battery.data.formatDuration
 import com.synosoftware.battery.data.notification.ChargingNotificationManager
+import com.synosoftware.battery.data.preferences.AppLanguage
 import com.synosoftware.battery.data.preferences.SettingsRepository
 import com.synosoftware.battery.data.preferences.TemperatureUnit
 import com.synosoftware.battery.data.preferences.ThemeMode
@@ -101,6 +102,7 @@ class BatteryViewModel(
             experimentalMetricsEnabled = preferences.experimentalMetricsEnabled,
             temperatureUnit = preferences.temperatureUnit,
             themeMode = preferences.themeMode,
+            language = preferences.language,
             currentSnapshot = snapshot,
             decision = decision,
             activeSession = activeSession,
@@ -126,7 +128,7 @@ class BatteryViewModel(
                 val result = sessionRepository.recordSnapshot(snapshot, preferences.targetChargePercent)
                 if (result.targetCrossed) {
                     val target = result.targetPercent ?: preferences.targetChargePercent
-                    notificationManager.notifyTargetReached(target, snapshot.levelPercent)
+                    notificationManager.notifyTargetReached(target, snapshot.levelPercent, preferences.language)
                     _events.tryEmit(BatteryEvent.TargetReached(target))
                 }
             }
@@ -148,6 +150,12 @@ class BatteryViewModel(
     fun setThemeMode(mode: ThemeMode) {
         viewModelScope.launch {
             settingsRepository.setThemeMode(mode)
+        }
+    }
+
+    fun setLanguage(language: AppLanguage) {
+        viewModelScope.launch {
+            settingsRepository.setLanguage(language)
         }
     }
 

@@ -20,7 +20,7 @@ class SessionReconciliationWorker(
         val result = sessionRepository.recordSnapshot(snapshot, preferences.targetChargePercent)
         if (result.targetCrossed) {
             val target = result.targetPercent ?: preferences.targetChargePercent
-            notificationManager.notifyTargetReached(target, snapshot.levelPercent)
+            notificationManager.notifyTargetReached(target, snapshot.levelPercent, preferences.language)
         }
         return Result.success()
     }

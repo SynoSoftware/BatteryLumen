@@ -23,12 +23,20 @@ enum class ThemeMode {
     DARK,
 }
 
+enum class AppLanguage(val tag: String) {
+    ENGLISH("en"),
+    PORTUGUESE("pt"),
+    GERMAN("de"),
+    FRENCH("fr"),
+}
+
 data class UserPreferences(
     val targetChargePercent: Int = 85,
     val designCapacityMah: Int? = null,
     val experimentalMetricsEnabled: Boolean = false,
     val temperatureUnit: TemperatureUnit = TemperatureUnit.CELSIUS,
     val themeMode: ThemeMode = ThemeMode.SYSTEM,
+    val language: AppLanguage = AppLanguage.ENGLISH,
 )
 
 class SettingsRepository(
@@ -39,6 +47,7 @@ class SettingsRepository(
     private val experimentalKey = booleanPreferencesKey("experimental_metrics_enabled")
     private val temperatureUnitKey = stringPreferencesKey("temperature_unit")
     private val themeModeKey = stringPreferencesKey("theme_mode")
+    private val languageKey = stringPreferencesKey("app_language")
 
     val preferences: Flow<UserPreferences> = context.userPreferencesDataStore.data.map { prefs ->
         prefs.toUserPreferences()
@@ -78,6 +87,12 @@ class SettingsRepository(
         }
     }
 
+    suspend fun setLanguage(language: AppLanguage) {
+        context.userPreferencesDataStore.edit { prefs ->
+            prefs[languageKey] = language.name
+        }
+    }
+
     private fun Preferences.toUserPreferences(): UserPreferences {
         val targetChargePercent = this[targetKey] ?: 85
         val designCapacityMah = this[designCapacityKey]
@@ -88,12 +103,16 @@ class SettingsRepository(
         val themeMode = runCatching {
             ThemeMode.valueOf(this[themeModeKey] ?: ThemeMode.SYSTEM.name)
         }.getOrDefault(ThemeMode.SYSTEM)
+        val language = runCatching {
+            AppLanguage.valueOf(this[languageKey] ?: AppLanguage.ENGLISH.name)
+        }.getOrDefault(AppLanguage.ENGLISH)
         return UserPreferences(
             targetChargePercent = targetChargePercent,
             designCapacityMah = designCapacityMah,
             experimentalMetricsEnabled = experimentalMetricsEnabled,
             temperatureUnit = temperatureUnit,
             themeMode = themeMode,
+            language = language,
         )
     }
 }

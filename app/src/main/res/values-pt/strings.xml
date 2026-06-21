@@ -1,0 +1,336 @@
+<resources>
+    <!-- above -->
+    <string name="above_85_label">Acima de 85</string>
+    <string name="above_90_label">Acima de 90</string>
+
+    <!-- allow -->
+    <string name="allow_notifications">Permitir notificações</string>
+
+    <!-- app -->
+    <string name="app_name">Battery Lumen</string>
+    <string name="app_title">Battery Lumen</string>
+
+    <!-- best -->
+    <string name="best_stop_label">Melhor parada</string>
+
+    <!-- capability -->
+    <string name="capability_battery_level_availability">Disponível em todos os dispositivos</string>
+    <string name="capability_battery_level_fallback">Mostrar apenas a porcentagem da bateria</string>
+    <string name="capability_battery_level_label">Nível da bateria</string>
+    <string name="capability_battery_level_rule">Usa a transmissão do sistema como leitura atual.</string>
+    <string name="capability_battery_level_source">Transmissão de bateria do Android</string>
+    <string name="capability_battery_temperature_availability">Disponível em muitos dispositivos</string>
+    <string name="capability_battery_temperature_fallback">Ocultar temperatura quando ausente</string>
+    <string name="capability_battery_temperature_label">Temperatura da bateria</string>
+    <string name="capability_battery_temperature_rule">Usa a temperatura medida quando o dispositivo a informa.</string>
+    <string name="capability_battery_temperature_source">BatteryManager</string>
+    <string name="capability_celsius_unit">Celsius</string>
+    <string name="capability_charge_counter_availability">Disponível em alguns dispositivos</string>
+    <string name="capability_charge_counter_fallback">Ocultar contador de carga quando ausente</string>
+    <string name="capability_charge_counter_label">Contador de carga</string>
+    <string name="capability_charge_counter_rule">Usa o contador de carga restante quando o dispositivo o expõe.</string>
+    <string name="capability_charge_counter_source">BatteryManager</string>
+    <string name="capability_current_now_availability">Disponível em alguns dispositivos</string>
+    <string name="capability_current_now_fallback">Ocultar corrente quando ausente</string>
+    <string name="capability_current_now_label">Corrente atual</string>
+    <string name="capability_current_now_rule">Usa a corrente instantânea quando o dispositivo a expõe.</string>
+    <string name="capability_current_now_source">BatteryManager</string>
+    <string name="capability_enum_unit">Enum</string>
+    <string name="capability_microamp_hour_unit">Microampere-hora</string>
+    <string name="capability_microamp_unit">Microampere</string>
+    <string name="capability_millivolt_unit">Milivolt</string>
+    <string name="capability_percent_unit">Porcentagem</string>
+    <string name="capability_plug_type_availability">Disponível na maioria dos dispositivos</string>
+    <string name="capability_plug_type_fallback">Tratar a fonte como desconhecida</string>
+    <string name="capability_plug_type_label">Tipo de conector</string>
+    <string name="capability_plug_type_rule">Usa o tipo de conector informado como indicação.</string>
+    <string name="capability_plug_type_source">Transmissão de bateria do Android</string>
+    <string name="capability_voltage_availability">Disponível em muitos dispositivos</string>
+    <string name="capability_voltage_fallback">Ocultar voltagem quando ausente</string>
+    <string name="capability_voltage_label">Voltagem</string>
+    <string name="capability_voltage_rule">Usa os milivolts informados quando disponíveis.</string>
+    <string name="capability_voltage_source">BatteryManager</string>
+
+    <!-- charging -->
+    <string name="charging_source_ac">CA</string>
+    <string name="charging_source_dock">Dock</string>
+    <string name="charging_source_unknown">Desconhecido</string>
+    <string name="charging_source_usb">USB</string>
+    <string name="charging_source_wireless">Sem fio</string>
+    <string name="charging_state_charging">Carregando</string>
+    <string name="charging_state_discharging">Descarregando</string>
+    <string name="charging_state_full">Cheia</string>
+    <string name="charging_state_unknown">Desconhecido</string>
+
+    <!-- confidence -->
+    <string name="confidence_high">Alta</string>
+    <string name="confidence_low">Baixa</string>
+    <string name="confidence_medium">Média</string>
+    <string name="confidence_reason_high">Leituras suficientes e sessões úteis</string>
+    <string name="confidence_reason_low">Ainda há poucos dados</string>
+    <string name="confidence_reason_medium">Algumas leituras ainda estão faltando</string>
+    <string name="confidence_summary">Confiança: %1$s. %2$s</string>
+
+    <!-- continue -->
+    <string name="continue_charging_or_set_target">Continue carregando ou defina uma meta</string>
+
+    <!-- current -->
+    <string name="current_label">Corrente</string>
+    <string name="current_session_label">Sessão Atual</string>
+
+    <!-- daily -->
+    <string name="daily_summary_above_85_issue">Passou %1$s acima de 85%% hoje</string>
+    <string name="daily_summary_above_90_issue">Passou %1$s acima de 90%% hoje</string>
+    <string name="daily_summary_based_on">Com base em %1$s sessões hoje</string>
+    <string name="daily_summary_collecting">Coletando dados</string>
+    <string name="daily_summary_good">Bom</string>
+    <string name="daily_summary_issue_hot">Carregamento quente hoje</string>
+    <string name="daily_summary_no_issue">Nenhum problema importante</string>
+    <string name="daily_summary_normal">Normal</string>
+    <string name="daily_summary_risky">Arriscado</string>
+    <string name="daily_summary_title">Hoje</string>
+    <string name="daily_summary_waiting">Abra o app enquanto carrega para montar o resumo de hoje.</string>
+
+    <!-- decision -->
+    <string name="decision_action_avoid_full">Evite carregar até a carga completa</string>
+    <string name="decision_action_continue">Continue carregando</string>
+    <string name="decision_action_cool">Deixe o dispositivo esfriar ou desconecte</string>
+    <string name="decision_action_not_charging">Comece a carregar para ver orientações</string>
+    <string name="decision_action_unplug_if_not_needed">Desconecte se não precisar de carga completa</string>
+    <string name="decision_action_unplug_now">Desconecte agora</string>
+    <string name="decision_details_hint">Abra os detalhes para ver as evidências.</string>
+    <string name="decision_reason_at_target">Na meta durante o carregamento</string>
+    <string name="decision_reason_charge_label">Estresse pelo nível de carga</string>
+    <string name="decision_reason_hot_charging">Carregando enquanto quente: %1$s°C</string>
+    <string name="decision_reason_hot_label">Carregamento quente</string>
+    <string name="decision_reason_near_full">Quase cheia durante o carregamento</string>
+    <string name="decision_reason_not_charging">Não está carregando</string>
+    <string name="decision_reason_reasonable">O carregamento parece razoável</string>
+    <string name="decision_thermal_label">Estresse térmico</string>
+
+    <!-- evidence -->
+    <string name="evidence_estimated">Estimado</string>
+    <string name="evidence_experimental">Experimental</string>
+    <string name="evidence_inferred">Inferido</string>
+    <string name="evidence_measured">Medido</string>
+
+    <!-- fallback -->
+    <string name="fallback_label">Alternativa: %1$s</string>
+
+    <!-- full -->
+    <string name="full_charge_label">Carga Completa</string>
+
+    <!-- health -->
+    <string name="health_approx_percent">~%1$s%%</string>
+    <string name="health_based_on_sessions">Com base em %1$s sessões úteis</string>
+    <string name="health_capacity_reference">Referência de capacidade: %1$s</string>
+    <string name="health_collecting_data">Coletando dados</string>
+    <string name="health_current_title">Saúde atual</string>
+    <string name="health_debug_seed_action">Carregar ano de demonstração</string>
+    <string name="health_debug_seed_body">Substitui as sessões salvas por cerca de um ano de dados de demonstração plausíveis.</string>
+    <string name="health_debug_seed_title">Dados de demonstração (depuração)</string>
+    <string name="health_estimated_capacity">Capacidade estimada</string>
+    <string name="health_estimated_health">Saúde estimada</string>
+    <string name="health_insufficient_body">A saúde da bateria precisa de %1$s sessões de carregamento úteis antes de poder ser estimada.</string>
+    <string name="health_insufficient_title">Dados insuficientes</string>
+    <string name="health_likely_range">Intervalo provável: %1$s - %2$s</string>
+    <string name="health_likely_range_percent">Intervalo provável: %1$s - %2$s</string>
+    <string name="health_sessions_collected">%1$s de %2$s sessões úteis coletadas</string>
+    <string name="health_summary_title">Resumo de saúde</string>
+    <string name="health_title">Saúde da Bateria</string>
+    <string name="health_trend_collecting">Coletando dados</string>
+    <string name="health_trend_confidence">Com base em %1$s sessões úteis</string>
+    <string name="health_trend_declining">Em declínio</string>
+    <string name="health_trend_noisy">Instável</string>
+    <string name="health_trend_note">O gráfico mostra estimativas de sessões úteis, não o desgaste exato.</string>
+    <string name="health_trend_stable">Estável</string>
+    <string name="health_trend_subtitle">Pontos de capacidade total estimada com base em sessões de carregamento úteis.</string>
+    <string name="health_trend_title">Tendência de saúde da bateria</string>
+
+    <!-- info -->
+    <string name="info_capability_hide">Ocultar</string>
+    <string name="info_capability_show">Mostrar</string>
+    <string name="info_capability_subtitle">O que este dispositivo pode expor</string>
+    <string name="info_capability_summary">%1$s sinais disponíveis</string>
+    <string name="info_capability_title">Capacidades do dispositivo</string>
+    <string name="info_experimental_desc">As métricas experimentais estão desativadas por padrão. Elas são úteis para pesquisa, mas não para afirmações precisas sobre a saúde da bateria.</string>
+    <string name="info_experimental_disabled">Métricas Experimentais Desativadas</string>
+    <string name="info_experimental_title">Métricas Experimentais</string>
+    <string name="info_grades_estimated_body">Os valores podem ser previstos a partir das sessões que temos.</string>
+    <string name="info_grades_experimental_body">Os valores experimentais permanecem claramente identificados e fora das afirmações.</string>
+    <string name="info_grades_inferred_body">Os valores inferidos combinam sinais medidos com regras do modelo.</string>
+    <string name="info_grades_measured_body">Os valores medidos vêm diretamente do dispositivo.</string>
+    <string name="info_grades_title">Níveis de evidência</string>
+    <string name="info_models_charge_body">Tanto o calor quanto o tempo de permanência importam quando o telefone está carregando.</string>
+    <string name="info_models_charge_title">Modelo de carga</string>
+    <string name="info_models_session_body">Sessões fracas são mantidas no histórico, mas não usadas para a saúde.</string>
+    <string name="info_models_session_title">Qualidade da sessão</string>
+    <string name="info_models_thermal_body">Temperatura e tempo de permanência mais altos aumentam o estresse durante o carregamento.</string>
+    <string name="info_models_thermal_title">Estresse térmico</string>
+    <string name="info_models_title">Regras do modelo</string>
+    <string name="info_subtitle">O que o app lê e como ele rotula isso.</string>
+    <string name="info_title">Informações</string>
+
+    <!-- language -->
+    <string name="language_name_en">English</string>
+    <string name="language_name_pt">Português</string>
+    <string name="language_name_de">Deutsch</string>
+    <string name="language_name_fr">Français</string>
+
+    <!-- level -->
+    <string name="level_label">Nível</string>
+
+    <!-- live -->
+    <string name="live_telemetry_subtitle">Leituras atuais do dispositivo</string>
+    <string name="live_telemetry_title">Telemetria em Tempo Real</string>
+
+    <!-- menu -->
+    <string name="menu_more">Mais opções</string>
+
+    <!-- navigation -->
+    <string name="navigation_health">Saúde</string>
+    <string name="navigation_info">Info</string>
+    <string name="navigation_now">Agora</string>
+    <string name="navigation_sessions">Sessões</string>
+    <string name="navigation_settings">Configurações</string>
+
+    <!-- no -->
+    <string name="no_active_session_yet">Ainda sem sessão ativa</string>
+    <string name="no_battery_snapshot_yet">Ainda sem leitura da bateria</string>
+
+    <!-- notification -->
+    <string name="notification_channel_charge_target_description">Notifica quando o carregamento atinge a meta selecionada</string>
+    <string name="notification_channel_charge_target_title">Alertas de meta de carga</string>
+
+    <!-- now -->
+    <string name="now_details_hide">Ocultar detalhes</string>
+    <string name="now_details_show">Mostrar detalhes</string>
+    <string name="now_details_title">Detalhes da decisão</string>
+    <string name="now_health_title">Resumo de saúde</string>
+    <string name="now_stress_label">Risco do carregamento</string>
+
+    <!-- open -->
+    <string name="open_app_while_charging">Abra o app enquanto carrega</string>
+
+    <!-- recommended -->
+    <string name="recommended_label">Recomendado</string>
+
+    <!-- session -->
+    <string name="session_assessment_incomplete">Sessão incompleta</string>
+    <string name="session_assessment_useful">Sessão útil</string>
+    <string name="session_assessment_weak">Sessão fraca</string>
+    <string name="session_delta_label">De %1$s%% a %2$s%%</string>
+    <string name="session_headline_delta">Ganhou %1$s</string>
+    <string name="session_hint_active">Continue carregando para tornar esta sessão útil</string>
+    <string name="session_hint_incomplete">O carregamento ainda está em andamento</string>
+    <string name="session_hint_useful">Útil para estimativas de saúde</string>
+    <string name="session_quality_active">Ativa</string>
+    <string name="session_quality_incomplete">Incompleta</string>
+    <string name="session_quality_useful">Útil</string>
+    <string name="session_quality_weak">Fraca</string>
+    <string name="session_source_ac">CA</string>
+    <string name="session_source_dock">Dock</string>
+    <string name="session_source_unknown">Desconhecido</string>
+    <string name="session_source_usb">USB</string>
+    <string name="session_source_wireless">Sem fio</string>
+    <string name="session_temperature_title">Máx %1$s°C</string>
+    <string name="session_temperature_with_average">Máx %1$s°C, média %2$s°C</string>
+    <string name="session_time_above_85">%1$s acima de 85%%</string>
+    <string name="session_time_above_90">%1$s acima de 90%%</string>
+    <string name="session_time_range">%1$s a %2$s</string>
+
+    <!-- sessions -->
+    <string name="sessions_active">Carregando</string>
+    <string name="sessions_empty_hint">Carregue com o app aberto para construir o histórico da bateria.</string>
+    <string name="sessions_empty_title">Ainda sem sessões</string>
+    <string name="sessions_incomplete">Incompleta</string>
+    <string name="sessions_recent_note">Mostrando as %1$s mais recentes de %2$s sessões</string>
+    <string name="sessions_search_empty_hint">Tente uma fonte, data, temperatura ou rótulo de qualidade</string>
+    <string name="sessions_search_empty_title">Nenhuma sessão correspondente</string>
+    <string name="sessions_search_hint">Buscar sessões</string>
+    <string name="sessions_search_label">Buscar</string>
+    <string name="sessions_subtitle">Sessões de carregamento recentes e evidências</string>
+    <string name="sessions_title">Sessões</string>
+    <string name="sessions_useful">Útil</string>
+    <string name="sessions_weak">Fraca</string>
+
+    <!-- settings -->
+    <string name="settings_design_description">Referência opcional usada para converter a saúde em porcentagem.</string>
+    <string name="settings_design_label">Capacidade de referência</string>
+    <string name="settings_design_placeholder">ex.: 5000</string>
+    <string name="settings_design_supporting">Deixe em branco se não souber a capacidade original.</string>
+    <string name="settings_design_title">Capacidade nominal</string>
+    <string name="settings_experimental_description">Métricas opcionais para pesquisa ou depuração.</string>
+    <string name="settings_experimental_title">Métricas experimentais</string>
+    <string name="settings_experimental_toggle">Ativar métricas experimentais</string>
+    <string name="settings_language_title">Idioma</string>
+    <string name="settings_quick_picker_description">As alterações são aplicadas imediatamente</string>
+    <string name="settings_quick_settings_label">Ajustes rápidos</string>
+    <string name="settings_subtitle">Escolha a aparência do Battery Lumen.</string>
+    <string name="settings_target_description">Escolha o nível de carga que deve disparar um alerta.</string>
+    <string name="settings_target_title">Meta de carga</string>
+    <string name="settings_temperature_celsius">Celsius</string>
+    <string name="settings_temperature_description">Escolha como as temperaturas são exibidas.</string>
+    <string name="settings_temperature_fahrenheit">Fahrenheit</string>
+    <string name="settings_temperature_preview">Pré-visualização: %1$s</string>
+    <string name="settings_temperature_title">Unidade de temperatura</string>
+    <string name="settings_theme_dark">Escuro</string>
+    <string name="settings_theme_description">Escolha o tema que parecer melhor.</string>
+    <string name="settings_theme_light">Claro</string>
+    <string name="settings_theme_system">Sistema</string>
+    <string name="settings_theme_title">Tema</string>
+    <string name="settings_title">Configurações</string>
+    <string name="settings_toggle_off">Desativado</string>
+    <string name="settings_toggle_on">Ativado</string>
+
+    <!-- source -->
+    <string name="source_charging_label">Fonte de energia</string>
+    <string name="source_label">Fonte</string>
+
+    <!-- state -->
+    <string name="state_label">Status</string>
+
+    <!-- stored -->
+    <string name="stored_only_label">Somente armazenado</string>
+
+    <!-- stress -->
+    <string name="stress_excellent">Excelente</string>
+    <string name="stress_good">Bom</string>
+    <string name="stress_high">Risco alto</string>
+    <string name="stress_normal">Normal</string>
+    <string name="stress_severe">Risco severo</string>
+
+    <!-- target -->
+    <string name="target_guidance_note">Os alertas seguem o ponto de parada selecionado enquanto o app observa o carregamento.</string>
+    <string name="target_label">Meta</string>
+    <string name="target_reached_body">A bateria está em %1$s%%</string>
+    <string name="target_reached_snackbar">Meta atingida em %1$s%%</string>
+    <string name="target_reached_title">Meta atingida</string>
+    <string name="target_timing_wait">Aguarde dados suficientes de carregamento</string>
+
+    <!-- temperature -->
+    <string name="temperature_label">Temperatura</string>
+
+    <!-- time -->
+    <string name="time_to_target_label">Tempo para a Meta</string>
+
+    <!-- useful -->
+    <string name="useful_label">Útil</string>
+
+    <!-- value -->
+    <string name="value_delta_percent">+%1$s%%</string>
+    <string name="value_mah">%1$s mAh</string>
+    <string name="value_min_short">~%1$s min</string>
+    <string name="value_mv">%1$s mV</string>
+    <string name="value_na">Não disponível</string>
+    <string name="value_percent">%1$s%%</string>
+    <string name="value_temp_c">%1$s°C</string>
+    <string name="value_temp_f">%1$s°F</string>
+    <string name="value_ua">%1$s uA</string>
+
+    <!-- voltage -->
+    <string name="voltage_label">Voltagem</string>
+
+    <!-- waiting -->
+    <string name="waiting_for_battery_data">Aguardando dados da bateria</string>
+</resources>
